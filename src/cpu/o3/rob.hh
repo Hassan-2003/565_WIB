@@ -38,6 +38,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// Going to modify this file to support the WIB - Hassan Al-alawi
+
 #ifndef __CPU_O3_ROB_HH__
 #define __CPU_O3_ROB_HH__
 
