@@ -91,6 +91,8 @@ class ThreadContext;
  * within it, as well as all of the time buffers between stages.  The
  * tick() function for the CPU is defined here.
  */
+
+// Can have to modify issue, dispatch, and rename table to support WIB - Hassan Alalawi
 class CPU : public BaseCPU
 {
   public:
