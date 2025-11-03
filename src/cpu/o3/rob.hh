@@ -76,6 +76,9 @@ class ROB
   public:
     typedef std::pair<RegIndex, RegIndex> UnmapInfo;
     typedef typename std::list<DynInstPtr>::iterator InstIt;
+    typedef std::list<DynInstPtr> InstListPerThread;
+    using bank = InstListPerThread;
+    using BanksPerThread = std::array<Bank, 2*issueWidth>;
 
     /** Possible ROB statuses. */
     enum Status
@@ -269,6 +272,16 @@ class ROB
      */
     size_t countInsts(ThreadID tid);
 
+    /** WIB Support functions */
+
+    /** Given a pointer, return the bank number and index in bank for tail ptr */
+    void get_indices(ThreadID tid, unsigned &bank_num,
+                      unsigned &index_in_bank);
+
+    /** Given a pointer, return the bank number and index in bank for head ptr */
+    void get_head_indices(ThreadID tid, unsigned &bank_num,
+                      unsigned &index_in_bank);
+
   private:
     /** Reset the ROB state */
     void resetState();
@@ -288,8 +301,8 @@ class ROB
     /** Max Insts a Thread Can Have in the ROB */
     unsigned maxEntries[MaxThreads];
 
-    /** ROB List of Instructions */
-    std::list<DynInstPtr> instList[MaxThreads];
+    /** ROB List of Instructions */ 
+    std::list<BanksPerThread> instList[MaxThreads];
 
     /** Number of instructions that can be squashed in a single cycle. */
     unsigned squashWidth;
@@ -304,6 +317,9 @@ class ROB
     /** Iterator pointing to the instruction which is the first instruction in
      *  in the ROB*/
     InstIt head;
+
+    int headptr[MaxThreads];
+    int tailptr[MaxThreads];
 
   private:
     /** Iterator used for walking through the list of instructions when
@@ -321,6 +337,9 @@ class ROB
 
     /** Dummy instruction returned if there are no insts left. */
     DynInstPtr dummyInst;
+
+    /** Issue Width for Number of Banks calculation. */
+    unsigned issueWidth;
 
   private:
     /** The sequence number of the squashed instruction. */

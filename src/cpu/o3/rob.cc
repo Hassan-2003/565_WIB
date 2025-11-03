@@ -93,10 +93,17 @@ ROB::ROB(CPU *_cpu, const BaseO3CPUParams &params)
         }
     }
 
+    for(ThreadID tid = 0; tid < numThreads; tid++) {
+        threadEntries[tid] = 0;
+        headptr[tid] = 0;
+        tailptr[tid] = 0;
+    }
+
     for (ThreadID tid = numThreads; tid < MaxThreads; tid++) {
         maxEntries[tid] = 0;
     }
-
+    
+    issueWidth = params.issueWidth;
     resetState();
 }
 
@@ -105,7 +112,13 @@ ROB::resetState()
 {
     for (ThreadID tid = 0; tid  < MaxThreads; tid++) {
         threadEntries[tid] = 0;
-        squashIt[tid] = instList[tid].end();
+        headptr[tid] = -1;
+        tailptr[tid] = -1;
+
+        unsigned int bank_num, index_in_bank;
+        get_indices(tid, bank_num, index_in_bank);
+
+        squashIt[tid] = instList[tid][bank_num+1].end();
         squashedSeqNum[tid] = 0;
         doneSquashing[tid] = true;
     }
@@ -113,8 +126,8 @@ ROB::resetState()
 
     // Initialize the "universal" ROB head & tail point to invalid
     // pointers
-    head = instList[0].end();
-    tail = instList[0].end();
+    head = instList[0][0].end();
+    tail = instList[0][0].end();
 }
 
 std::string
@@ -134,7 +147,8 @@ void
 ROB::drainSanityCheck() const
 {
     for (ThreadID tid = 0; tid  < numThreads; tid++)
-        assert(instList[tid].empty());
+        for( auto &bank : instList[tid])
+            assert(bank.empty());
     assert(isEmpty());
 }
 
@@ -190,7 +204,11 @@ ROB::countInsts()
 size_t
 ROB::countInsts(ThreadID tid)
 {
-    return instList[tid].size();
+    unsigned sum = 0;
+    for(auto &bank : instList[tid]) {
+        sum += bank.size();
+    }
+    return sum;
 }
 
 void
@@ -206,23 +224,32 @@ ROB::insertInst(const DynInstPtr &inst)
 
     ThreadID tid = inst->threadNumber;
 
-    instList[tid].push_back(inst);
+    unsigned int bank_num, index_in_bank;
+    get_indices(tid, bank_num, index_in_bank);
+
+    instList[tid][bank_num+1].push_back(inst); // Insert into next bank to model contigous bank access
 
     //Set Up head iterator if this is the 1st instruction in the ROB
     if (numInstsInROB == 0) {
-        head = instList[tid].begin();
+        head = instList[tid][0].begin();
         assert((*head) == inst);
+    }
+
+    //Set Up headptr if this is the 1st instruction for this thread in ROB
+    if (threadEntries[tid] == 0) {
+        headptr[tid] = 0;
     }
 
     //Must Decrement for iterator to actually be valid  since __.end()
     //actually points to 1 after the last inst
-    tail = instList[tid].end();
+    tail = instList[tid][bank_num+1].end();
     tail--;
 
     inst->setInROB();
 
     ++numInstsInROB;
     ++threadEntries[tid];
+    tailptr[tid] = (tailptr[tid] + 1) % maxEntries[tid]; //rollover tail ptr at max ROB per thread size
 
     assert((*tail) == inst);
 
@@ -237,11 +264,14 @@ ROB::retireHead(ThreadID tid)
 
     assert(numInstsInROB > 0);
 
+    unsigned int bank_num, index_in_bank;
+    get_head_indices(tid, bank_num, index_in_bank);
+
     // Get the head ROB instruction by copying it and remove it from the list
-    InstIt head_it = instList[tid].begin();
+    InstIt head_it = instList[tid][bank_num].begin();
 
     DynInstPtr head_inst = std::move(*head_it);
-    instList[tid].erase(head_it);
+    instList[tid][bank_num].erase(head_it);
 
     assert(head_inst->readyToCommit());
 
@@ -251,6 +281,14 @@ ROB::retireHead(ThreadID tid)
 
     --numInstsInROB;
     --threadEntries[tid];
+
+    if(headptr[tid] == tailptr[tid]) {
+        //ROB is now empty for this thread
+        headptr[tid] = -1;
+        tailptr[tid] = -1;
+    } else
+    {   headptr[tid] = (headptr[tid] + 1) % maxEntries[tid]; //rollover head ptr at max ROB per thread size
+    }
 
     head_inst->clearInROB();
     head_inst->setCommitted();
@@ -269,7 +307,9 @@ ROB::isHeadReady(ThreadID tid)
 {
     stats.reads++;
     if (threadEntries[tid] != 0) {
-        return instList[tid].front()->readyToCommit();
+        unsigned int bank_num, index_in_bank;
+        get_head_indices(tid, bank_num, index_in_bank);
+        return instList[tid][bank_num].front()->readyToCommit();
     }
 
     return false;
@@ -539,6 +579,33 @@ ROB::findInst(ThreadID tid, InstSeqNum squash_inst)
         }
     }
     return NULL;
+}
+
+void ROB::get_indices(ThreadID tid, unsigned &bank_num,
+                      unsigned &index_in_bank)
+{   
+    unsigned ptr = tailptr[tid];
+    if( ptr == -1 ) {
+        bank_num = -1;
+        index_in_bank = 0;
+        return;
+    }
+    bank_num = ptr%(2*issueWidth);
+    index_in_bank = (ptr-bank_num)/(2*issueWidth);
+}
+
+void ROB::get_head_indices(ThreadID tid, unsigned &bank_num,
+                      unsigned &index_in_bank);
+
+{   
+    unsigned ptr = headptr[tid];
+    if( ptr == -1 ) {
+        bank_num = -1;
+        index_in_bank = 0;
+        return;
+    }
+    bank_num = ptr%(2*issueWidth);
+    index_in_bank = (ptr-bank_num)/(2*issueWidth);
 }
 
 } // namespace o3
