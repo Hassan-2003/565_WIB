@@ -48,6 +48,7 @@
 #include "debug/Fetch.hh"
 #include "debug/ROB.hh"
 #include "params/BaseO3CPU.hh"
+// #include "base/types.hh"
 
 namespace gem5
 {
@@ -97,6 +98,9 @@ ROB::ROB(CPU *_cpu, const BaseO3CPUParams &params)
         threadEntries[tid] = 0;
         headptr[tid] = 0;
         tailptr[tid] = 0;
+        for( unsigned bank_num = 0; bank_num < 2*issueWidth; bank_num++) {
+            cursorIt[tid][bank_num] = instList[tid][bank_num].end();
+        }
     }
 
     for (ThreadID tid = numThreads; tid < MaxThreads; tid++) {
@@ -105,6 +109,90 @@ ROB::ROB(CPU *_cpu, const BaseO3CPUParams &params)
     
     issueWidth = params.issueWidth;
     resetState();
+}
+
+void ROB::get_tail_bank(ThreadID tid, unsigned &bank_num)
+{   
+    unsigned ptr = tailptr[tid];
+    if( ptr == (unsigned)-1 ) {
+        bank_num = -1;
+        return;
+    }
+    bank_num = ptr%(2*issueWidth);
+}
+
+void ROB::get_head_bank(ThreadID tid, unsigned &bank_num)
+{   
+    unsigned ptr = headptr[tid];
+    if( ptr == (unsigned)-1 ) {
+        bank_num = 0;
+        return;
+    }
+    bank_num = ptr%(2*issueWidth);
+    return;
+}
+
+void 
+ROB::get_squash_cursor(ThreadID tid, unsigned bank_num, InstIt &it)
+{   
+    it = cursorIt[tid][bank_num];
+}
+
+void 
+ROB::set_squash_cursors(ThreadID tid)
+{
+    for (unsigned bank_num = 0; bank_num < 2*issueWidth; bank_num++) {
+        cursorIt[tid][bank_num] = instList[tid][bank_num].end();
+        cursorIt[tid][bank_num]--;
+    }
+}
+
+void 
+ROB::set_warpIt(ThreadID tid, unsigned bank_num)
+{
+    warpIt[tid] = bank_num;
+}
+
+void 
+ROB::increment_warpIt(ThreadID tid)
+{
+    warpIt[tid] = (warpIt[tid]+1) % (2*issueWidth);
+}
+
+void 
+ROB::decrement_warpIt(ThreadID tid)
+{
+    if(warpIt[tid] == 0){
+        warpIt[tid] = 2*issueWidth - 1;
+    } else {
+        warpIt[tid] = (warpIt[tid]-1) % (2*issueWidth);
+    }
+}
+
+void 
+ROB::set_search_cursors(ThreadID tid)
+{
+    for (unsigned bank_num = 0; bank_num < 2*issueWidth; bank_num++) {
+        cursorIt[tid][bank_num] = instList[tid][0].begin();
+    }
+}
+
+void 
+ROB::decrement_squash_cursor(ThreadID tid, unsigned bank_num){
+    if (cursorIt[tid][bank_num] != instList[tid][bank_num].begin()) {
+        cursorIt[tid][bank_num]--;
+    } else {
+        cursorIt[tid][bank_num] = instList[tid][bank_num].end();
+    }
+}
+
+void 
+ROB::increment_search_cursor(ThreadID tid, unsigned bank_num){
+    if (cursorIt[tid][bank_num] != instList[tid][bank_num].end()) {
+        cursorIt[tid][bank_num]++;
+    } else {
+        cursorIt[tid][bank_num] = instList[tid][bank_num].end();
+    }
 }
 
 void
@@ -116,9 +204,12 @@ ROB::resetState()
         tailptr[tid] = -1;
 
         unsigned int bank_num, index_in_bank;
-        get_indices(tid, bank_num, index_in_bank);
+        get_tail_bank(tid, bank_num);
 
         squashIt[tid] = instList[tid][bank_num+1].end();
+        for( unsigned bank_num = 0; bank_num < 2*issueWidth; bank_num++) {
+            cursorIt[tid][bank_num] = instList[tid][bank_num].end();
+        }
         squashedSeqNum[tid] = 0;
         doneSquashing[tid] = true;
     }
@@ -225,7 +316,7 @@ ROB::insertInst(const DynInstPtr &inst)
     ThreadID tid = inst->threadNumber;
 
     unsigned int bank_num, index_in_bank;
-    get_indices(tid, bank_num, index_in_bank);
+    get_tail_bank(tid, bank_num);
 
     instList[tid][bank_num+1].push_back(inst); // Insert into next bank to model contigous bank access
 
@@ -265,7 +356,7 @@ ROB::retireHead(ThreadID tid)
     assert(numInstsInROB > 0);
 
     unsigned int bank_num, index_in_bank;
-    get_head_indices(tid, bank_num, index_in_bank);
+    get_head_bank(tid, bank_num);
 
     // Get the head ROB instruction by copying it and remove it from the list
     InstIt head_it = instList[tid][bank_num].begin();
@@ -308,7 +399,7 @@ ROB::isHeadReady(ThreadID tid)
     stats.reads++;
     if (threadEntries[tid] != 0) {
         unsigned int bank_num, index_in_bank;
-        get_head_indices(tid, bank_num, index_in_bank);
+        get_head_bank(tid, bank_num);
         return instList[tid][bank_num].front()->readyToCommit();
     }
 
@@ -351,14 +442,16 @@ ROB::doSquash(ThreadID tid)
     stats.writes++;
     DPRINTF(ROB, "[tid:%i] Squashing instructions until [sn:%llu].\n",
             tid, squashedSeqNum[tid]);
-
-    assert(squashIt[tid] != instList[tid].end());
+    
+    unsigned int tail_bank_num, index_in_bank;
+    get_tail_bank(tid, tail_bank_num);
+    assert(squashIt[tid] != instList[tid][tail_bank_num].end());
 
     if ((*squashIt[tid])->seqNum < squashedSeqNum[tid]) {
         DPRINTF(ROB, "[tid:%i] Done squashing instructions.\n",
                 tid);
 
-        squashIt[tid] = instList[tid].end();
+        squashIt[tid] = instList[tid][tail_bank_num].end();
 
         doneSquashing[tid] = true;
         return;
@@ -376,9 +469,13 @@ ROB::doSquash(ThreadID tid)
         numInstsToSquash = numEntries;
     }
 
+    unsigned int head_bank_num, index_in_bank, tail_bank_num;
+    get_head_bank(tid, head_bank_num);
+    get_tail_bank(tid, tail_bank_num);
+
     for (int numSquashed = 0;
          numSquashed < numInstsToSquash &&
-         squashIt[tid] != instList[tid].end() &&
+         squashIt[tid] != instList[tid][tail_bank_num].end() &&
          (*squashIt[tid])->seqNum > squashedSeqNum[tid];
          ++numSquashed)
     {
@@ -393,25 +490,32 @@ ROB::doSquash(ThreadID tid)
 
         (*squashIt[tid])->setCanCommit();
 
-
-        if (squashIt[tid] == instList[tid].begin()) {
+        if (squashIt[tid] == instList[tid][head_bank_num].begin()) {
             DPRINTF(ROB, "Reached head of instruction list while "
                     "squashing.\n");
 
-            squashIt[tid] = instList[tid].end();
+            squashIt[tid] = instList[tid][tail_bank_num].end();
 
             doneSquashing[tid] = true;
 
             return;
         }
 
-        InstIt tail_thread = instList[tid].end();
+        InstIt tail_thread = instList[tid][tail_bank_num].end();
         tail_thread--;
 
         if ((*squashIt[tid]) == (*tail_thread))
             robTailUpdate = true;
 
-        squashIt[tid]--;
+        
+        // squashIt[tid] = tail_thread;
+        // squashIt[tid]--;
+        unsigned bank_num = warpIt[tid];
+        decrement_squash_cursor(tid, bank_num);
+
+        decrement_warpIt(tid);
+        unsigned bank_num = warpIt[tid];
+        get_squash_cursor(tid, bank_num, squashIt[tid]);
     }
 
 
@@ -420,7 +524,7 @@ ROB::doSquash(ThreadID tid)
         DPRINTF(ROB, "[tid:%i] Done squashing instructions.\n",
                 tid);
 
-        squashIt[tid] = instList[tid].end();
+        squashIt[tid] = instList[tid][tail_bank_num].end();
 
         doneSquashing[tid] = true;
     }
@@ -443,18 +547,21 @@ ROB::updateHead()
 
     while (threads != end) {
         ThreadID tid = *threads++;
+        unsigned int bank_num, index_in_bank, tail_bank_num;
+        get_head_bank(tid, bank_num);
+        get_tail_bank(tid, tail_bank_num);
 
-        if (instList[tid].empty())
+        if (instList[tid][0].empty())
             continue;
 
         if (first_valid) {
-            head = instList[tid].begin();
+            head = instList[tid][bank_num].begin();
             lowest_num = (*head)->seqNum;
             first_valid = false;
             continue;
         }
 
-        InstIt head_thread = instList[tid].begin();
+        InstIt head_thread = instList[tid][bank_num].begin();
 
         DynInstPtr head_inst = (*head_thread);
 
@@ -467,15 +574,19 @@ ROB::updateHead()
     }
 
     if (first_valid) {
-        head = instList[0].end();
+        head = instList[0][0].end();
     }
 
 }
 
 void
 ROB::updateTail()
-{
-    tail = instList[0].end();
+{   
+    unsigned int bank_num, index_in_bank, tail_bank_num;
+    get_head_bank(0, bank_num);
+    get_tail_bank(0, tail_bank_num);
+
+    tail = instList[0][tail_bank_num].end();
     bool first_valid = true;
 
     std::list<ThreadID>::iterator threads = activeThreads->begin();
@@ -484,14 +595,17 @@ ROB::updateTail()
     while (threads != end) {
         ThreadID tid = *threads++;
 
-        if (instList[tid].empty()) {
+        get_head_bank(tid, bank_num);
+        get_tail_bank(tid, tail_bank_num);
+
+        if (instList[tid][0].empty()) {
             continue;
         }
 
         // If this is the first valid then assign w/out
         // comparison
         if (first_valid) {
-            tail = instList[tid].end();
+            tail = instList[tid][tail_bank_num].end();
             tail--;
             first_valid = false;
             continue;
@@ -499,7 +613,7 @@ ROB::updateTail()
 
         // Assign new tail if this thread's tail is younger
         // than our current "tail high"
-        InstIt tail_thread = instList[tid].end();
+        InstIt tail_thread = instList[tid][tail_bank_num].end();
         tail_thread--;
 
         if ((*tail_thread)->seqNum > (*tail)->seqNum) {
@@ -528,12 +642,20 @@ ROB::squash(InstSeqNum squash_num, ThreadID tid)
 
     squashedSeqNum[tid] = squash_num;
 
-    if (!instList[tid].empty()) {
-        InstIt tail_thread = instList[tid].end();
-        tail_thread--;
+    if (!instList[tid][0].empty()) {
+        unsigned int bank_num, index_in_bank, tail_bank_num;
+        get_head_bank(tid, bank_num);
+        get_tail_bank(tid, tail_bank_num);
 
-        squashIt[tid] = tail_thread;
+        // InstIt tail_thread = instList[tid][bank_num].end();
+        // tail_thread--;
 
+        // squashIt[tid] = tail_thread;
+
+        set_squash_cursors(tid);
+        get_squash_cursor(tid, tail_bank_num, squashIt[tid]);
+        set_warpIt(tid, tail_bank_num);
+        
         doSquash(tid);
     }
 }
@@ -542,7 +664,10 @@ const DynInstPtr&
 ROB::readHeadInst(ThreadID tid)
 {
     if (threadEntries[tid] != 0) {
-        InstIt head_thread = instList[tid].begin();
+        unsigned int bank_num, index_in_bank, tail_bank_num;
+        get_head_bank(tid, bank_num);
+
+        InstIt head_thread = instList[tid][bank_num].begin();
 
         assert((*head_thread)->isInROB());
 
@@ -555,7 +680,9 @@ ROB::readHeadInst(ThreadID tid)
 DynInstPtr
 ROB::readTailInst(ThreadID tid)
 {
-    InstIt tail_thread = instList[tid].end();
+    unsigned int bank_num, index_in_bank, tail_bank_num;;
+    get_tail_bank(tid, tail_bank_num);
+    InstIt tail_thread = instList[tid][tail_bank_num].end();
     tail_thread--;
 
     return *tail_thread;
@@ -573,39 +700,25 @@ ROB::ROBStats::ROBStats(statistics::Group *parent)
 DynInstPtr
 ROB::findInst(ThreadID tid, InstSeqNum squash_inst)
 {
-    for (InstIt it = instList[tid].begin(); it != instList[tid].end(); it++) {
+    unsigned int head_bank_num, index_in_bank, tail_bank_num;
+    get_head_bank(tid, head_bank_num);
+    get_tail_bank(tid, tail_bank_num);
+
+    set_warpIt(tid, head_bank_num);
+    unsigned cur_bank_num = warpIt[tid];
+
+    for (InstIt it = instList[tid][head_bank_num].begin(); 
+    it != instList[tid][tail_bank_num].end();) {
         if ((*it)->seqNum == squash_inst) {
             return *it;
         }
+
+        increment_search_cursor(tid, cur_bank_num);
+        increment_warpIt(tid);
+        cur_bank_num = warpIt[tid];
+        get_search_cursor(tid, cur_bank_num, it);
     }
     return NULL;
-}
-
-void ROB::get_indices(ThreadID tid, unsigned &bank_num,
-                      unsigned &index_in_bank)
-{   
-    unsigned ptr = tailptr[tid];
-    if( ptr == -1 ) {
-        bank_num = -1;
-        index_in_bank = 0;
-        return;
-    }
-    bank_num = ptr%(2*issueWidth);
-    index_in_bank = (ptr-bank_num)/(2*issueWidth);
-}
-
-void ROB::get_head_indices(ThreadID tid, unsigned &bank_num,
-                      unsigned &index_in_bank);
-
-{   
-    unsigned ptr = headptr[tid];
-    if( ptr == -1 ) {
-        bank_num = -1;
-        index_in_bank = 0;
-        return;
-    }
-    bank_num = ptr%(2*issueWidth);
-    index_in_bank = (ptr-bank_num)/(2*issueWidth);
 }
 
 } // namespace o3

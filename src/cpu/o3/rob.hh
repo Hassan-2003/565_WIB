@@ -78,7 +78,7 @@ class ROB
     typedef typename std::list<DynInstPtr>::iterator InstIt;
     typedef std::list<DynInstPtr> InstListPerThread;
     using bank = InstListPerThread;
-    using BanksPerThread = std::array<Bank, 2*issueWidth>;
+    using BanksPerThread = std::array<bank, (2*MaxWidth)>;
 
     /** Possible ROB statuses. */
     enum Status
@@ -275,12 +275,26 @@ class ROB
     /** WIB Support functions */
 
     /** Given a pointer, return the bank number and index in bank for tail ptr */
-    void get_indices(ThreadID tid, unsigned &bank_num,
-                      unsigned &index_in_bank);
+    void get_tail_bank(ThreadID tid, unsigned &bank_num);
 
     /** Given a pointer, return the bank number and index in bank for head ptr */
-    void get_head_indices(ThreadID tid, unsigned &bank_num,
-                      unsigned &index_in_bank);
+    void get_head_bank(ThreadID tid, unsigned &bank_num);
+
+    void get_squash_cursor(ThreadID tid, unsigned bank_num, InstIt &it);
+    void decrement_squash_cursor(ThreadID tid, unsigned bank_num);
+
+    void set_squash_cursors(ThreadID tid);
+    void set_search_cursors(ThreadID tid);
+
+    void get_search_cursor(ThreadID tid, unsigned bank_num, InstIt &it);
+    void increment_search_cursor(ThreadID tid, unsigned bank_num);
+
+    void set_warpIt(ThreadID tid, unsigned bank_num);
+
+    void increment_warpIt(ThreadID tid);
+
+    void decrement_warpIt(ThreadID tid);
+                
 
   private:
     /** Reset the ROB state */
@@ -302,7 +316,7 @@ class ROB
     unsigned maxEntries[MaxThreads];
 
     /** ROB List of Instructions */ 
-    std::list<BanksPerThread> instList[MaxThreads];
+    BanksPerThread instList[MaxThreads];
 
     /** Number of instructions that can be squashed in a single cycle. */
     unsigned squashWidth;
@@ -330,6 +344,10 @@ class ROB
      *  This will always be set to cpu->instList.end() if it is invalid.
      */
     InstIt squashIt[MaxThreads];
+
+    InstIt cursorIt[MaxThreads][2*MaxWidth];
+
+    unsigned warpIt[MaxThreads];
 
   public:
     /** Number of instructions in the ROB. */

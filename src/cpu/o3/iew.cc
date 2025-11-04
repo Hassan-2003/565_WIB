@@ -1167,7 +1167,7 @@ IEW::executeInsts()
         // executing
         ppExecute->notify(inst);
 
-        // Check if the instruction is squashed; if so then skip it
+        // Check if the instruction is squashed; if so then skip it (Note that it doesnt just stall and squash issueQ during squash event)
         if (inst->isSquashed()) {
             DPRINTF(IEW, "Execute: Instruction was squashed. PC: %s, [tid:%i]"
                          " [sn:%llu]\n", inst->pcState(), inst->threadNumber,
