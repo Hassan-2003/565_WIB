@@ -280,20 +280,26 @@ class ROB
     /** Given a pointer, return the bank number and index in bank for head ptr */
     void get_head_bank(ThreadID tid, unsigned &bank_num);
 
-    void get_squash_cursor(ThreadID tid, unsigned bank_num, InstIt &it);
-    void decrement_squash_cursor(ThreadID tid, unsigned bank_num);
+    void get_squashCursor(ThreadID tid, unsigned bank_num, InstIt &it);
+    void get_searchCursor(ThreadID tid, unsigned bank_num, InstIt &it);
+    void decrement_cursor(ThreadID tid, unsigned bank_num);
 
-    void set_squash_cursors(ThreadID tid);
-    void set_search_cursors(ThreadID tid);
+    void set_squashCursors(ThreadID tid);
+    void set_searchCursors(ThreadID tid);
 
-    void get_search_cursor(ThreadID tid, unsigned bank_num, InstIt &it);
-    void increment_search_cursor(ThreadID tid, unsigned bank_num);
+    void increment_cursor(ThreadID tid, unsigned bank_num);
 
-    void set_warpIt(ThreadID tid, unsigned bank_num);
+    void set_searchBankIt(ThreadID tid, unsigned bank_num);
 
-    void increment_warpIt(ThreadID tid);
+    void increment_searchBankIt(ThreadID tid);
 
-    void decrement_warpIt(ThreadID tid);
+    // void decrement_searchBankIt(ThreadID tid);
+
+    void set_squashBankIt(ThreadID tid, unsigned bank_num);
+
+    void decrement_squashBankIt(ThreadID tid);
+
+    // void increment_squashBankIt(ThreadID tid);
                 
 
   private:
@@ -345,9 +351,16 @@ class ROB
      */
     InstIt squashIt[MaxThreads];
 
-    InstIt cursorIt[MaxThreads][2*MaxWidth];
+    InstIt squashCursorIt[MaxThreads][2*MaxWidth];
+    InstIt searchCursorIt[MaxThreads][2*MaxWidth];
 
-    unsigned warpIt[MaxThreads];
+    /** Need bank iterators for search and squash 
+    * because of multi-cycle interleaved squash
+    * and search
+    */
+
+    unsigned searchBankIt[MaxThreads];
+    unsigned squashBankIt[MaxThreads];
 
   public:
     /** Number of instructions in the ROB. */

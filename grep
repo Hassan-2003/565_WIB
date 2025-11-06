@@ -1,0 +1,9 @@
+gem5 Simulator System.  https://www.gem5.org
+gem5 is copyrighted software; use the --copyright option for details.
+
+gem5 version 22.0.0.2
+gem5 compiled Nov  4 2025 16:14:05
+gem5 started Nov  4 2025 16:20:49
+gem5 executing on qstruct.ecn.purdue.edu, pid 404115
+command line: ./build/ECE565-ARM/gem5.opt configs/spec/spec_se.py --debug-help --cpu-type=ArmO3CPU --maxinsts=1000000 --l1d_size=64kB --l1i_size=16kB --caches --l2cache -b sjeng --debug
+
