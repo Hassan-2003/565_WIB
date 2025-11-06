@@ -521,7 +521,8 @@ ROB::doSquash(ThreadID tid)
 
     bool robTailUpdate = false;
 
-    unsigned int numInstsToSquash = squashWidth;
+    unsigned int numInstsToSquash = std::min(squashWidth,2*issueWidth);
+    // unsigned int numInstsToSquash = squashWidth;
 
     // If the CPU is exiting, squash all of the instructions
     // it is told to, even if that exceeds the squashWidth.
