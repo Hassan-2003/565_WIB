@@ -214,8 +214,9 @@ ROB::decrement_cursor(ThreadID tid, unsigned bank_num){
         --squashCursorIt[tid][bank_num];
     }else {
         DPRINTF(ROB, "[tid:%d] Finished squash scanning bank %d.\n",tid,bank_num);
-        get_tail_bank(tid, tail_bank_num);
-        squashCursorIt[tid][bank_num] = instList[tid][tail_bank_num].end();
+        // get_tail_bank(tid, tail_bank_num);
+        // squashCursorIt[tid][bank_num] = instList[tid][tail_bank_num].end();
+        squashCursorIt[tid][bank_num] = instList[tid][bank_num].end();
     }
 }
 
@@ -228,8 +229,9 @@ ROB::increment_cursor(ThreadID tid, unsigned bank_num){
     }
     else{
         DPRINTF(ROB, "[tid:%d] Finished search scanning bank %d.\n",tid,bank_num);
-        get_tail_bank(tid, tail_bank_num);
-        searchCursorIt[tid][bank_num] = instList[tid][tail_bank_num].end();
+        // get_tail_bank(tid, tail_bank_num);
+        // searchCursorIt[tid][bank_num] = instList[tid][tail_bank_num].end();
+        searchCursorIt[tid][bank_num] = instList[tid][bank_num].end();
     }
 }
 
@@ -521,8 +523,8 @@ ROB::doSquash(ThreadID tid)
 
     bool robTailUpdate = false;
 
-    unsigned int numInstsToSquash = std::min(squashWidth,2*issueWidth);
-    // unsigned int numInstsToSquash = squashWidth;
+    // unsigned int numInstsToSquash = std::min(squashWidth,2*issueWidth);
+    unsigned int numInstsToSquash = squashWidth;
 
     // If the CPU is exiting, squash all of the instructions
     // it is told to, even if that exceeds the squashWidth.
@@ -566,7 +568,7 @@ ROB::doSquash(ThreadID tid)
             return;
         }
 
-        if(!(instList[tid][tail_bank_num].empty())) {
+        if(countInsts(tid) > 0) {
             InstIt tail_thread = instList[tid][tail_bank_num].end();
             tail_thread--;
 
@@ -723,19 +725,10 @@ ROB::squash(InstSeqNum squash_num, ThreadID tid)
 
     squashedSeqNum[tid] = squash_num;
 
-    unsigned int bank_num, tail_bank_num;
-    get_head_bank(tid, bank_num);
-    get_tail_bank(tid, tail_bank_num);
-
-    if (!instList[tid][bank_num].empty()) {
-        // unsigned int bank_num, tail_bank_num;
-        // get_head_bank(tid, bank_num);
-        // get_tail_bank(tid, tail_bank_num);
-
-        // InstIt tail_thread = instList[tid][bank_num].end();
-        // tail_thread--;
-
-        // squashIt[tid] = tail_thread;
+    if (countInsts(tid) > 0) {
+        unsigned int bank_num, tail_bank_num;
+        get_head_bank(tid, bank_num);
+        get_tail_bank(tid, tail_bank_num);
 
         // Setting the squash cursors to the tails of the ROB banks
         set_squashCursors(tid);
