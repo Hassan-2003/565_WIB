@@ -74,11 +74,21 @@ struct DerivO3CPUParams;
 class ROB
 {
   public:
+    typedef struct WIBEntry
+    {
+        int *src1Waiting;
+        int *src2Waiting;
+        DynInstPtr instr;
+    } WIBEntry;
+    
     typedef std::pair<RegIndex, RegIndex> UnmapInfo;
     typedef typename std::list<DynInstPtr>::iterator InstIt;
     typedef std::list<DynInstPtr> InstListPerThread;
     using bank = InstListPerThread;
     using BanksPerThread = std::array<bank, (2*MaxWidth)>;
+    
+    typedef std::list<WIBEntry*> loadVectors;
+    using WIBBanks = std::array<loadVectors, (2*MaxWidth)>;
 
     /** Possible ROB statuses. */
     enum Status
@@ -94,6 +104,8 @@ class ROB
 
     /** ROB resource sharing policy for SMT mode. */
     SMTQueuePolicy robPolicy;
+
+    unsigned numLoadVectors;
 
   public:
     /** ROB constructor.
@@ -272,7 +284,7 @@ class ROB
      */
     size_t countInsts(ThreadID tid);
 
-    /** WIB Support functions */
+    /** WIB Support functions **/
 
     /** Given a pointer, return the bank number and index in bank for tail ptr */
     void get_tail_bank(ThreadID tid, unsigned &bank_num);
@@ -298,8 +310,28 @@ class ROB
     void set_squashBankIt(ThreadID tid, unsigned bank_num);
 
     void decrement_squashBankIt(ThreadID tid);
+    
+    // Clears all WIB entries waiting on a specific load
+    void clearLoadWaiting(ThreadID tid, unsigned loadPtr);
 
-    // void increment_squashBankIt(ThreadID tid);
+    // Request any available load vector pointer
+    bool getLoadVectorPtr(ThreadID tid, unsigned &loadPtr);
+
+    // Given an instruction, get its ROB bank number
+    void get_bank(ThreadID tid, DynInstPtr instr, unsigned &bank_num);
+
+    // Only called assuming load vector ptr was assigned succesfully
+    void wibPush(ThreadID tid, unsigned loadPtr, 
+                DynInstPtr instr, unsigned wait1, 
+                unsigned wait2);
+    
+    // Called only by squash but its logic is replicated in readCycle to avoid redundant looping
+    bool wibPop(ThreadID tid, unsigned loadPtr, 
+                DynInstPtr instr, unsigned bank_num);
+    
+    bool instrWaiting(int *src1Waiting, int *src2Waiting);
+
+    void readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs);
                 
 
   private:
@@ -326,6 +358,16 @@ class ROB
 
     /** Number of instructions that can be squashed in a single cycle. */
     unsigned squashWidth;
+
+    /** WIB Structures **/
+    // WIB Banks per thread
+    WIBBanks WIB[MaxThreads];
+    
+    // Toggle to alternate checking even/odd banks each cycle
+    int even;
+    
+    // Stack to track free load vector pointers
+    std::vector<unsigned> freeLoadVectors[MaxThreads];
 
   public:
     /** Iterator pointing to the instruction which is the last instruction

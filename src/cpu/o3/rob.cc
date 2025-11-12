@@ -106,10 +106,16 @@ ROB::ROB(CPU *_cpu, const BaseO3CPUParams &params)
         }
     }
 
+    numLoadVectors = params.numLoadVectors;
+
     for (ThreadID tid = numThreads; tid < MaxThreads; tid++) {
         maxEntries[tid] = 0;
+        for( unsigned loadVector = 0; loadVector < numLoadVectors; loadVector++) {
+            freeLoadVectors[tid].push_back(loadVector);
+        }
     }
 
+    even = 1;
     resetState();
 }
 
@@ -233,6 +239,124 @@ ROB::increment_cursor(ThreadID tid, unsigned bank_num){
         // searchCursorIt[tid][bank_num] = instList[tid][tail_bank_num].end();
         searchCursorIt[tid][bank_num] = instList[tid][bank_num].end();
     }
+}
+
+void ROB::get_bank(ThreadID tid, DynInstPtr instr, unsigned &bank_num){
+    for(bank_num=0; bank_num<2*MaxWidth; bank_num++){
+        for(InstIt it = instList[tid][bank_num].begin(); it != instList[tid][bank_num].end(); it++){
+            if(*it = instr){
+                return;
+            }
+        }
+    }
+}
+
+void ROB::wibPush(ThreadID tid, unsigned loadPtr, DynInstPtr instr,
+                    unsigned wait1, unsigned wait2){
+
+    WIBEntry* wibEntry = new WIBEntry;
+
+    wibEntry->src1Waiting = new int[numLoadVectors];
+    wibEntry->src2Waiting = new int[numLoadVectors];
+    wibEntry->instr = instr;
+
+    for(int i=0; i<numLoadVectors; i++){
+        wibEntry->src1Waiting[i] = 0;
+        wibEntry->src2Waiting[i] = 0;
+    }
+
+    wibEntry->src1Waiting[loadPtr] = wait1;
+    wibEntry->src2Waiting[loadPtr] = wait2;
+
+    unsigned bank_num;
+    get_bank(tid, instr, bank_num);
+
+    WIB[tid][bank_num].push_back(wibEntry);
+    DPRINTF(ROB, "[tid:%d] Instruction has been pushed to WIB. [sn:%llu]\n", tid, wibEntry->instr->seqNum);
+}
+
+bool 
+ROB::instrWaiting(int *src1Waiting, int *src2Waiting){
+    for(int i=0; i<numLoadVectors; i++){
+        if(src1Waiting[i] != 0 || src2Waiting[i] != 0){
+            return true;
+        }
+    }
+    return false;
+}
+
+bool
+ROB::wibPop(ThreadID tid, unsigned loadPtr, DynInstPtr instr,
+                    unsigned bank_num){
+    for(auto it = WIB[tid][bank_num].begin(); it != WIB[tid][bank_num].end(); it++){
+        WIBEntry* wibEntry = *it;
+        if(wibEntry->instr == instr){
+            WIB[tid][bank_num].erase(it);
+            delete[] wibEntry->src1Waiting;
+            delete[] wibEntry->src2Waiting;
+            delete wibEntry;
+
+            // DPRINTF(ROB, "[tid:%d] Cleared load vector pointer %d for instruction in WIB. [sn:%llu]\n", tid, loadPtr, wibEntry->instr->seqNum);
+            return true;
+        }
+    }
+    return false;
+}
+
+void 
+ROB::readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs){
+    unsigned initial;
+    
+    // Alternate between checking even or odd banks each cycle
+    if(even){
+        initial = 0;
+    } else {
+        initial = 1;
+    }
+    even = !even;
+
+    for(unsigned bank_num=initial; bank_num < 2*issueWidth; bank_num+=2){
+        for(auto it = WIB[tid][bank_num].begin(); it != WIB[tid][bank_num].end(); it++){
+            WIBEntry* wibEntry = *it;
+            if(!instrWaiting(wibEntry->src1Waiting, wibEntry->src2Waiting)){
+                DPRINTF(ROB, "[tid:%d] Instruction is ready to re-issue from WIB. [sn:%llu]\n", tid, wibEntry->instr->seqNum);
+                
+                readyInstrs.push_back(wibEntry->instr);
+
+                //Remove from WIB
+                WIB[tid][bank_num].erase(it);
+                delete[] wibEntry->src1Waiting;
+                delete[] wibEntry->src2Waiting;
+                delete wibEntry;
+
+                //Break to avoid iterator invalidation
+                break;
+            }
+        }
+    }
+}
+
+void 
+ROB::clearLoadWaiting(ThreadID tid, unsigned loadPtr){
+    for(unsigned bank_num=0; bank_num < 2*issueWidth; bank_num++){
+        for(auto it = WIB[tid][bank_num].begin(); it != WIB[tid][bank_num].end(); it++){
+            WIBEntry* wibEntry = *it;
+            wibEntry->src1Waiting[loadPtr] = 0;
+            wibEntry->src2Waiting[loadPtr] = 0;
+        }
+    }
+}
+
+bool 
+ROB::getLoadVectorPtr(ThreadID tid, unsigned &loadPtr){
+    if(!freeLoadVectors[tid].empty()){
+        loadPtr = freeLoadVectors[tid].back();
+        freeLoadVectors[tid].pop_back();
+        DPRINTF(ROB, "[tid:%d] Assigned Load Vector Pointer: %d\n", tid, loadPtr);
+        return true;
+    }
+
+    return false;
 }
 
 void
@@ -553,6 +677,9 @@ ROB::doSquash(ThreadID tid)
         (*squashIt[tid])->setSquashed();
 
         (*squashIt[tid])->setCanCommit();
+
+        // Clear any WIB entries for this instruction
+        wibPop(tid, 0, (*squashIt[tid]), squashBankIt[tid]);
         
         // This is used only for full flush mode (squash at 0 events 
         // for all threads). Normal squashes wont trigger this condition 
