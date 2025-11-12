@@ -850,7 +850,7 @@ InstructionQueue::scheduleReadyInsts()
                 dest_reg = issuing_inst->renamedDestIdx(i)->flatIndex();
                 setWait(dest_reg, wib_index);
 
-                //wakeWaitDependent(issuing_inst->renamedDestIdx(i));
+                wakeWaitDependents(issuing_inst->renamedDestIdx(i));
             }
 
              // remove the instruction from the readyInsts queue
@@ -1127,8 +1127,56 @@ InstructionQueue::wakeDependents(const DynInstPtr &completed_inst)
 
         // Mark the scoreboard as having that register ready.
         regScoreboard[dest_reg->flatIndex()].ready = true;
+        regScoreboard[dest_reg->flatIndex()].wait_bit = false;
+        regScoreboard[dest_reg->flatIndex()].wib_index = -1;
     }
     return dependents;
+}
+
+int
+InstructionQueue::wakeWaitDependents(const DynInstPtr &waiting_inst)
+{
+    assert(!waiting_inst->isSquashed());
+
+    for (int dest_reg_idx = 0;
+         dest_reg_idx < waiting_inst->numDestRegs();
+         dest_reg_idx++)
+    {
+        PhysRegIdPtr dest_reg =
+            waiting_inst->renamedDestIdx(dest_reg_idx);
+
+        // Special case of uniq or control registers.  They are not
+        // handled by the IQ and thus have no dependency graph entry.
+        if (dest_reg->isFixedMapping()) {
+            DPRINTF(IQ, "Reg %d [%s] is part of a fix mapping, skipping\n",
+                    dest_reg->index(), dest_reg->className());
+            continue;
+        }
+    
+        //Go through the dependency chain, marking the registers as
+        //ready within the waiting instructions.
+        DynInstPtr dep_inst = dependGraph.pop(dest_reg->flatIndex());
+
+        while (dep_inst) {
+            DPRINTF(IQ, "Waking up a wait dependent instruction, [sn:%llu] "
+                "PC %s.\n", dep_inst->seqNum, dep_inst->pcState());
+
+            // Might want to give more information to the instruction
+            // so that it knows which of its source registers is
+            // ready.  However that would mean that the dependency
+            // graph entries would need to hold the src_reg_idx.
+            dep_inst->markSrcRegReady();
+            
+            addIfReady(dep_inst);
+            
+            dep_inst = dependGraph.pop(dest_reg->flatIndex());
+        }
+
+        // Reset the head node now that all of its dependents have
+        // been woken up.
+        assert(dependGraph.empty(dest_reg->flatIndex()));
+        dependGraph.clearInst(dest_reg->flatIndex());
+    }
 }
 
 void
