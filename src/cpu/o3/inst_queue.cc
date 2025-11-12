@@ -811,62 +811,46 @@ InstructionQueue::scheduleReadyInsts()
             continue;
         }
 
-        int idx = FUPool::NoCapableFU;
-        Cycles op_latency = Cycles(1);
-        ThreadID tid = issuing_inst->threadNumber;
+        // Look for at least 1 pretend ready source
+        bool pretend_ready = false;
+        int wib_index = -1;
+        PhysRegIdPtr wait_reg;
 
-        if (op_class != No_OpClass) {
-            idx = fuPool->getUnit(op_class);
-            if (issuing_inst->isFloating()) {
-                iqIOStats.fpAluAccesses++;
-            } else if (issuing_inst->isVector()) {
-                iqIOStats.vecAluAccesses++;
-            } else {
-                iqIOStats.intAluAccesses++;
-            }
-            if (idx > FUPool::NoFreeFU) {
-                op_latency = fuPool->getOpLatency(op_class);
+        for (int i = 0; i < issuing_inst->numSrcRegs(); i++) {
+            if (scoreboard->getWait(issuing_inst->renamedSrcIdx(i))) {
+                pretend_ready = true;
+                //wib_index = scoreboard->getIndex();
+                wait_reg = issuing_inst->renamedSrcIdx(i);
+                break;
             }
         }
 
-        // If we have an instruction that doesn't require a FU, or a
-        // valid FU, then schedule for execution.
-        if (idx != FUPool::NoFreeFU) {
-            if (op_latency == Cycles(1)) {
-                i2e_info->size++;
-                instsToExecute.push_back(issuing_inst);
+        // Send the pretend ready instruction to the WIB
+        if (pretend_ready) {
 
-                // Add the FU onto the list of FU's to be freed next
-                // cycle if we used one.
-                if (idx >= 0)
-                    fuPool->freeUnitNextCycle(idx);
-            } else {
-                bool pipelined = fuPool->isPipelined(op_class);
-                // Generate completion event for the FU
-                ++wbOutstanding;
-                FUCompletion *execution = new FUCompletion(issuing_inst,
-                                                           idx, this);
-
-                cpu->schedule(execution,
-                              cpu->clockEdge(Cycles(op_latency - 1)));
-
-                if (!pipelined) {
-                    // If FU isn't pipelined, then it must be freed
-                    // upon the execution completing.
-                    execution->setFreeFU();
-                } else {
-                    // Add the FU onto the list of FU's to be freed next cycle.
-                    fuPool->freeUnitNextCycle(idx);
-                }
-            }
-
-            DPRINTF(IQ, "Thread %i: Issuing instruction PC %s "
-                    "[sn:%llu]\n",
+            DPRINTF(IQ, "Thread %i: Moving instruction PC %s "
+                    "[sn:%llu] to WIB (wait)\n",
                     tid, issuing_inst->pcState(),
                     issuing_inst->seqNum);
+            
+            // function for adding to WIB
+            //
 
+            // Set wait bit and wake up the wait dependent instructions
+            for (int i = 0; i < issuing_inst->numDestRegs(); i++) {
+                DPRINTF(IQ,"Setting Destination Register wait bit for"
+                        "wait dependent instructions %i (%s)\n",
+                        issuing_inst->renamedDestIdx(i)->index(),
+                        issuing_inst->renamedDestIdx(i)->className());
+            
+                scoreboard->setWait(issuing_inst->renamedDestIdx(i), scoreboard->getIndex());
+
+                wakeWaitDependent(issuing_inst->renamedDestIdx(i));
+            }
+
+             // remove the instruction from the readyInsts queue
             readyInsts[op_class].pop();
-
+            
             if (!readyInsts[op_class].empty()) {
                 moveToYoungerInst(order_it);
             } else {
@@ -874,32 +858,112 @@ InstructionQueue::scheduleReadyInsts()
                 queueOnList[op_class] = false;
             }
 
-            issuing_inst->setIssued();
+            // Don't know the implications of setIssued
+            // issuing_inst->setIssued();
             ++total_issued;
-
-#if TRACING_ON
-            issuing_inst->issueTick = curTick() - issuing_inst->fetchTick;
-#endif
-
+            
+            // Checks if this is the first issue of the instruction
             if (issuing_inst->firstIssue == -1)
                 issuing_inst->firstIssue = curTick();
+            
+            // remove the instruction from the IQ
+            ++freeEntries;
+            count[tid]--;
+            issuing_inst->clearInIQ();
+            listOrder.erase(order_it++);
+        }
 
-            if (!issuing_inst->isMemRef()) {
-                // Memory instructions can not be freed from the IQ until they
-                // complete.
-                ++freeEntries;
-                count[tid]--;
-                issuing_inst->clearInIQ();
-            } else {
-                memDepUnit[tid].issue(issuing_inst);
+        else {
+            int idx = FUPool::NoCapableFU;
+            Cycles op_latency = Cycles(1);
+            ThreadID tid = issuing_inst->threadNumber;
+
+            if (op_class != No_OpClass) {
+                idx = fuPool->getUnit(op_class);
+                if (issuing_inst->isFloating()) {
+                    iqIOStats.fpAluAccesses++;
+                } else if (issuing_inst->isVector()) {
+                    iqIOStats.vecAluAccesses++;
+                } else {
+                    iqIOStats.intAluAccesses++;
+                }
+                if (idx > FUPool::NoFreeFU) {
+                    op_latency = fuPool->getOpLatency(op_class);
+                }
             }
 
-            listOrder.erase(order_it++);
-            iqStats.statIssuedInstType[tid][op_class]++;
-        } else {
-            iqStats.statFuBusy[op_class]++;
-            iqStats.fuBusy[tid]++;
-            ++order_it;
+            // If we have an instruction that doesn't require a FU, or a
+            // valid FU, then schedule for execution.
+            if (idx != FUPool::NoFreeFU) {
+                if (op_latency == Cycles(1)) {
+                    i2e_info->size++;
+                    instsToExecute.push_back(issuing_inst);
+
+                    // Add the FU onto the list of FU's to be freed next
+                    // cycle if we used one.
+                    if (idx >= 0)
+                        fuPool->freeUnitNextCycle(idx);
+                } else {
+                    bool pipelined = fuPool->isPipelined(op_class);
+                    // Generate completion event for the FU
+                    ++wbOutstanding;
+                    FUCompletion *execution = new FUCompletion(issuing_inst,
+                                                            idx, this);
+
+                    cpu->schedule(execution,
+                                cpu->clockEdge(Cycles(op_latency - 1)));
+
+                    if (!pipelined) {
+                        // If FU isn't pipelined, then it must be freed
+                        // upon the execution completing.
+                        execution->setFreeFU();
+                    } else {
+                        // Add the FU onto the list of FU's to be freed next cycle.
+                        fuPool->freeUnitNextCycle(idx);
+                    }
+                }
+
+                DPRINTF(IQ, "Thread %i: Issuing instruction PC %s "
+                        "[sn:%llu]\n",
+                        tid, issuing_inst->pcState(),
+                        issuing_inst->seqNum);
+
+                readyInsts[op_class].pop();
+
+                if (!readyInsts[op_class].empty()) {
+                    moveToYoungerInst(order_it);
+                } else {
+                    readyIt[op_class] = listOrder.end();
+                    queueOnList[op_class] = false;
+                }
+
+                issuing_inst->setIssued();
+                ++total_issued;
+
+    #if TRACING_ON
+                issuing_inst->issueTick = curTick() - issuing_inst->fetchTick;
+    #endif
+
+                if (issuing_inst->firstIssue == -1)
+                    issuing_inst->firstIssue = curTick();
+
+                if (!issuing_inst->isMemRef()) {
+                    // Memory instructions can not be freed from the IQ until they
+                    // complete.
+                    ++freeEntries;
+                    count[tid]--;
+                    issuing_inst->clearInIQ();
+                } else {
+                    memDepUnit[tid].issue(issuing_inst);
+                }
+
+                listOrder.erase(order_it++);
+                iqStats.statIssuedInstType[tid][op_class]++;
+            } else {
+                iqStats.statFuBusy[op_class]++;
+                iqStats.fuBusy[tid]++;
+                ++order_it;
+            }
         }
     }
 

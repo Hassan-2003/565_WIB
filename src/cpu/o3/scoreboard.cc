@@ -37,7 +37,7 @@ namespace o3
 
 Scoreboard::Scoreboard(const std::string &_my_name,
         unsigned _numPhysicalRegs) :
-    _name(_my_name), regScoreBoard(_numPhysicalRegs, regstate{true, false}),
+    _name(_my_name), regScoreBoard(_numPhysicalRegs, regstate),
     numPhysRegs(_numPhysicalRegs)
 {}
 

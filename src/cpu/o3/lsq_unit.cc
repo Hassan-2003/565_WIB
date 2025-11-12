@@ -1596,6 +1596,26 @@ LSQUnit::read(LSQRequest *request, ssize_t load_idx)
     if (!request->isSent())
         iewStage->blockMemInst(load_inst);
 
+        // get the bit vector index for the miss
+        int wib_index = -1;
+        // wib_index = wib->getIndex();
+
+        // Setting wait bit for every blocked load
+        // Should also check if the WIB can issue a new b-vector index?
+        for (int i = 0; i < inst->numDestRegs(); i++) {
+            // Mark register as waiting ( do we need to check if not pinned?)
+            // if (inst->renamedDestIdx(i)->
+            //         getNumPinnedWritesToComplete() == 0) {
+                DPRINTF(LSQUnit,"Setting Destination Register wait bit %i (%s)"
+                        "with WIB Index (%d)\n",
+                        inst->renamedDestIdx(i)->index(),
+                        inst->renamedDestIdx(i)->className(),
+                        wib_index);
+                scoreboard->setWait(inst->renamedDestIdx(i), wib_index);
+            }
+        }
+
+        
     return NoFault;
 }
 

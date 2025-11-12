@@ -56,8 +56,9 @@ class Scoreboard
   private:
     struct regstate
     {
-        bool ready;
-        bool wait_bit;
+        bool ready = true;
+        bool wait_bit = false;
+        int wib_index = -1;
     };
 
     /** The object name, for DPRINTF.  We have to declare this
@@ -131,6 +132,7 @@ class Scoreboard
 
         regScoreBoard[phys_reg->flatIndex()].ready = false;
         regScoreBoard[phys_reg->flatIndex()].wait_bit = false;
+        regScoreBoard[phys_reg->flatIndex()].wib_index = -1;
     }
 
     /** Checks if the register is waiting. */
@@ -147,9 +149,18 @@ class Scoreboard
         return regScoreBoard[phys_reg->flatIndex()].wait_bit;
     }
 
+    int
+    getIndex(PhysRegIdPtr phys_reg)
+    {
+        assert(phys_reg->flatIndex() < numPhysRegs);
+
+        return regScoreBoard[phys_reg->flatIndex()].wib_index;
+    }
+ 
+
     /** Sets the register as waiting. */
     void
-    setWait(PhysRegIdPtr phys_reg)
+    setWait(PhysRegIdPtr phys_reg, int wib_index)
     {
         if (phys_reg->isFixedMapping()) {
             // Fixed mapping regs are always ready, ignore attempts to
@@ -161,6 +172,7 @@ class Scoreboard
 
         regScoreBoard[phys_reg->flatIndex()].ready = false;
         regScoreBoard[phys_reg->flatIndex()].wait_bit = true;
+        regScoreBoard[phys_reg->flatIndex()].wib_index = wib_index;
     }
 };
 
