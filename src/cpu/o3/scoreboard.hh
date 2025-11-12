@@ -149,8 +149,9 @@ class Scoreboard
         return regScoreBoard[phys_reg->flatIndex()].wait_bit;
     }
 
+    /** Return the WIB Index. */
     int
-    getIndex(PhysRegIdPtr phys_reg)
+    getIndex(PhysRegIdPtr phys_reg) const
     {
         assert(phys_reg->flatIndex() < numPhysRegs);
 

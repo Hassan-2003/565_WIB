@@ -338,6 +338,12 @@ class IEW
     /** Scoreboard pointer. */
     Scoreboard* scoreboard;
 
+  // public:
+  //   // return the scoreboard pointer
+  //   Scoreboard* getScoreboardPtr() { 
+  //     return scoreboard; 
+  //   }
+
   private:
     /** CPU pointer. */
     CPU *cpu;

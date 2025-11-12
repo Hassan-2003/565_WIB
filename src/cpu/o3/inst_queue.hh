@@ -452,7 +452,13 @@ class InstructionQueue
      *  is basically a secondary scoreboard, and should pretty much mirror
      *  the scoreboard that exists in the rename map.
      */
-    std::vector<bool> regScoreboard;
+      struct regstate
+      {
+          bool ready = true;
+          bool wait_bit = false;
+          int wib_index = -1;
+      };
+     std::vector<regstate> regScoreboard;
 
     /** Adds an instruction to the dependency graph, as a consumer. */
     bool addToDependents(const DynInstPtr &new_inst);
@@ -561,6 +567,15 @@ class InstructionQueue
         statistics::Scalar fpAluAccesses;
         statistics::Scalar vecAluAccesses;
     } iqIOStats;
+
+    /** Checks if the register is waiting. */
+    bool getWait(int reg_index) const;
+    
+    /** Return the WIB Index. */
+    int getIndex(int reg_index) const;
+
+    /** Sets the register as waiting. */
+    void setWait(int reg_index, int wib_index);
 };
 
 } // namespace o3

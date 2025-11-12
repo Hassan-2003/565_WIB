@@ -407,7 +407,9 @@ InstructionQueue::resetState()
     // registers are ready in rename.  Thus it can all be initialized as
     // unready.
     for (int i = 0; i < numPhysRegs; ++i) {
-        regScoreboard[i] = false;
+        regScoreboard[i].ready = false;
+        regScoreboard[i].wait_bit = false;
+        regScoreboard[i].wib_index = -1;
     }
 
     for (ThreadID tid = 0; tid < MaxThreads; ++tid) {
@@ -817,9 +819,9 @@ InstructionQueue::scheduleReadyInsts()
         PhysRegIdPtr wait_reg;
 
         for (int i = 0; i < issuing_inst->numSrcRegs(); i++) {
-            if (scoreboard->getWait(issuing_inst->renamedSrcIdx(i))) {
+            if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex())) {
                 pretend_ready = true;
-                //wib_index = scoreboard->getIndex();
+                wib_index = getIndex(issuing_inst->renamedDestIdx(i)->flatIndex());
                 wait_reg = issuing_inst->renamedSrcIdx(i);
                 break;
             }
@@ -827,6 +829,8 @@ InstructionQueue::scheduleReadyInsts()
 
         // Send the pretend ready instruction to the WIB
         if (pretend_ready) {
+            ThreadID tid = issuing_inst->threadNumber;
+            int dest_reg = -1;
 
             DPRINTF(IQ, "Thread %i: Moving instruction PC %s "
                     "[sn:%llu] to WIB (wait)\n",
@@ -843,9 +847,10 @@ InstructionQueue::scheduleReadyInsts()
                         issuing_inst->renamedDestIdx(i)->index(),
                         issuing_inst->renamedDestIdx(i)->className());
             
-                scoreboard->setWait(issuing_inst->renamedDestIdx(i), scoreboard->getIndex());
+                dest_reg = issuing_inst->renamedDestIdx(i)->flatIndex();
+                setWait(dest_reg, wib_index);
 
-                wakeWaitDependent(issuing_inst->renamedDestIdx(i));
+                //wakeWaitDependent(issuing_inst->renamedDestIdx(i));
             }
 
              // remove the instruction from the readyInsts queue
@@ -1121,7 +1126,7 @@ InstructionQueue::wakeDependents(const DynInstPtr &completed_inst)
         dependGraph.clearInst(dest_reg->flatIndex());
 
         // Mark the scoreboard as having that register ready.
-        regScoreboard[dest_reg->flatIndex()] = true;
+        regScoreboard[dest_reg->flatIndex()].ready = true;
     }
     return dependents;
 }
@@ -1415,7 +1420,7 @@ InstructionQueue::addToDependents(const DynInstPtr &new_inst)
             // it be added to the dependency graph.
             if (src_reg->isFixedMapping()) {
                 continue;
-            } else if (!regScoreboard[src_reg->flatIndex()]) {
+            } else if (!regScoreboard[src_reg->flatIndex()].ready) {
                 DPRINTF(IQ, "Instruction PC %s has src reg %i (%s) that "
                         "is being added to the dependency chain.\n",
                         new_inst->pcState(), src_reg->index(),
@@ -1471,7 +1476,7 @@ InstructionQueue::addToProducers(const DynInstPtr &new_inst)
         dependGraph.setInst(dest_reg->flatIndex(), new_inst);
 
         // Mark the scoreboard to say it's not yet ready.
-        regScoreboard[dest_reg->flatIndex()] = false;
+        regScoreboard[dest_reg->flatIndex()].ready = false;
     }
 }
 
@@ -1644,6 +1649,26 @@ InstructionQueue::dumpInsts()
         inst_list_it++;
         ++num;
     }
+}
+
+bool
+InstructionQueue::getWait(int reg_index) const
+{
+    return regScoreboard[reg_index].wait_bit;
+}
+
+int
+InstructionQueue::getIndex(int reg_index) const
+{
+    return regScoreboard[reg_index].wib_index;
+}
+
+void
+InstructionQueue::setWait(int reg_index, int wib_index)
+{
+    regScoreboard[reg_index].wait_bit = true;
+    regScoreboard[reg_index].ready = false;
+    regScoreboard[reg_index].wib_index = wib_index;
 }
 
 } // namespace o3
