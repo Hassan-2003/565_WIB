@@ -850,7 +850,7 @@ InstructionQueue::scheduleReadyInsts()
                 dest_reg = issuing_inst->renamedDestIdx(i)->flatIndex();
                 setWait(dest_reg, wib_index);
 
-                wakeWaitDependents(issuing_inst->renamedDestIdx(i));
+                wakeWaitDependents(issuing_inst);
             }
 
              // remove the instruction from the readyInsts queue
@@ -1133,7 +1133,7 @@ InstructionQueue::wakeDependents(const DynInstPtr &completed_inst)
     return dependents;
 }
 
-int
+void
 InstructionQueue::wakeWaitDependents(const DynInstPtr &waiting_inst)
 {
     assert(!waiting_inst->isSquashed());
