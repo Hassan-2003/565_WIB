@@ -112,9 +112,11 @@ class IEW
     std::list<DynInstPtr> readyInstrs;
 
     /** Sets pointer to the ROB. */
+    ROB* rob;
     void setROB(ROB *rob_ptr) { rob = rob_ptr; }
-  
+
   private:
+
     /** Overall stage status. */
     Status _status;
     /** Dispatch status. */

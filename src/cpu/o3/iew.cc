@@ -929,7 +929,7 @@ IEW::dispatchInsts(ThreadID tid)
     
     // Loop through the instructions, putting them in the instruction
     // queue.
-    int dis_num_new_insts = 0;
+    int dis_num_new_inst = 0;
     for ( ; dis_num_new_inst < insts_to_add &&
               dis_num_inst < dispatchWidth;
           ++dis_num_new_inst)
