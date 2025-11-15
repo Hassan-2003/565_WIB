@@ -838,7 +838,17 @@ InstructionQueue::scheduleReadyInsts()
                     issuing_inst->seqNum);
             
             // function for adding to WIB
-            //
+            for (int i = 0; i < issuing_inst->numSrcRegs(); i++) {
+                if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex())) {
+                    wib_index = getIndex(issuing_inst->renamedSrcIdx(i)->flatIndex());
+                    wib_indexes.push_back(wib_index);
+                }
+                else {
+                    wib_indexes.push_back(-1);
+                }
+            }
+
+            // wibPush(tid, issuing_inst, wib_indexes);
 
             // Set wait bit and wake up the wait dependent instructions
             for (int i = 0; i < issuing_inst->numDestRegs(); i++) {

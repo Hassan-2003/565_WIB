@@ -101,6 +101,9 @@ class InstructionQueue
     // Typedef of iterator through the list of instructions.
     typedef typename std::list<DynInstPtr>::iterator ListIt;
 
+    /** Array of WIb indexes */
+    std::vector<int> wib_indexes;
+
     /** FU completion event class. */
     class FUCompletion : public Event
     {
@@ -338,6 +341,9 @@ class InstructionQueue
      * since, so they can now be retried. May fail again go on the blocked list.
      */
     std::list<DynInstPtr> retryMemInsts;
+
+    /** List of ready instructions from the WIB */
+    std::list<DynInstPtr> readyWIBInsts;
 
     /**
      * Struct for comparing entries to be added to the priority queue.
