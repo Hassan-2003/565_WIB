@@ -848,6 +848,7 @@ InstructionQueue::scheduleReadyInsts()
                 }
             }
 
+            DPRINTF(IQ, "[tid:%d] IQ pushed to WIB. [sn:%llu]\n", tid, issuing_inst->seqNum);
             iewStage->rob->wibPush(tid, issuing_inst, wib_indexes);
 
             // Set wait bit and wake up the wait dependent instructions

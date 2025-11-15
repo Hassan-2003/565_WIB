@@ -266,8 +266,10 @@ void ROB::wibPush(ThreadID tid, DynInstPtr instr, std::vector<int> loadPtrs){
         int i = loadPtrs.back();
         loadPtrs.pop_back();
 
-        if(wibEntry->loadPtrs[i] == 0){
-            wibEntry->loadPtrs[i] = 1;
+        if(i >= 0){
+            if(wibEntry->loadPtrs[i] == 0){
+                wibEntry->loadPtrs[i] = 1;
+            }
         }
     }
 
