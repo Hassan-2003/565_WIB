@@ -51,6 +51,7 @@
 #include "cpu/o3/limits.hh"
 #include "cpu/o3/lsq.hh"
 #include "cpu/o3/scoreboard.hh"
+#include "cpu/o3/rob.hh"
 #include "cpu/timebuf.hh"
 #include "debug/IEW.hh"
 #include "sim/probe/probe.hh"
@@ -107,6 +108,12 @@ class IEW
         Unblocking
     };
 
+    /** List of WIB ready instrcutions. */
+    std::list<DynInstPtr> readyInstrs;
+
+    /** Sets pointer to the ROB. */
+    void setROB(ROB *rob_ptr) { rob = rob_ptr; }
+  
   private:
     /** Overall stage status. */
     Status _status;
@@ -337,6 +344,12 @@ class IEW
 
     /** Scoreboard pointer. */
     Scoreboard* scoreboard;
+
+  // public:
+  //   // return the scoreboard pointer
+  //   Scoreboard* getScoreboardPtr() { 
+  //     return scoreboard; 
+  //   }
 
   private:
     /** CPU pointer. */

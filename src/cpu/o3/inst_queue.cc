@@ -407,7 +407,9 @@ InstructionQueue::resetState()
     // registers are ready in rename.  Thus it can all be initialized as
     // unready.
     for (int i = 0; i < numPhysRegs; ++i) {
-        regScoreboard[i] = false;
+        regScoreboard[i].ready = false;
+        regScoreboard[i].wait_bit = false;
+        regScoreboard[i].wib_index = -1;
     }
 
     for (ThreadID tid = 0; tid < MaxThreads; ++tid) {
@@ -811,62 +813,59 @@ InstructionQueue::scheduleReadyInsts()
             continue;
         }
 
-        int idx = FUPool::NoCapableFU;
-        Cycles op_latency = Cycles(1);
-        ThreadID tid = issuing_inst->threadNumber;
+        // Look for at least 1 pretend ready source
+        bool pretend_ready = false;
+        int wib_index = 0;
+        PhysRegIdPtr wait_reg;
 
-        if (op_class != No_OpClass) {
-            idx = fuPool->getUnit(op_class);
-            if (issuing_inst->isFloating()) {
-                iqIOStats.fpAluAccesses++;
-            } else if (issuing_inst->isVector()) {
-                iqIOStats.vecAluAccesses++;
-            } else {
-                iqIOStats.intAluAccesses++;
-            }
-            if (idx > FUPool::NoFreeFU) {
-                op_latency = fuPool->getOpLatency(op_class);
+        for (int i = 0; i < issuing_inst->numSrcRegs(); i++) {
+            if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex())) {
+                pretend_ready = true;
+                wib_index = getIndex(issuing_inst->renamedDestIdx(i)->flatIndex());
+                wait_reg = issuing_inst->renamedSrcIdx(i);
+                break;
             }
         }
 
-        // If we have an instruction that doesn't require a FU, or a
-        // valid FU, then schedule for execution.
-        if (idx != FUPool::NoFreeFU) {
-            if (op_latency == Cycles(1)) {
-                i2e_info->size++;
-                instsToExecute.push_back(issuing_inst);
+        // Send the pretend ready instruction to the WIB
+        if (pretend_ready) {
+            ThreadID tid = issuing_inst->threadNumber;
+            int dest_reg = -1;
 
-                // Add the FU onto the list of FU's to be freed next
-                // cycle if we used one.
-                if (idx >= 0)
-                    fuPool->freeUnitNextCycle(idx);
-            } else {
-                bool pipelined = fuPool->isPipelined(op_class);
-                // Generate completion event for the FU
-                ++wbOutstanding;
-                FUCompletion *execution = new FUCompletion(issuing_inst,
-                                                           idx, this);
-
-                cpu->schedule(execution,
-                              cpu->clockEdge(Cycles(op_latency - 1)));
-
-                if (!pipelined) {
-                    // If FU isn't pipelined, then it must be freed
-                    // upon the execution completing.
-                    execution->setFreeFU();
-                } else {
-                    // Add the FU onto the list of FU's to be freed next cycle.
-                    fuPool->freeUnitNextCycle(idx);
+            DPRINTF(IQ, "Thread %i: Moving instruction PC %s "
+                    "[sn:%llu] to WIB (wait)\n",
+                    tid, issuing_inst->pcState(),
+                    issuing_inst->seqNum);
+            
+            // function for adding to WIB
+            for (int i = 0; i < issuing_inst->numSrcRegs(); i++) {
+                if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex())) {
+                    wib_index = getIndex(issuing_inst->renamedSrcIdx(i)->flatIndex());
+                    wib_indexes.push_back(wib_index);
+                }
+                else {
+                    wib_indexes.push_back(-1);
                 }
             }
 
-            DPRINTF(IQ, "Thread %i: Issuing instruction PC %s "
-                    "[sn:%llu]\n",
-                    tid, issuing_inst->pcState(),
-                    issuing_inst->seqNum);
+            iewStage->rob->wibPush(tid, issuing_inst, wib_indexes);
 
+            // Set wait bit and wake up the wait dependent instructions
+            for (int i = 0; i < issuing_inst->numDestRegs(); i++) {
+                DPRINTF(IQ,"Setting Destination Register wait bit for"
+                        "wait dependent instructions %i (%s)\n",
+                        issuing_inst->renamedDestIdx(i)->index(),
+                        issuing_inst->renamedDestIdx(i)->className());
+            
+                dest_reg = issuing_inst->renamedDestIdx(i)->flatIndex();
+                setWait(dest_reg, wib_index);
+
+                wakeWaitDependents(issuing_inst);
+            }
+
+             // remove the instruction from the readyInsts queue
             readyInsts[op_class].pop();
-
+            
             if (!readyInsts[op_class].empty()) {
                 moveToYoungerInst(order_it);
             } else {
@@ -874,32 +873,112 @@ InstructionQueue::scheduleReadyInsts()
                 queueOnList[op_class] = false;
             }
 
-            issuing_inst->setIssued();
+            // Don't know the implications of setIssued
+            // issuing_inst->setIssued();
             ++total_issued;
-
-#if TRACING_ON
-            issuing_inst->issueTick = curTick() - issuing_inst->fetchTick;
-#endif
-
+            
+            // Checks if this is the first issue of the instruction
             if (issuing_inst->firstIssue == -1)
                 issuing_inst->firstIssue = curTick();
+            
+            // remove the instruction from the IQ
+            ++freeEntries;
+            count[tid]--;
+            issuing_inst->clearInIQ();
+            listOrder.erase(order_it++);
+        }
 
-            if (!issuing_inst->isMemRef()) {
-                // Memory instructions can not be freed from the IQ until they
-                // complete.
-                ++freeEntries;
-                count[tid]--;
-                issuing_inst->clearInIQ();
-            } else {
-                memDepUnit[tid].issue(issuing_inst);
+        else {
+            int idx = FUPool::NoCapableFU;
+            Cycles op_latency = Cycles(1);
+            ThreadID tid = issuing_inst->threadNumber;
+
+            if (op_class != No_OpClass) {
+                idx = fuPool->getUnit(op_class);
+                if (issuing_inst->isFloating()) {
+                    iqIOStats.fpAluAccesses++;
+                } else if (issuing_inst->isVector()) {
+                    iqIOStats.vecAluAccesses++;
+                } else {
+                    iqIOStats.intAluAccesses++;
+                }
+                if (idx > FUPool::NoFreeFU) {
+                    op_latency = fuPool->getOpLatency(op_class);
+                }
             }
 
-            listOrder.erase(order_it++);
-            iqStats.statIssuedInstType[tid][op_class]++;
-        } else {
-            iqStats.statFuBusy[op_class]++;
-            iqStats.fuBusy[tid]++;
-            ++order_it;
+            // If we have an instruction that doesn't require a FU, or a
+            // valid FU, then schedule for execution.
+            if (idx != FUPool::NoFreeFU) {
+                if (op_latency == Cycles(1)) {
+                    i2e_info->size++;
+                    instsToExecute.push_back(issuing_inst);
+
+                    // Add the FU onto the list of FU's to be freed next
+                    // cycle if we used one.
+                    if (idx >= 0)
+                        fuPool->freeUnitNextCycle(idx);
+                } else {
+                    bool pipelined = fuPool->isPipelined(op_class);
+                    // Generate completion event for the FU
+                    ++wbOutstanding;
+                    FUCompletion *execution = new FUCompletion(issuing_inst,
+                                                            idx, this);
+
+                    cpu->schedule(execution,
+                                cpu->clockEdge(Cycles(op_latency - 1)));
+
+                    if (!pipelined) {
+                        // If FU isn't pipelined, then it must be freed
+                        // upon the execution completing.
+                        execution->setFreeFU();
+                    } else {
+                        // Add the FU onto the list of FU's to be freed next cycle.
+                        fuPool->freeUnitNextCycle(idx);
+                    }
+                }
+
+                DPRINTF(IQ, "Thread %i: Issuing instruction PC %s "
+                        "[sn:%llu]\n",
+                        tid, issuing_inst->pcState(),
+                        issuing_inst->seqNum);
+
+                readyInsts[op_class].pop();
+
+                if (!readyInsts[op_class].empty()) {
+                    moveToYoungerInst(order_it);
+                } else {
+                    readyIt[op_class] = listOrder.end();
+                    queueOnList[op_class] = false;
+                }
+
+                issuing_inst->setIssued();
+                ++total_issued;
+
+    #if TRACING_ON
+                issuing_inst->issueTick = curTick() - issuing_inst->fetchTick;
+    #endif
+
+                if (issuing_inst->firstIssue == -1)
+                    issuing_inst->firstIssue = curTick();
+
+                if (!issuing_inst->isMemRef()) {
+                    // Memory instructions can not be freed from the IQ until they
+                    // complete.
+                    ++freeEntries;
+                    count[tid]--;
+                    issuing_inst->clearInIQ();
+                } else {
+                    memDepUnit[tid].issue(issuing_inst);
+                }
+
+                listOrder.erase(order_it++);
+                iqStats.statIssuedInstType[tid][op_class]++;
+            } else {
+                iqStats.statFuBusy[op_class]++;
+                iqStats.fuBusy[tid]++;
+                ++order_it;
+            }
         }
     }
 
@@ -1057,9 +1136,57 @@ InstructionQueue::wakeDependents(const DynInstPtr &completed_inst)
         dependGraph.clearInst(dest_reg->flatIndex());
 
         // Mark the scoreboard as having that register ready.
-        regScoreboard[dest_reg->flatIndex()] = true;
+        regScoreboard[dest_reg->flatIndex()].ready = true;
+        regScoreboard[dest_reg->flatIndex()].wait_bit = false;
+        regScoreboard[dest_reg->flatIndex()].wib_index = -1;
     }
     return dependents;
+}
+
+void
+InstructionQueue::wakeWaitDependents(const DynInstPtr &waiting_inst)
+{
+    assert(!waiting_inst->isSquashed());
+
+    for (int dest_reg_idx = 0;
+         dest_reg_idx < waiting_inst->numDestRegs();
+         dest_reg_idx++)
+    {
+        PhysRegIdPtr dest_reg =
+            waiting_inst->renamedDestIdx(dest_reg_idx);
+
+        // Special case of uniq or control registers.  They are not
+        // handled by the IQ and thus have no dependency graph entry.
+        if (dest_reg->isFixedMapping()) {
+            DPRINTF(IQ, "Reg %d [%s] is part of a fix mapping, skipping\n",
+                    dest_reg->index(), dest_reg->className());
+            continue;
+        }
+    
+        //Go through the dependency chain, marking the registers as
+        //ready within the waiting instructions.
+        DynInstPtr dep_inst = dependGraph.pop(dest_reg->flatIndex());
+
+        while (dep_inst) {
+            DPRINTF(IQ, "Waking up a wait dependent instruction, [sn:%llu] "
+                "PC %s.\n", dep_inst->seqNum, dep_inst->pcState());
+
+            // Might want to give more information to the instruction
+            // so that it knows which of its source registers is
+            // ready.  However that would mean that the dependency
+            // graph entries would need to hold the src_reg_idx.
+            dep_inst->markSrcRegReady();
+            
+            addIfReady(dep_inst);
+            
+            dep_inst = dependGraph.pop(dest_reg->flatIndex());
+        }
+
+        // Reset the head node now that all of its dependents have
+        // been woken up.
+        assert(dependGraph.empty(dest_reg->flatIndex()));
+        dependGraph.clearInst(dest_reg->flatIndex());
+    }
 }
 
 void
@@ -1351,7 +1478,7 @@ InstructionQueue::addToDependents(const DynInstPtr &new_inst)
             // it be added to the dependency graph.
             if (src_reg->isFixedMapping()) {
                 continue;
-            } else if (!regScoreboard[src_reg->flatIndex()]) {
+            } else if (!regScoreboard[src_reg->flatIndex()].ready) {
                 DPRINTF(IQ, "Instruction PC %s has src reg %i (%s) that "
                         "is being added to the dependency chain.\n",
                         new_inst->pcState(), src_reg->index(),
@@ -1407,7 +1534,9 @@ InstructionQueue::addToProducers(const DynInstPtr &new_inst)
         dependGraph.setInst(dest_reg->flatIndex(), new_inst);
 
         // Mark the scoreboard to say it's not yet ready.
-        regScoreboard[dest_reg->flatIndex()] = false;
+        regScoreboard[dest_reg->flatIndex()].ready = false;
+        regScoreboard[dest_reg->flatIndex()].wait_bit = false;
+        regScoreboard[dest_reg->flatIndex()].wib_index = -1;
     }
 }
 
@@ -1580,6 +1709,26 @@ InstructionQueue::dumpInsts()
         inst_list_it++;
         ++num;
     }
+}
+
+bool
+InstructionQueue::getWait(int reg_index) const
+{
+    return regScoreboard[reg_index].wait_bit;
+}
+
+int
+InstructionQueue::getIndex(int reg_index) const
+{
+    return regScoreboard[reg_index].wib_index;
+}
+
+void
+InstructionQueue::setWait(int reg_index, int wib_index)
+{
+    regScoreboard[reg_index].wait_bit = true;
+    regScoreboard[reg_index].ready = false;
+    regScoreboard[reg_index].wib_index = wib_index;
 }
 
 } // namespace o3

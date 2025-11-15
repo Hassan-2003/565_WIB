@@ -54,13 +54,20 @@ namespace o3
 class Scoreboard
 {
   private:
+    struct regstate
+    {
+        bool ready = true;
+        bool wait_bit = false;
+        int wib_index = -1;
+    };
+
     /** The object name, for DPRINTF.  We have to declare this
      *  explicitly because Scoreboard is not a SimObject. */
     const std::string _name;
 
     /** Scoreboard of physical integer registers, saying whether or not they
      *  are ready. */
-    std::vector<bool> regScoreBoard;
+    std::vector<regstate> regScoreBoard;
 
     /** The number of actual physical registers */
     GEM5_CLASS_VAR_USED unsigned numPhysRegs;
@@ -89,7 +96,7 @@ class Scoreboard
 
         assert(phys_reg->flatIndex() < numPhysRegs);
 
-        return regScoreBoard[phys_reg->flatIndex()];
+        return regScoreBoard[phys_reg->flatIndex()].ready;
     }
 
     /** Sets the register as ready. */
@@ -107,7 +114,8 @@ class Scoreboard
         DPRINTF(Scoreboard, "Setting reg %i (%s) as ready\n",
                 phys_reg->index(), phys_reg->className());
 
-        regScoreBoard[phys_reg->flatIndex()] = true;
+        regScoreBoard[phys_reg->flatIndex()].ready = true;
+        regScoreBoard[phys_reg->flatIndex()].wait_bit = false;
     }
 
     /** Sets the register as not ready. */
@@ -122,9 +130,51 @@ class Scoreboard
 
         assert(phys_reg->flatIndex() < numPhysRegs);
 
-        regScoreBoard[phys_reg->flatIndex()] = false;
+        regScoreBoard[phys_reg->flatIndex()].ready = false;
+        regScoreBoard[phys_reg->flatIndex()].wait_bit = false;
+        regScoreBoard[phys_reg->flatIndex()].wib_index = -1;
     }
 
+    /** Checks if the register is waiting. */
+    bool
+    getWait(PhysRegIdPtr phys_reg) const
+    {
+        if (phys_reg->isFixedMapping()) {
+            // Fixed mapping regs are always ready
+            return true;
+        }
+
+        assert(phys_reg->flatIndex() < numPhysRegs);
+
+        return regScoreBoard[phys_reg->flatIndex()].wait_bit;
+    }
+
+    /** Return the WIB Index. */
+    int
+    getIndex(PhysRegIdPtr phys_reg) const
+    {
+        assert(phys_reg->flatIndex() < numPhysRegs);
+
+        return regScoreBoard[phys_reg->flatIndex()].wib_index;
+    }
+ 
+
+    /** Sets the register as waiting. */
+    void
+    setWait(PhysRegIdPtr phys_reg, int wib_index)
+    {
+        if (phys_reg->isFixedMapping()) {
+            // Fixed mapping regs are always ready, ignore attempts to
+            // change that
+            return;
+        }
+
+        assert(phys_reg->flatIndex() < numPhysRegs);
+
+        regScoreBoard[phys_reg->flatIndex()].ready = false;
+        regScoreBoard[phys_reg->flatIndex()].wait_bit = true;
+        regScoreBoard[phys_reg->flatIndex()].wib_index = wib_index;
+    }
 };
 
 } // namespace o3

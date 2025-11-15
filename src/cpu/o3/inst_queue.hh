@@ -101,6 +101,9 @@ class InstructionQueue
     // Typedef of iterator through the list of instructions.
     typedef typename std::list<DynInstPtr>::iterator ListIt;
 
+    /** Array of WIB indexes */
+    std::vector<int> wib_indexes;
+
     /** FU completion event class. */
     class FUCompletion : public Event
     {
@@ -238,6 +241,9 @@ class InstructionQueue
     /** Wakes all dependents of a completed instruction. */
     int wakeDependents(const DynInstPtr &completed_inst);
 
+    /** Wakes all dependents of a waiting instruction. */
+    void wakeWaitDependents(const DynInstPtr &waiting_inst);
+
     /** Adds a ready memory instruction to the ready list. */
     void addReadyMemInst(const DynInstPtr &ready_inst);
 
@@ -335,6 +341,9 @@ class InstructionQueue
      * since, so they can now be retried. May fail again go on the blocked list.
      */
     std::list<DynInstPtr> retryMemInsts;
+
+    /** List of ready instructions from the WIB */
+    std::list<DynInstPtr> readyWIBInsts;
 
     /**
      * Struct for comparing entries to be added to the priority queue.
@@ -452,7 +461,13 @@ class InstructionQueue
      *  is basically a secondary scoreboard, and should pretty much mirror
      *  the scoreboard that exists in the rename map.
      */
-    std::vector<bool> regScoreboard;
+      struct regstate
+      {
+          bool ready = true;
+          bool wait_bit = false;
+          int wib_index = -1;
+      };
+     std::vector<regstate> regScoreboard;
 
     /** Adds an instruction to the dependency graph, as a consumer. */
     bool addToDependents(const DynInstPtr &new_inst);
@@ -561,6 +576,15 @@ class InstructionQueue
         statistics::Scalar fpAluAccesses;
         statistics::Scalar vecAluAccesses;
     } iqIOStats;
+
+    /** Checks if the register is waiting. */
+    bool getWait(int reg_index) const;
+    
+    /** Return the WIB Index. */
+    int getIndex(int reg_index) const;
+
+    /** Sets the register as waiting. */
+    void setWait(int reg_index, int wib_index);
 };
 
 } // namespace o3
