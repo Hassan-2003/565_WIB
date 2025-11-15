@@ -251,22 +251,24 @@ void ROB::get_bank(ThreadID tid, DynInstPtr instr, unsigned &bank_num){
     }
 }
 
-void ROB::wibPush(ThreadID tid, unsigned loadPtr, DynInstPtr instr,
-                    unsigned wait1, unsigned wait2){
+void ROB::wibPush(ThreadID tid, DynInstPtr instr, int *loadPtrs){
 
     WIBEntry* wibEntry = new WIBEntry;
 
-    wibEntry->src1Waiting = new int[numLoadVectors];
-    wibEntry->src2Waiting = new int[numLoadVectors];
+    wibEntry->loadPtrs = new int[numLoadVectors];
     wibEntry->instr = instr;
 
     for(int i=0; i<numLoadVectors; i++){
-        wibEntry->src1Waiting[i] = 0;
-        wibEntry->src2Waiting[i] = 0;
+        wibEntry->loadPtrs[i] = 0;
     }
 
-    wibEntry->src1Waiting[loadPtr] = wait1;
-    wibEntry->src2Waiting[loadPtr] = wait2;
+    for(int i=0; i<instr->numSrcRegs(); i++){
+        if(wibEntry->loadPtrs[loadPtrs[i]] == 0){
+            wibEntry->loadPtrs[loadPtrs[i]] = 1;
+        }
+    }
+
+    delete[] loadPtrs;
 
     unsigned bank_num;
     get_bank(tid, instr, bank_num);
@@ -276,9 +278,9 @@ void ROB::wibPush(ThreadID tid, unsigned loadPtr, DynInstPtr instr,
 }
 
 bool 
-ROB::instrWaiting(int *src1Waiting, int *src2Waiting){
+ROB::instrWaiting(int *loadPtrs){
     for(int i=0; i<numLoadVectors; i++){
-        if(src1Waiting[i] != 0 || src2Waiting[i] != 0){
+        if(loadPtrs[i] == 1){
             return true;
         }
     }
@@ -292,8 +294,7 @@ ROB::wibPop(ThreadID tid, unsigned loadPtr, DynInstPtr instr,
         WIBEntry* wibEntry = *it;
         if(wibEntry->instr == instr){
             WIB[tid][bank_num].erase(it);
-            delete[] wibEntry->src1Waiting;
-            delete[] wibEntry->src2Waiting;
+            delete[] wibEntry->loadPtrs;
             delete wibEntry;
 
             // DPRINTF(ROB, "[tid:%d] Cleared load vector pointer %d for instruction in WIB. [sn:%llu]\n", tid, loadPtr, wibEntry->instr->seqNum);
@@ -315,18 +316,18 @@ ROB::readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs){
     }
     even = !even;
 
+    // Currently doing oldest-first checking within even/odd banks
     for(unsigned bank_num=initial; bank_num < 2*issueWidth; bank_num+=2){
         for(auto it = WIB[tid][bank_num].begin(); it != WIB[tid][bank_num].end(); it++){
             WIBEntry* wibEntry = *it;
-            if(!instrWaiting(wibEntry->src1Waiting, wibEntry->src2Waiting)){
+            if(!instrWaiting(wibEntry->loadPtrs)){
                 DPRINTF(ROB, "[tid:%d] Instruction is ready to re-issue from WIB. [sn:%llu]\n", tid, wibEntry->instr->seqNum);
                 
                 readyInstrs.push_back(wibEntry->instr);
 
                 //Remove from WIB
                 WIB[tid][bank_num].erase(it);
-                delete[] wibEntry->src1Waiting;
-                delete[] wibEntry->src2Waiting;
+                delete[] wibEntry->loadPtrs;
                 delete wibEntry;
 
                 //Break to avoid iterator invalidation
@@ -341,8 +342,9 @@ ROB::clearLoadWaiting(ThreadID tid, unsigned loadPtr){
     for(unsigned bank_num=0; bank_num < 2*issueWidth; bank_num++){
         for(auto it = WIB[tid][bank_num].begin(); it != WIB[tid][bank_num].end(); it++){
             WIBEntry* wibEntry = *it;
-            wibEntry->src1Waiting[loadPtr] = 0;
-            wibEntry->src2Waiting[loadPtr] = 0;
+            wibEntry->loadPtrs[loadPtr] = 0;
+            freeLoadVectors[tid].push_back(loadPtr);
+            DPRINTF(ROB, "[tid:%d] Cleared load vector pointer %d for instruction in WIB. [sn:%llu]\n", tid, loadPtr, wibEntry->instr->seqNum);
         }
     }
 }

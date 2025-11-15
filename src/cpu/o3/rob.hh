@@ -76,8 +76,7 @@ class ROB
   public:
     typedef struct WIBEntry
     {
-        int *src1Waiting;
-        int *src2Waiting;
+        int *loadPtrs;
         DynInstPtr instr;
     } WIBEntry;
     
@@ -310,7 +309,12 @@ class ROB
     void set_squashBankIt(ThreadID tid, unsigned bank_num);
 
     void decrement_squashBankIt(ThreadID tid);
+
     
+
+    
+    /** Interface functions for WIB **/
+
     // Clears all WIB entries waiting on a specific load
     void clearLoadWaiting(ThreadID tid, unsigned loadPtr);
 
@@ -321,15 +325,14 @@ class ROB
     void get_bank(ThreadID tid, DynInstPtr instr, unsigned &bank_num);
 
     // Only called assuming load vector ptr was assigned succesfully
-    void wibPush(ThreadID tid, unsigned loadPtr, 
-                DynInstPtr instr, unsigned wait1, 
-                unsigned wait2);
+    void wibPush(ThreadID tid, DynInstPtr instr, 
+                int *loadPtrs);
     
     // Called only by squash but its logic is replicated in readCycle to avoid redundant looping
     bool wibPop(ThreadID tid, unsigned loadPtr, 
                 DynInstPtr instr, unsigned bank_num);
     
-    bool instrWaiting(int *src1Waiting, int *src2Waiting);
+    bool instrWaiting(int *loadPtrs);
 
     void readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs);
                 
