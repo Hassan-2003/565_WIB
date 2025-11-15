@@ -101,7 +101,7 @@ class InstructionQueue
     // Typedef of iterator through the list of instructions.
     typedef typename std::list<DynInstPtr>::iterator ListIt;
 
-    /** Array of WIb indexes */
+    /** Array of WIB indexes */
     std::vector<int> wib_indexes;
 
     /** FU completion event class. */

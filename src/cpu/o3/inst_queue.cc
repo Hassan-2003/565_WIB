@@ -815,7 +815,7 @@ InstructionQueue::scheduleReadyInsts()
 
         // Look for at least 1 pretend ready source
         bool pretend_ready = false;
-        int wib_index = -1;
+        int wib_index = 0;
         PhysRegIdPtr wait_reg;
 
         for (int i = 0; i < issuing_inst->numSrcRegs(); i++) {
@@ -848,7 +848,7 @@ InstructionQueue::scheduleReadyInsts()
                 }
             }
 
-            // wibPush(tid, issuing_inst, wib_indexes);
+            iewStage->rob->wibPush(tid, issuing_inst, wib_indexes);
 
             // Set wait bit and wake up the wait dependent instructions
             for (int i = 0; i < issuing_inst->numDestRegs(); i++) {

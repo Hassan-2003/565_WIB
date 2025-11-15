@@ -892,7 +892,7 @@ IEW::dispatchInsts(ThreadID tid)
     // Loop through the WIB instructions, putting them in the instruction
     // queue.
     std::list<DynInstPtr> readyInstrs;
-    readCycle(tid, readyInstrs);
+    rob->readCycle(tid, readyInstrs);
     while (dis_num_inst < dispatchWidth &&
            readyInstrs.size() != 0)
     {
