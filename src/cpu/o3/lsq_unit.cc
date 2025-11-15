@@ -1595,6 +1595,9 @@ LSQUnit::read(LSQRequest *request, ssize_t load_idx)
     request->sendPacketToCache();
     if (!request->isSent()) {
         iewStage->blockMemInst(load_inst);
+    }
+
+    else {
 
         // get the bit vector index for the miss
         int wib_index = -1;
@@ -1613,8 +1616,8 @@ LSQUnit::read(LSQRequest *request, ssize_t load_idx)
                         wib_index);
                 PhysRegIdPtr dest_reg = load_inst->renamedDestIdx(i);
                 iewStage->instQueue.setWait(dest_reg->flatIndex(), wib_index);
-            }
         }
+    }
 
     return NoFault;
 }
