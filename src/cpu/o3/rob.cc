@@ -251,7 +251,7 @@ void ROB::get_bank(ThreadID tid, DynInstPtr instr, unsigned &bank_num){
     }
 }
 
-void ROB::wibPush(ThreadID tid, DynInstPtr instr, int *loadPtrs){
+void ROB::wibPush(ThreadID tid, DynInstPtr instr, std::vector<int> loadPtrs){
 
     WIBEntry* wibEntry = new WIBEntry;
 
@@ -262,13 +262,14 @@ void ROB::wibPush(ThreadID tid, DynInstPtr instr, int *loadPtrs){
         wibEntry->loadPtrs[i] = 0;
     }
 
-    for(int i=0; i<instr->numSrcRegs(); i++){
-        if(wibEntry->loadPtrs[loadPtrs[i]] == 0){
-            wibEntry->loadPtrs[loadPtrs[i]] = 1;
+    while(!loadPtrs.empty()){
+        int i = loadPtrs.back();
+        loadPtrs.pop_back();
+
+        if(wibEntry->loadPtrs[i] == 0){
+            wibEntry->loadPtrs[i] = 1;
         }
     }
-
-    delete[] loadPtrs;
 
     unsigned bank_num;
     get_bank(tid, instr, bank_num);
