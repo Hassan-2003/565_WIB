@@ -1535,6 +1535,8 @@ InstructionQueue::addToProducers(const DynInstPtr &new_inst)
 
         // Mark the scoreboard to say it's not yet ready.
         regScoreboard[dest_reg->flatIndex()].ready = false;
+        regScoreboard[dest_reg->flatIndex()].wait_bit = false;
+        regScoreboard[dest_reg->flatIndex()].wib_index = -1;
     }
 }
 
