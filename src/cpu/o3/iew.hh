@@ -107,6 +107,9 @@ class IEW
         Unblocking
     };
 
+    /** List of WIB ready instrcutions. */
+    std::list<DynInstPtr> readyInstrs;
+
   private:
     /** Overall stage status. */
     Status _status;

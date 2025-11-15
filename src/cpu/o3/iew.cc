@@ -889,11 +889,50 @@ IEW::dispatchInsts(ThreadID tid)
     bool add_to_iq = false;
     int dis_num_inst = 0;
 
+    // Loop through the WIB instructions, putting them in the instruction
+    // queue.
+    std::list<DynInstPtr> readyInstrs;
+    readCycle(tid, readyInstrs);
+    while (dis_num_inst < dispatchWidth &&
+           readyInstrs.size() != 0)
+    {
+        // Check for full conditions.
+        if (instQueue.isFull(tid)) {
+            DPRINTF(IEW, "[tid:%i] Issue: IQ has become full. Cannot do WIB reinsertion\n", tid);
+
+            // Call function to start blocking.
+            block(tid);
+
+            // Set unblock to false. Special case where we are using
+            // skidbuffer (unblocking) instructions but then we still
+            // get full in the IQ.
+            toRename->iewUnblock[tid] = false;
+
+            ++iewStats.iqFullEvents;
+            break;
+        }
+
+        // Read the 1st instruction from the WIB ready instructions for reinsertion
+        DynInstPtr wib_inst = readyInstrs.front();
+
+        DPRINTF(IEW, "[tid:%i] Issue: Adding PC %s [sn:%lli] [tid:%i] from WIB to "
+                "IQ.\n",
+                tid, wib_inst->pcState(), wib_inst->seqNum, wib_inst->threadNumber);
+        
+        
+        // Insert the WIB instruction in to the IQ
+        instQueue.insert(inst);
+
+        // Increment dispatched instructions counter
+        dis_num_inst++;
+    }
+    
     // Loop through the instructions, putting them in the instruction
     // queue.
-    for ( ; dis_num_inst < insts_to_add &&
+    int dis_num_new_insts = 0;
+    for ( ; dis_num_new_inst < insts_to_add &&
               dis_num_inst < dispatchWidth;
-          ++dis_num_inst)
+          ++dis_num_new_inst)
     {
         inst = insts_to_dispatch.front();
 
@@ -1088,6 +1127,8 @@ IEW::dispatchInsts(ThreadID tid)
         toRename->iewInfo[tid].dispatched++;
 
         ++iewStats.dispatchedInsts;
+
+        dis_num_inst++;
 
 #if TRACING_ON
         inst->dispatchTick = curTick() - inst->fetchTick;
