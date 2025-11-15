@@ -244,6 +244,7 @@ CPU::CPU(const BaseO3CPUParams &params)
 
     // Setup the ROB for whichever stages need it.
     commit.setROB(&rob);
+    iew.setROB(&rob);
 
     lastActivatedCycle = 0;
 
