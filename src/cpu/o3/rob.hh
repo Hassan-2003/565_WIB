@@ -316,10 +316,10 @@ class ROB
     /** Interface functions for WIB **/
 
     // Clears all WIB entries waiting on a specific load
-    void clearLoadWaiting(ThreadID tid, unsigned loadPtr);
+    void clearLoadWaiting(ThreadID tid, int loadPtr);
 
     // Request any available load vector pointer
-    bool getLoadVectorPtr(ThreadID tid, unsigned &loadPtr);
+    bool getLoadVectorPtr(ThreadID tid, int &loadPtr);
 
     // Given an instruction, get its ROB bank number
     void get_bank(ThreadID tid, DynInstPtr instr, unsigned &bank_num);
@@ -329,7 +329,7 @@ class ROB
                 int *loadPtrs);
     
     // Called only by squash but its logic is replicated in readCycle to avoid redundant looping
-    bool wibPop(ThreadID tid, unsigned loadPtr, 
+    bool wibPop(ThreadID tid, int loadPtr, 
                 DynInstPtr instr, unsigned bank_num);
     
     bool instrWaiting(int *loadPtrs);

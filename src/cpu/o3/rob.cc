@@ -288,7 +288,7 @@ ROB::instrWaiting(int *loadPtrs){
 }
 
 bool
-ROB::wibPop(ThreadID tid, unsigned loadPtr, DynInstPtr instr,
+ROB::wibPop(ThreadID tid, int loadPtr, DynInstPtr instr,
                     unsigned bank_num){
     for(auto it = WIB[tid][bank_num].begin(); it != WIB[tid][bank_num].end(); it++){
         WIBEntry* wibEntry = *it;
@@ -338,7 +338,7 @@ ROB::readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs){
 }
 
 void 
-ROB::clearLoadWaiting(ThreadID tid, unsigned loadPtr){
+ROB::clearLoadWaiting(ThreadID tid, int loadPtr){
     for(unsigned bank_num=0; bank_num < 2*issueWidth; bank_num++){
         for(auto it = WIB[tid][bank_num].begin(); it != WIB[tid][bank_num].end(); it++){
             WIBEntry* wibEntry = *it;
@@ -350,7 +350,7 @@ ROB::clearLoadWaiting(ThreadID tid, unsigned loadPtr){
 }
 
 bool 
-ROB::getLoadVectorPtr(ThreadID tid, unsigned &loadPtr){
+ROB::getLoadVectorPtr(ThreadID tid, int &loadPtr){
     if(!freeLoadVectors[tid].empty()){
         loadPtr = freeLoadVectors[tid].back();
         freeLoadVectors[tid].pop_back();
