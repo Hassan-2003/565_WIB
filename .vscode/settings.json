@@ -78,5 +78,6 @@
         "cfenv": "cpp",
         "typeindex": "cpp",
         "valarray": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "/home/min/a/halalawi/565_WIB/ext/dsent"
 }

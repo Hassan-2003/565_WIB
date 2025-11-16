@@ -104,7 +104,7 @@ class ROB
     /** ROB resource sharing policy for SMT mode. */
     SMTQueuePolicy robPolicy;
 
-    unsigned numLoadVectors;
+    int numLoadVectors;
 
   public:
     /** ROB constructor.
@@ -112,6 +112,7 @@ class ROB
      *  @param params The cpu params including several ROB-specific parameters.
      */
     ROB(CPU *_cpu, const BaseO3CPUParams &params);
+    // ~ROB();
 
     std::string name() const;
 
@@ -370,7 +371,7 @@ class ROB
     int even;
     
     // Stack to track free load vector pointers
-    std::vector<unsigned> freeLoadVectors[MaxThreads];
+    std::vector<int> freeLoadVectors[MaxThreads];
 
   public:
     /** Iterator pointing to the instruction which is the last instruction

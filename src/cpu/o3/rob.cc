@@ -96,6 +96,8 @@ ROB::ROB(CPU *_cpu, const BaseO3CPUParams &params)
         }
     }
 
+    numLoadVectors = params.numLoadVectors;
+    
     for(ThreadID tid = 0; tid < numThreads; tid++) {
         threadEntries[tid] = 0;
         headptr[tid] = 0;
@@ -104,20 +106,29 @@ ROB::ROB(CPU *_cpu, const BaseO3CPUParams &params)
             squashCursorIt[tid][bank_num] = instList[tid][bank_num].end();
             searchCursorIt[tid][bank_num] = instList[tid][bank_num].end();
         }
+
+        for(int loadVector = 0; loadVector < numLoadVectors; loadVector++) {
+            freeLoadVectors[tid].push_back(loadVector);
+        } 
     }
 
-    numLoadVectors = params.numLoadVectors;
+    // freeLoadVectors = new std::vector<int>[numLoadVectors];
 
     for (ThreadID tid = numThreads; tid < MaxThreads; tid++) {
         maxEntries[tid] = 0;
-        for( unsigned loadVector = 0; loadVector < numLoadVectors; loadVector++) {
-            freeLoadVectors[tid].push_back(loadVector);
-        }
     }
+
+    DPRINTF(ROB, "Checking freeLoadVector value. Front: %d, Back: %d \n", 
+            freeLoadVectors[0].front(), freeLoadVectors[0].back());
 
     even = 1;
     resetState();
 }
+
+// ROB::~ROB()
+// {
+//     delete[] freeLoadVectors;
+// }
 
 void ROB::get_tail_bank(ThreadID tid, unsigned &bank_num)
 {   
