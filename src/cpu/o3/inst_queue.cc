@@ -1136,6 +1136,18 @@ InstructionQueue::wakeDependents(const DynInstPtr &completed_inst)
         assert(dependGraph.empty(dest_reg->flatIndex()));
         dependGraph.clearInst(dest_reg->flatIndex());
 
+        int wib_index = getIndex(dest_reg->flatIndex());
+        // Clear the WIB entry of the waiting load
+        if (completed_inst->isLoad() && regScoreboard[dest_reg->flatIndex()].wait_bit) {
+            DPRINTF(IQ, "Clearing WIB entry of the waiting load "
+                        "with destination register (%i) and "
+                        "WIB Index (%d)\n",
+                        dest_reg->index(),
+                        wib_index);
+            
+            iewStage->rob->clearLoadWaiting(tid, wib_index);
+        }
+        
         // Mark the scoreboard as having that register ready.
         regScoreboard[dest_reg->flatIndex()].ready = true;
         regScoreboard[dest_reg->flatIndex()].wait_bit = false;

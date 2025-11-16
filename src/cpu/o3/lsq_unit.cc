@@ -1608,7 +1608,7 @@ LSQUnit::read(LSQRequest *request, ssize_t load_idx)
                 // Mark register as waiting ( do we need to check if not pinned?)
                 // if (inst->renamedDestIdx(i)->
                 //         getNumPinnedWritesToComplete() == 0) {
-                DPRINTF(LSQUnit,"Setting Destination Register wait bit %i (%s)"
+                DPRINTF(LSQUnit,"Setting Destination Register wait bit %i (%s) "
                         "with WIB Index (%d)\n",
                         load_inst->renamedDestIdx(i)->index(),
                         load_inst->renamedDestIdx(i)->className(),
