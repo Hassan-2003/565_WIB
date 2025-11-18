@@ -892,6 +892,7 @@ IEW::dispatchInsts(ThreadID tid)
     // Loop through the WIB instructions, putting them in the instruction
     // queue.
     std::list<DynInstPtr> readyInstrs;
+    DPRINTF(IEW, "[tid:%i] Getting list of reinsertion ready instructions from WIB\n", tid);
     rob->readCycle(tid, readyInstrs);
     while (dis_num_inst < dispatchWidth &&
            readyInstrs.size() != 0)
@@ -921,7 +922,7 @@ IEW::dispatchInsts(ThreadID tid)
         
         
         // Insert the WIB instruction in to the IQ
-        instQueue.insert(inst);
+        instQueue.insert(wib_inst);
 
         // Increment dispatched instructions counter
         dis_num_inst++;

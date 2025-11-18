@@ -1615,6 +1615,9 @@ LSQUnit::read(LSQRequest *request, ssize_t load_idx)
                         wib_index);
                 PhysRegIdPtr dest_reg = load_inst->renamedDestIdx(i);
                 iewStage->instQueue.setWait(dest_reg->flatIndex(), wib_index);
+
+                DPRINTF(LSQUnit, "Waking dependents of the missed load instruction");
+                iewStage->instQueue.wakeWaitDependents(load_inst);
             }
         }
     }

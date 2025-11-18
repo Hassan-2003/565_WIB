@@ -161,6 +161,27 @@ InstructionQueue::InstructionQueue(CPU *cpu_ptr, IEW *iew_ptr,
     }
 }
 
+
+bool
+InstructionQueue::getWait(int reg_index) const
+{
+    return regScoreboard[reg_index].wait_bit;
+}
+
+int
+InstructionQueue::getIndex(int reg_index) const
+{
+    return regScoreboard[reg_index].wib_index;
+}
+
+void
+InstructionQueue::setWait(int reg_index, int wib_index)
+{
+    regScoreboard[reg_index].wait_bit = true;
+    regScoreboard[reg_index].ready = false;
+    regScoreboard[reg_index].wib_index = wib_index;
+}
+
 InstructionQueue::~InstructionQueue()
 {
     dependGraph.reset();
@@ -785,6 +806,7 @@ InstructionQueue::scheduleReadyInsts()
         assert(!readyInsts[op_class].empty());
 
         DynInstPtr issuing_inst = readyInsts[op_class].top();
+        ThreadID tid = issuing_inst->threadNumber;
 
         if (issuing_inst->isFloating()) {
             iqIOStats.fpInstQueueReads++;
@@ -820,6 +842,11 @@ InstructionQueue::scheduleReadyInsts()
 
         for (int i = 0; i < issuing_inst->numSrcRegs(); i++) {
             if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex())) {
+                DPRINTF(IQ, "Thread %i: Found source register (%i) waiting for PC %s "
+                    "[sn:%llu] with \n",
+                    tid, issuing_inst->pcState(),
+                    issuing_inst->seqNum,
+                    issuing_inst->renamedSrcIdx(i)->index());
                 pretend_ready = true;
                 wib_index = getIndex(issuing_inst->renamedDestIdx(i)->flatIndex());
                 wait_reg = issuing_inst->renamedSrcIdx(i);
@@ -829,7 +856,6 @@ InstructionQueue::scheduleReadyInsts()
 
         // Send the pretend ready instruction to the WIB
         if (pretend_ready) {
-            ThreadID tid = issuing_inst->threadNumber;
             int dest_reg = -1;
 
             DPRINTF(IQ, "Thread %i: Moving instruction PC %s "
@@ -1722,26 +1748,6 @@ InstructionQueue::dumpInsts()
         inst_list_it++;
         ++num;
     }
-}
-
-bool
-InstructionQueue::getWait(int reg_index) const
-{
-    return regScoreboard[reg_index].wait_bit;
-}
-
-int
-InstructionQueue::getIndex(int reg_index) const
-{
-    return regScoreboard[reg_index].wib_index;
-}
-
-void
-InstructionQueue::setWait(int reg_index, int wib_index)
-{
-    regScoreboard[reg_index].wait_bit = true;
-    regScoreboard[reg_index].ready = false;
-    regScoreboard[reg_index].wib_index = wib_index;
 }
 
 } // namespace o3
