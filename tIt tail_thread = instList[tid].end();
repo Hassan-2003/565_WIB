@@ -1,0 +1,637 @@
+[1mdiff --git a/src/cpu/o3/rob.cc b/src/cpu/o3/rob.cc[m
+[1mindex 5d0fac9a6..24ea05151 100644[m
+[1m--- a/src/cpu/o3/rob.cc[m
+[1m+++ b/src/cpu/o3/rob.cc[m
+[36m@@ -48,6 +48,7 @@[m
+ #include "debug/Fetch.hh"[m
+ #include "debug/ROB.hh"[m
+ #include "params/BaseO3CPU.hh"[m
+[32m+[m[32m// #include "base/types.hh"[m
+ [m
+ namespace gem5[m
+ {[m
+[36m@@ -64,6 +65,8 @@[m [mROB::ROB(CPU *_cpu, const BaseO3CPUParams &params)[m
+       numThreads(params.numThreads),[m
+       stats(_cpu)[m
+ {[m
+[32m+[m[32m    DPRINTF(ROB, "Created ROB\n");[m
+[32m+[m[32m    issueWidth = params.issueWidth;[m
+     //Figure out rob policy[m
+     if (robPolicy == SMTQueuePolicy::Dynamic) {[m
+         //Set Max Entries to Total ROB Capacity[m
+[36m@@ -93,19 +96,284 @@[m [mROB::ROB(CPU *_cpu, const BaseO3CPUParams &params)[m
+         }[m
+     }[m
+ [m
+[32m+[m[32m    for(ThreadID tid = 0; tid < numThreads; tid++) {[m
+[32m+[m[32m        threadEntries[tid] = 0;[m
+[32m+[m[32m        headptr[tid] = 0;[m
+[32m+[m[32m        tailptr[tid] = 0;[m
+[32m+[m[32m        // for( unsigned bank_num = 0; bank_num < 2*issueWidth; bank_num++) {[m
+[32m+[m[32m        //     squashCursorIt[tid][bank_num] = instList[tid][bank_num].end();[m
+[32m+[m[32m        //     searchCursorIt[tid][bank_num] = instList[tid][bank_num].end();[m
+[32m+[m[32m        // }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    numLoadVectors = params.numLoadVectors;[m
+[32m+[m
+     for (ThreadID tid = numThreads; tid < MaxThreads; tid++) {[m
+         maxEntries[tid] = 0;[m
+[32m+[m[32m        for( unsigned loadVector = 0; loadVector < numLoadVectors; loadVector++) {[m
+[32m+[m[32m            freeLoadVectors[tid].push_back(loadVector);[m
+[32m+[m[32m        }[m
+     }[m
+ [m
+[32m+[m[32m    even = 1;[m
+     resetState();[m
+ }[m
+ [m
+[32m+[m[32m// void ROB::get_tail_bank(ThreadID tid, unsigned &bank_num)[m
+[32m+[m[32m// {[m[41m   [m
+[32m+[m[32m//     unsigned ptr = tailptr[tid];[m
+[32m+[m[32m//     if( ptr == (unsigned)-1 ) {[m
+[32m+[m[32m//         bank_num = 0;[m
+[32m+[m[32m//         DPRINTF(ROB, "[tid:%d] Getting Tail Bank: %d\n",tid, bank_num);[m
+[32m+[m[32m//         return;[m
+[32m+[m[32m//     }[m
+[32m+[m[32m//     bank_num = ptr%(2*issueWidth);[m
+[32m+[m[32m//     DPRINTF(ROB, "[tid:%d] Getting Tail Bank: %d\n",tid, bank_num);[m
+[32m+[m[32m// }[m
+[32m+[m
+[32m+[m[32m// void ROB::get_head_bank(ThreadID tid, unsigned &bank_num)[m
+[32m+[m[32m// {[m[41m   [m
+[32m+[m[32m//     unsigned ptr = headptr[tid];[m
+[32m+[m[32m//     if( ptr == (unsigned)-1 ) {[m
+[32m+[m[32m//         bank_num = 0;[m
+[32m+[m[32m//         DPRINTF(ROB, "[tid:%d] Getting Head Bank: %d\n",tid, bank_num);[m
+[32m+[m[32m//         return;[m
+[32m+[m[32m//     }[m
+[32m+[m[32m//     bank_num = ptr%(2*issueWidth);[m
+[32m+[m[32m//     DPRINTF(ROB, "[tid:%d] Getting Head Bank: %d\n",tid, bank_num);[m
+[32m+[m[32m//     return;[m
+[32m+[m[32m// }[m
+[32m+[m
+[32m+[m[32m// void[m[41m [m
+[32m+[m[32m// ROB::set_squashCursors(ThreadID tid)[m
+[32m+[m[32m// {[m
+[32m+[m[32m//     DPRINTF(ROB, "[tid:%d] Setting cursors to tails\n",tid);[m
+[32m+[m[32m//     for (unsigned bank_num = 0; bank_num < 2*issueWidth; bank_num++) {[m
+[32m+[m[32m//         squashCursorIt[tid][bank_num] = instList[tid][bank_num].end();[m
+[32m+[m[32m//         if(!instList[tid][bank_num].empty())[m
+[32m+[m[32m//             {squashCursorIt[tid][bank_num]--;}[m
+[32m+[m[32m//     }[m
+[32m+[m[32m// }[m
+[32m+[m
+[32m+[m[32m// void[m[41m [m
+[32m+[m[32m// ROB::set_searchBankIt(ThreadID tid, unsigned bank_num)[m
+[32m+[m[32m// {[m
+[32m+[m[32m//     searchBankIt[tid] = bank_num;[m
+[32m+[m[32m//     DPRINTF(ROB, "[tid:%d] Setting search bank iterator with bank: %d\n",tid, bank_num);[m
+[32m+[m[32m// }[m
+[32m+[m
+[32m+[m[32m// void[m[41m [m
+[32m+[m[32m// ROB::set_squashBankIt(ThreadID tid, unsigned bank_num)[m
+[32m+[m[32m// {[m
+[32m+[m[32m//     squashBankIt[tid] = bank_num;[m
+[32m+[m[32m//     DPRINTF(ROB, "[tid:%d] Setting squash bank iterator with bank: %d\n",tid, bank_num);[m
+[32m+[m[32m// }[m
+[32m+[m
+[32m+[m[32m// void[m[41m [m
+[32m+[m[32m// ROB::increment_searchBankIt(ThreadID tid)[m
+[32m+[m[32m// {[m
+[32m+[m[32m//     DPRINTF(ROB, "[tid:%d] Incrementing search bank iterator\n",tid);[m
+[32m+[m[32m//     searchBankIt[tid] = (searchBankIt[tid]+1) % (2*issueWidth);[m
+[32m+[m[32m// }[m
+[32m+[m
+[32m+[m[32m// void[m[41m [m
+[32m+[m[32m// ROB::decrement_squashBankIt(ThreadID tid)[m
+[32m+[m[32m// {[m
+[32m+[m[32m//     DPRINTF(ROB, "[tid:%d] Decrementing squash bank iterator\n",tid);[m
+[32m+[m[32m//     if(squashBankIt[tid] == 0){[m
+[32m+[m[32m//         squashBankIt[tid] = 2*issueWidth - 1;[m
+[32m+[m[32m//     } else {[m
+[32m+[m[32m//         squashBankIt[tid] = (squashBankIt[tid]-1) % (2*issueWidth);[m
+[32m+[m[32m//     }[m
+[32m+[m[32m// }[m
+[32m+[m
+[32m+[m[32m// void[m[41m [m
+[32m+[m[32m// ROB::get_squashCursor(ThreadID tid, unsigned bank_num, InstIt &it)[m
+[32m+[m[32m// {[m[41m   [m
+[32m+[m[32m//     DPRINTF(ROB, "[tid:%d] squash cursor now pointing to bank: %d\n",tid, bank_num);[m
+[32m+[m[32m//     it = squashCursorIt[tid][bank_num];[m
+[32m+[m[32m// }[m
+[32m+[m
+[32m+[m[32m// void[m[41m [m
+[32m+[m[32m// ROB::get_searchCursor(ThreadID tid, unsigned bank_num, InstIt &it)[m
+[32m+[m[32m// {[m[41m   [m
+[32m+[m[32m//     DPRINTF(ROB, "[tid:%d] search cursor now pointing to bank: %d\n",tid, bank_num);[m
+[32m+[m[32m//     it = searchCursorIt[tid][bank_num];[m
+[32m+[m[32m// }[m
+[32m+[m
+[32m+[m[32m// void[m[41m [m
+[32m+[m[32m// ROB::set_searchCursors(ThreadID tid)[m
+[32m+[m[32m// {[m
+[32m+[m[32m//     DPRINTF(ROB, "[tid:%i] Setting cursors to heads.\n",[m
+[32m+[m[32m//                 tid);[m
+[32m+[m[32m//     for (unsigned bank_num = 0; bank_num < 2*issueWidth; bank_num++) {[m
+[32m+[m[32m//         searchCursorIt[tid][bank_num] = instList[tid][bank_num].begin();[m
+[32m+[m[32m//     }[m
+[32m+[m[32m// }[m
+[32m+[m
+[32m+[m[32m// void[m[41m [m
+[32m+[m[32m// ROB::decrement_cursor(ThreadID tid, unsigned bank_num){[m
+[32m+[m[32m//     DPRINTF(ROB, "[tid:%d] Decrementing squash cursor\n",tid);[m
+[32m+[m[32m//     // cursorIt[tid][bank_num] = instList[tid][bank_num].end();[m
+[32m+[m[32m//     unsigned tail_bank_num;[m
+[32m+[m[32m//     if (squashCursorIt[tid][bank_num] != instList[tid][bank_num].begin()) {[m
+[32m+[m[32m//         --squashCursorIt[tid][bank_num];[m
+[32m+[m[32m//     }else {[m
+[32m+[m[32m//         DPRINTF(ROB, "[tid:%d] Finished squash scanning bank %d.\n",tid,bank_num);[m
+[32m+[m[32m//         // get_tail_bank(tid, tail_bank_num);[m
+[32m+[m[32m//         // squashCursorIt[tid][bank_num] = instList[tid][tail_bank_num].end();[m
+[32m+[m[32m//         squashCursorIt[tid][bank_num] = instList[tid][bank_num].end();[m
+[32m+[m[32m//     }[m
+[32m+[m[32m// }[m
+[32m+[m
+[32m+[m[32m// void[m[41m [m
+[32m+[m[32m// ROB::increment_cursor(ThreadID tid, unsigned bank_num){[m
+[32m+[m[32m//     DPRINTF(ROB, "[tid:%d] Incrementing search cursor\n",tid);[m
+[32m+[m[32m//     unsigned tail_bank_num;[m
+[32m+[m[32m//     if (searchCursorIt[tid][bank_num] != instList[tid][bank_num].end()) {[m
+[32m+[m[32m//         ++searchCursorIt[tid][bank_num];[m
+[32m+[m[32m//     }[m
+[32m+[m[32m//     else{[m
+[32m+[m[32m//         DPRINTF(ROB, "[tid:%d] Finished search scanning bank %d.\n",tid,bank_num);[m
+[32m+[m[32m//         // get_tail_bank(tid, tail_bank_num);[m
+[32m+[m[32m//         // searchCursorIt[tid][bank_num] = instList[tid][tail_bank_num].end();[m
+[32m+[m[32m//         searchCursorIt[tid][bank_num] = instList[tid][bank_num].end();[m
+[32m+[m[32m//     }[m
+[32m+[m[32m// }[m
+[32m+[m
+[32m+[m[32mvoid ROB::get_bank(ThreadID tid, DynInstPtr instr, unsigned &bank_num){[m
+[32m+[m[32m    for(bank_num=0; bank_num<2*MaxWidth; bank_num++){[m
+[32m+[m[32m        for(InstIt it = instList[tid][bank_num].begin(); it != instList[tid][bank_num].end(); it++){[m
+[32m+[m[32m            if(*it = instr){[m
+[32m+[m[32m                return;[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mvoid ROB::wibPush(ThreadID tid, DynInstPtr instr, int *loadPtrs){[m
+[32m+[m
+[32m+[m[32m    WIBEntry* wibEntry = new WIBEntry;[m
+[32m+[m
+[32m+[m[32m    wibEntry->loadPtrs = new int[numLoadVectors];[m
+[32m+[m[32m    wibEntry->instr = instr;[m
+[32m+[m
+[32m+[m[32m    for(int i=0; i<numLoadVectors; i++){[m
+[32m+[m[32m        wibEntry->loadPtrs[i] = 0;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    for(int i=0; i<instr->numSrcRegs(); i++){[m
+[32m+[m[32m        if(wibEntry->loadPtrs[loadPtrs[i]] == 0){[m
+[32m+[m[32m            wibEntry->loadPtrs[loadPtrs[i]] = 1;[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    // delete[] loadPtrs;[m
+[32m+[m
+[32m+[m[32m    // unsigned bank_num;[m
+[32m+[m[32m    // get_bank(tid, instr, bank_num);[m
+[32m+[m
+[32m+[m[32m    // WIB[tid][bank_num].push_back(wibEntry);[m
+[32m+[m[32m    WIB[tid].push_back(wibEntry);[m
+[32m+[m[32m    DPRINTF(ROB, "[tid:%d] Instruction has been pushed to WIB. [sn:%llu]\n", tid, wibEntry->instr->seqNum);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mbool[m[41m [m
+[32m+[m[32mROB::instrWaiting(WIBEntry* wibEntry){[m
+[32m+[m[32m    for(int i=0; i<numLoadVectors; i++){[m
+[32m+[m[32m        if(wibEntry->loadPtrs[i] == 1){[m
+[32m+[m[32m            return true;[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m[32m    return false;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mbool[m
+[32m+[m[32mROB::wibPop(ThreadID tid, unsigned loadPtr, DynInstPtr instr){[m
+[32m+[m[32m    for(auto it = WIB[tid].begin(); it != WIB[tid].end(); it++){[m
+[32m+[m[32m        WIBEntry* wibEntry = *it;[m
+[32m+[m[32m        if(wibEntry->instr == instr){[m
+[32m+[m[32m            WIB[tid].erase(it);[m
+[32m+[m[32m            delete[] wibEntry->loadPtrs;[m
+[32m+[m[32m            delete wibEntry;[m
+[32m+[m
+[32m+[m[32m            // DPRINTF(ROB, "[tid:%d] Cleared load vector pointer %d for instruction in WIB. [sn:%llu]\n", tid, loadPtr, wibEntry->instr->seqNum);[m
+[32m+[m[32m            return true;[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m[32m    return false;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mvoid[m[41m [m
+[32m+[m[32mROB::readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs){[m
+[32m+[m[32m    unsigned initial;[m
+[32m+[m[32m    unsigned banksChecked[2*MaxWidth] = {0};[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Alternate between checking even or odd banks each cycle[m
+[32m+[m[32m    if(even){[m
+[32m+[m[32m        initial = 0;[m
+[32m+[m[32m    } else {[m
+[32m+[m[32m        initial = 1;[m
+[32m+[m[32m    }[m
+[32m+[m[32m    even = !even;[m
+[32m+[m
+[32m+[m[32m    // Currently doing oldest-first checking within even/odd banks[m
+[32m+[m[32m    for(auto it = WIB[tid].begin(); it != WIB[tid].end(); it++){[m
+[32m+[m[32m        WIBEntry* wibEntry = *it;[m
+[32m+[m[32m        if((!banksChecked[wibEntry->instr->bankNum]) && (wibEntry->instr->bankNum % 2 == initial)){[m
+[32m+[m[32m            banksChecked[wibEntry->instr->bankNum] = 1;[m
+[32m+[m[32m            if(!instrWaiting(wibEntry->loadPtrs)){[m
+[32m+[m[32m                DPRINTF(ROB, "[tid:%d] Instruction is ready to re-issue from WIB. [sn:%llu]\n", tid, wibEntry->instr->seqNum);[m
+[32m+[m[41m                [m
+[32m+[m[32m                readyInstrs.push_back(wibEntry->instr);[m
+[32m+[m
+[32m+[m[32m                //Remove from WIB[m
+[32m+[m[32m                WIB[tid].erase(it);[m
+[32m+[m[32m                delete[] wibEntry->loadPtrs;[m
+[32m+[m[32m                delete wibEntry;[m
+[32m+[m
+[32m+[m[32m                //Break to avoid iterator invalidation[m
+[32m+[m[32m                break;[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m[41m    [m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mvoid[m[41m [m
+[32m+[m[32mROB::clearLoadWaiting(ThreadID tid, unsigned loadPtr){[m
+[32m+[m[32m    freeLoadVectors[tid].push_back(loadPtr);[m
+[32m+[m[32m    for(auto it = WIB[tid].begin(); it != WIB[tid].end(); it++){[m
+[32m+[m[32m        WIBEntry* wibEntry = *it;[m
+[32m+[m[32m        wibEntry->loadPtrs[loadPtr] = 0;[m
+[32m+[m[32m        DPRINTF(ROB, "[tid:%d] Cleared load vector pointer %d for instruction in WIB. [sn:%llu]\n", tid, loadPtr, wibEntry->instr->seqNum);[m
+[32m+[m[32m    }[m
+[32m+[m[41m    [m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mbool[m[41m [m
+[32m+[m[32mROB::getLoadVectorPtr(ThreadID tid, unsigned &loadPtr){[m
+[32m+[m[32m    if(!freeLoadVectors[tid].empty()){[m
+[32m+[m[32m        loadPtr = freeLoadVectors[tid].back();[m
+[32m+[m[32m        freeLoadVectors[tid].pop_back();[m
+[32m+[m[32m        DPRINTF(ROB, "[tid:%d] Assigned Load Vector Pointer: %d\n", tid, loadPtr);[m
+[32m+[m[32m        return true;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    return false;[m
+[32m+[m[32m}[m
+[32m+[m
+ void[m
+ ROB::resetState()[m
+ {[m
+[32m+[m[32m    DPRINTF(ROB, "Reseting state.\n");[m
+     for (ThreadID tid = 0; tid  < MaxThreads; tid++) {[m
+         threadEntries[tid] = 0;[m
+[32m+[m[32m        headptr[tid] = -1;[m
+[32m+[m[32m        tailptr[tid] = -1;[m
+[32m+[m
+         squashIt[tid] = instList[tid].end();[m
+[32m+[m
+         squashedSeqNum[tid] = 0;[m
+         doneSquashing[tid] = true;[m
+     }[m
+[36m@@ -133,6 +401,7 @@[m [mROB::setActiveThreads(std::list<ThreadID> *at_ptr)[m
+ void[m
+ ROB::drainSanityCheck() const[m
+ {[m
+[32m+[m[32m    DPRINTF(ROB, "Performing drain sanity check.\n");[m
+     for (ThreadID tid = 0; tid  < numThreads; tid++)[m
+         assert(instList[tid].empty());[m
+     assert(isEmpty());[m
+[36m@@ -179,6 +448,7 @@[m [mROB::entryAmount(ThreadID num_threads)[m
+ int[m
+ ROB::countInsts()[m
+ {[m
+[32m+[m[32m    DPRINTF(ROB, "Counting Instructions.\n");[m
+     int total = 0;[m
+ [m
+     for (ThreadID tid = 0; tid < numThreads; tid++)[m
+[36m@@ -205,8 +475,29 @@[m [mROB::insertInst(const DynInstPtr &inst)[m
+     assert(numInstsInROB != numEntries);[m
+ [m
+     ThreadID tid = inst->threadNumber;[m
+[32m+[m[32m    assert(threadEntries[tid] < maxEntries[tid]);[m
+[32m+[m
+[32m+[m[32m    // unsigned int bank_num;[m
+[32m+[m
+[32m+[m[32m    // if(threadEntries[tid] == 0) {[m
+[32m+[m[32m    //     bank_num = 0;[m
+[32m+[m[32m    // } else {[m
+[32m+[m[32m    //     // get_tail_bank(tid, bank_num);[m
+[32m+[m[32m    //     if(bank_num == (2*issueWidth -1)) {[m
+[32m+[m[32m    //         bank_num = -1;[m
+[32m+[m[32m    //     }[m
+[32m+[m[32m    // }[m
+[32m+[m
+[32m+[m[32m    //Set Up headptr if this is the 1st instruction for this thread in ROB[m
+[32m+[m[32m    if (threadEntries[tid] == 0) {[m
+[32m+[m[32m        headptr[tid] = 0;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    tailptr[tid] = (tailptr[tid] + 1) % maxEntries[tid];[m
+ [m
+[31m-    instList[tid].push_back(inst);[m
+[32m+[m[32m    inst->bankNum = tailptr[tid] % (2*issueWidth);[m
+[32m+[m
+[32m+[m[32m    instList[tid].push_back(inst); // Insert into next bank to model contigous bank access[m
+ [m
+     //Set Up head iterator if this is the 1st instruction in the ROB[m
+     if (numInstsInROB == 0) {[m
+[36m@@ -223,6 +514,7 @@[m [mROB::insertInst(const DynInstPtr &inst)[m
+ [m
+     ++numInstsInROB;[m
+     ++threadEntries[tid];[m
+[32m+[m[32m    // tailptr[tid] = (tailptr[tid] + 1) % maxEntries[tid]; //rollover tail ptr at max ROB per thread size[m
+ [m
+     assert((*tail) == inst);[m
+ [m
+[36m@@ -237,12 +529,19 @@[m [mROB::retireHead(ThreadID tid)[m
+ [m
+     assert(numInstsInROB > 0);[m
+ [m
+[32m+[m[32m    // unsigned int bank_num;[m
+[32m+[m[32m    // get_head_bank(tid, bank_num);[m
+[32m+[m
+     // Get the head ROB instruction by copying it and remove it from the list[m
+     InstIt head_it = instList[tid].begin();[m
+ [m
+     DynInstPtr head_inst = std::move(*head_it);[m
+     instList[tid].erase(head_it);[m
+ [m
+[32m+[m[32m    // if(!instList[tid][bank_num].empty()) {[m
+[32m+[m[32m    //     assert(!(head_inst == instList[tid][bank_num].front()));[m
+[32m+[m[32m    // }[m
+[32m+[m
+     assert(head_inst->readyToCommit());[m
+ [m
+     DPRINTF(ROB, "[tid:%i] Retiring head instruction, "[m
+[36m@@ -252,6 +551,14 @@[m [mROB::retireHead(ThreadID tid)[m
+     --numInstsInROB;[m
+     --threadEntries[tid];[m
+ [m
+[32m+[m[32m    if(threadEntries[tid]==0) {[m
+[32m+[m[32m        //ROB is now empty for this thread[m
+[32m+[m[32m        headptr[tid] = -1;[m
+[32m+[m[32m        tailptr[tid] = -1;[m
+[32m+[m[32m    } else[m
+[32m+[m[32m    {   headptr[tid] = (headptr[tid] + 1) % maxEntries[tid]; //rollover head ptr at max ROB per thread size[m
+[32m+[m[32m    }[m
+[32m+[m
+     head_inst->clearInROB();[m
+     head_inst->setCommitted();[m
+ [m
+[36m@@ -269,6 +576,15 @@[m [mROB::isHeadReady(ThreadID tid)[m
+ {[m
+     stats.reads++;[m
+     if (threadEntries[tid] != 0) {[m
+[32m+[m[32m        // unsigned int bank_num;[m
+[32m+[m[32m        // get_head_bank(tid, bank_num);[m
+[32m+[m[32m        DPRINTF(ROB, "[tid:%u] Checking if head is ready. Head bank: %u size=%d\n",[m
+[32m+[m[32m        tid, bank_num, instList[tid].size());[m
+[32m+[m
+[32m+[m[32m        assert(!instList[tid].empty());[m
+[32m+[m[32m        // if(instList[tid][bank_num].empty()) {[m
+[32m+[m[32m        //     return false;[m
+[32m+[m[32m        // }[m
+         return instList[tid].front()->readyToCommit();[m
+     }[m
+ [m
+[36m@@ -281,7 +597,7 @@[m [mROB::canCommit()[m
+     //@todo: set ActiveThreads through ROB or CPU[m
+     std::list<ThreadID>::iterator threads = activeThreads->begin();[m
+     std::list<ThreadID>::iterator end = activeThreads->end();[m
+[31m-[m
+[32m+[m[32m    DPRINTF(ROB, "Checking if ROB can commit from any thread.\n");[m
+     while (threads != end) {[m
+         ThreadID tid = *threads++;[m
+ [m
+[36m@@ -311,7 +627,9 @@[m [mROB::doSquash(ThreadID tid)[m
+     stats.writes++;[m
+     DPRINTF(ROB, "[tid:%i] Squashing instructions until [sn:%llu].\n",[m
+             tid, squashedSeqNum[tid]);[m
+[31m-[m
+[32m+[m[41m    [m
+[32m+[m[32m    // unsigned int head_bank_num, tail_bank_num;[m
+[32m+[m[32m    // get_tail_bank(tid, tail_bank_num);[m
+     assert(squashIt[tid] != instList[tid].end());[m
+ [m
+     if ((*squashIt[tid])->seqNum < squashedSeqNum[tid]) {[m
+[36m@@ -326,6 +644,7 @@[m [mROB::doSquash(ThreadID tid)[m
+ [m
+     bool robTailUpdate = false;[m
+ [m
+[32m+[m[32m    // unsigned int numInstsToSquash = std::min(squashWidth,2*issueWidth);[m
+     unsigned int numInstsToSquash = squashWidth;[m
+ [m
+     // If the CPU is exiting, squash all of the instructions[m
+[36m@@ -336,6 +655,9 @@[m [mROB::doSquash(ThreadID tid)[m
+         numInstsToSquash = numEntries;[m
+     }[m
+ [m
+[32m+[m[32m    // get_head_bank(tid, head_bank_num);[m
+[32m+[m[32m    // get_tail_bank(tid, tail_bank_num);[m
+[32m+[m
+     for (int numSquashed = 0;[m
+          numSquashed < numInstsToSquash &&[m
+          squashIt[tid] != instList[tid].end() &&[m
+[36m@@ -353,7 +675,12 @@[m [mROB::doSquash(ThreadID tid)[m
+ [m
+         (*squashIt[tid])->setCanCommit();[m
+ [m
+[31m-[m
+[32m+[m[32m        // Clear any WIB entries for this instruction[m
+[32m+[m[32m        wibPop(tid, 0, (*squashIt[tid]));[m
+[32m+[m[41m        [m
+[32m+[m[32m        // This is used only for full flush mode (squash at 0 events[m[41m [m
+[32m+[m[32m        // for all threads). Normal squashes wont trigger this condition[m[41m [m
+[32m+[m[32m        // due to the > in the loop.[m
+         if (squashIt[tid] == instList[tid].begin()) {[m
+             DPRINTF(ROB, "Reached head of instruction list while "[m
+                     "squashing.\n");[m
+[36m@@ -365,18 +692,21 @@[m [mROB::doSquash(ThreadID tid)[m
+             return;[m
+         }[m
+ [m
+[31m-        InstIt tail_thread = instList[tid].end();[m
+[31m-        tail_thread--;[m
+[32m+[m[32m        if(countInsts(tid) > 0) {[m
+[32m+[m[32m            InstIt tail_thread = instList[tid].end();[m
+[32m+[m[32m            tail_thread--;[m
+ [m
+[31m-        if ((*squashIt[tid]) == (*tail_thread))[m
+[32m+[m[32m            if ((*squashIt[tid]) == (*tail_thread))[m
+             robTailUpdate = true;[m
+[32m+[m[32m        }[m
+ [m
+         squashIt[tid]--;[m
+     }[m
+ [m
+ [m
+     // Check if ROB is done squashing.[m
+[31m-    if ((*squashIt[tid])->seqNum <= squashedSeqNum[tid]) {[m
+[32m+[m[32m    if( squashIt[tid] != instList[tid].end() )[m
+[32m+[m[32m    {if ((*squashIt[tid])->seqNum <= squashedSeqNum[tid]) {[m
+         DPRINTF(ROB, "[tid:%i] Done squashing instructions.\n",[m
+                 tid);[m
+ [m
+[36m@@ -384,6 +714,7 @@[m [mROB::doSquash(ThreadID tid)[m
+ [m
+         doneSquashing[tid] = true;[m
+     }[m
+[32m+[m[32m    }[m
+ [m
+     if (robTailUpdate) {[m
+         updateTail();[m
+[36m@@ -394,6 +725,8 @@[m [mROB::doSquash(ThreadID tid)[m
+ void[m
+ ROB::updateHead()[m
+ {[m
+[32m+[m
+[32m+[m[32m    DPRINTF(ROB, "Updating global head ptr.\n");[m
+     InstSeqNum lowest_num = 0;[m
+     bool first_valid = true;[m
+ [m
+[36m@@ -403,6 +736,9 @@[m [mROB::updateHead()[m
+ [m
+     while (threads != end) {[m
+         ThreadID tid = *threads++;[m
+[32m+[m[32m        // unsigned int bank_num, tail_bank_num;[m
+[32m+[m[32m        // get_head_bank(tid, bank_num);[m
+[32m+[m[32m        // get_tail_bank(tid, tail_bank_num);[m
+ [m
+         if (instList[tid].empty())[m
+             continue;[m
+[36m@@ -434,7 +770,13 @@[m [mROB::updateHead()[m
+ [m
+ void[m
+ ROB::updateTail()[m
+[31m-{[m
+[32m+[m[32m{[m[41m   [m
+[32m+[m[32m    DPRINTF(ROB, "Updating global tail ptr.\n");[m
+[32m+[m
+[32m+[m[32m    // unsigned int bank_num, tail_bank_num;[m
+[32m+[m[32m    // get_head_bank(0, bank_num);[m
+[32m+[m[32m    // get_tail_bank(0, tail_bank_num);[m
+[32m+[m
+     tail = instList[0].end();[m
+     bool first_valid = true;[m
+ [m
+[36m@@ -444,6 +786,9 @@[m [mROB::updateTail()[m
+     while (threads != end) {[m
+         ThreadID tid = *threads++;[m
+ [m
+[32m+[m[32m        // get_head_bank(tid, bank_num);[m
+[32m+[m[32m        // get_tail_bank(tid, tail_bank_num);[m
+[32m+[m
+         if (instList[tid].empty()) {[m
+             continue;[m
+         }[m
+[36m@@ -488,12 +833,20 @@[m [mROB::squash(InstSeqNum squash_num, ThreadID tid)[m
+ [m
+     squashedSeqNum[tid] = squash_num;[m
+ [m
+[31m-    if (!instList[tid].empty()) {[m
+[31m-        InstIt tail_thread = instList[tid].end();[m
+[31m-        tail_thread--;[m
+[32m+[m[32m    if (countInsts(tid) > 0) {[m
+[32m+[m[32m        // unsigned int bank_num, tail_bank_num;[m
+[32m+[m[32m        // get_head_bank(tid, bank_num);[m
+[32m+[m[32m        // get_tail_bank(tid, tail_bank_num);[m
+[32m+[m
+[32m+[m[32m        // // Setting the squash cursors to the tails of the ROB banks[m
+[32m+[m[32m        // set_squashCursors(tid);[m
+ [m
+[31m-        squashIt[tid] = tail_thread;[m
+[32m+[m[32m        // // Setting the squash iterator to the tail entry pointer[m
+[32m+[m[32m        // get_squashCursor(tid, tail_bank_num, squashIt[tid]);[m
+ [m
+[32m+[m[32m        // Setting the bank iterator to the tail bank number[m
+[32m+[m[32m        // set_squashBankIt(tid, tail_bank_num);[m
+[32m+[m[41m        [m
+         doSquash(tid);[m
+     }[m
+ }[m
+[36m@@ -501,8 +854,15 @@[m [mROB::squash(InstSeqNum squash_num, ThreadID tid)[m
+ const DynInstPtr&[m
+ ROB::readHeadInst(ThreadID tid)[m
+ {[m
+[32m+[m[32m    DPRINTF(ROB, "[tid:%i] Reading Head Instr.\n",[m
+[32m+[m[32m                tid);[m
+[32m+[m[41m    [m
+     if (threadEntries[tid] != 0) {[m
+[31m-        InstIt head_thread = instList[tid].begin();[m
+[32m+[m[32m        unsigned int bank_num, tail_bank_num;[m
+[32m+[m[32m        get_head_bank(tid, bank_num);[m
+[32m+[m
+[32m+[m[32m        InstIt head_thread = instList[tid][bank_num].begin();[m
+[32m+[m[32m        assert(!(instList[tid][bank_num].empty()));[m
+ [m
+         assert((*head_thread)->isInROB());[m
+ [m
+[36m@@ -514,8 +874,15 @@[m [mROB::readHeadInst(ThreadID tid)[m
+ [m
+ DynInstPtr[m
+ ROB::readTailInst(ThreadID tid)[m
+[31m-{[m
+[31m-    InstIt tail_thread = instList[tid].end();[m
+[32m+[m[32m{[m[41m   [m
+[32m+[m[32m    DPRINTF(ROB, "[tid:%i] Reading Tail Instr.\n",[m
+[32m+[m[32m                tid);[m
+[32m+[m
+[32m+[m[32m    unsigned int bank_num, tail_bank_num;;[m
+[32m+[m[32m    get_tail_bank(tid, tail_bank_num);[m
+[32m+[m[32m    assert(!(instList[tid][tail_bank_num].empty()));[m
+[32m+[m
+[32m+[m[32m    InstIt tail_thread = instList[tid][tail_bank_num].end();[m
+     tail_thread--;[m
+ [m
+     return *tail_thread;[m
+[36m@@ -533,11 +900,33 @@[m [mROB::ROBStats::ROBStats(statistics::Group *parent)[m
+ DynInstPtr[m
+ ROB::findInst(ThreadID tid, InstSeqNum squash_inst)[m
+ {[m
+[31m-    for (InstIt it = instList[tid].begin(); it != instList[tid].end(); it++) {[m
+[32m+[m[32m    DPRINTF(ROB, "[tid:%i] Checking for squash instruction with seq. number: %d\n",[m
+[32m+[m[32m                tid, squash_inst);[m
+[32m+[m
+[32m+[m[32m    unsigned int head_bank_num, tail_bank_num;[m
+[32m+[m[32m    get_head_bank(tid, head_bank_num);[m
+[32m+[m[32m    get_tail_bank(tid, tail_bank_num);[m
+[32m+[m
+[32m+[m[32m    set_searchBankIt(tid, head_bank_num);[m
+[32m+[m[32m    unsigned cur_bank_num = searchBankIt[tid];[m
+[32m+[m
+[32m+[m[32m    InstIt it = instList[tid][head_bank_num].begin();[m[41m [m
+[32m+[m[32m    set_searchCursors(tid);[m
+[32m+[m
+[32m+[m[32m    while(it != instList[tid][tail_bank_num].end()){// && it != instList[tid][cur_bank_num].end()) {[m
+[32m+[m[32m        DPRINTF(ROB, "[tid:%i] Bank %d has %d instructions.\n",[m
+[32m+[m[32m                tid, cur_bank_num, instList[tid][cur_bank_num].size());[m
+         if ((*it)->seqNum == squash_inst) {[m
+             return *it;[m
+         }[m
+[32m+[m
+[32m+[m[32m        increment_cursor(tid, cur_bank_num);[m
+[32m+[m[32m        increment_searchBankIt(tid);[m
+[32m+[m[32m        cur_bank_num = searchBankIt[tid];[m
+[32m+[m[32m        get_searchCursor(tid, cur_bank_num, it);[m
+     }[m
+[32m+[m
+[32m+[m
+     return NULL;[m
+ }[m
+ [m
