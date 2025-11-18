@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.cfg": "cmake",
         "any": "cpp",
         "array": "cpp",
         "atomic": "cpp",
@@ -77,7 +78,8 @@
         "iomanip": "cpp",
         "cfenv": "cpp",
         "typeindex": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "shared_mutex": "cpp"
     },
     "cmake.sourceDirectory": "/home/min/a/halalawi/565_WIB/ext/dsent"
 }

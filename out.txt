@@ -1,0 +1,2395 @@
+Global frequency set at 1000000000000 ticks per second
+      0: system.cpu.iq: IQ sharing policy set to Partitioned:64 entries per thread.
+      0: system.cpu.iew.lsq.thread0: Creating LSQUnit0 object.
+      0: system.cpu.rob: Created ROB
+      0: system.cpu.rob: Checking freeLoadVector value. Front: 0, Back: 16383 
+      0: system.cpu.rob: Reseting state.
+      0: system.cpu.rob: [tid:0] Getting Tail Bank: 0
+      0: system.cpu.rob: [tid:1] Getting Tail Bank: 0
+      0: system.cpu.rob: [tid:2] Getting Tail Bank: 0
+      0: system.cpu.rob: [tid:3] Getting Tail Bank: 0
+      0: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 0
+      0: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 0
+      0: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 0
+      0: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 0
+      0: system.cpu.rob: Setting active threads list pointer.
+gem5 Simulator System.  https://www.gem5.org
+gem5 is copyrighted software; use the --copyright option for details.
+
+gem5 version 22.0.0.2
+gem5 compiled Nov 17 2025 21:06:20
+gem5 started Nov 17 2025 21:07:47
+gem5 executing on ececomp4.ecn.purdue.edu, pid 188357
+command line: ./build/ECE565-ARM/gem5.opt --debug-flags=ROB,IQ,LSQUnit configs/spec/spec_se.py --cpu-type=ArmO3CPU --maxinsts=1000000 --l1d_size=64kB --l1i_size=16kB --caches --l2cache -b sjeng
+
+**** REAL SIMULATION ****
+      0: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+      0: system.cpu.iq: Not able to schedule any instructions.
+      0: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 0
+      0: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 0
+      0: system.cpu.rob: Does not need to squash due to being empty [sn:0]
+    500: system.cpu.iq: [tid:0] Starting to squash instructions in the IQ.
+    500: system.cpu.iq: [tid:0] Squashing until sequence number 0!
+    500: system.cpu.iew.lsq.thread0: Squashing until [sn:0]!(Loads:0 Stores:0)
+    500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+    500: system.cpu.iq: Not able to schedule any instructions.
+    500: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 0
+    500: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 0
+   1000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+   1000: system.cpu.iq: Not able to schedule any instructions.
+   1500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+   1500: system.cpu.iq: Not able to schedule any instructions.
+   2000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+   2000: system.cpu.iq: Not able to schedule any instructions.
+   2500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+   2500: system.cpu.iq: Not able to schedule any instructions.
+   3000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+   3000: system.cpu.iq: Not able to schedule any instructions.
+   3500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+   3500: system.cpu.iq: Not able to schedule any instructions.
+   4000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+   4000: system.cpu.iq: Not able to schedule any instructions.
+   4500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+   4500: system.cpu.iq: Not able to schedule any instructions.
+   5000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+   5000: system.cpu.iq: Not able to schedule any instructions.
+   5500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+   5500: system.cpu.iq: Not able to schedule any instructions.
+  89000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+  89000: system.cpu.iq: Not able to schedule any instructions.
+  89500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+  89500: system.cpu.iq: Not able to schedule any instructions.
+  90000: global: [sn:3] has 1 ready out of 2 sources. RTI 0)
+  90000: global: [sn:3] has 2 ready out of 2 sources. RTI 0)
+  90000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+  90000: system.cpu.iq: Not able to schedule any instructions.
+  90500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+  90500: system.cpu.iq: Not able to schedule any instructions.
+  90500: system.cpu.rob: Adding inst PC (0x401ef4=>0x401ef8).(0=>1) to the ROB.
+  90500: system.cpu.rob: [tid:0] Now has 1 instructions.
+  90500: system.cpu.rob: Adding inst PC (0x401ef8=>0x401efc).(0=>1) to the ROB.
+  90500: system.cpu.rob: [tid:0] Getting Tail Bank: 0
+  90500: system.cpu.rob: [tid:0] Now has 2 instructions.
+  90500: system.cpu.rob: Adding inst PC (0x401efc=>0x401f00).(0=>1) to the ROB.
+  90500: system.cpu.rob: [tid:0] Getting Tail Bank: 1
+  90500: system.cpu.rob: [tid:0] Now has 3 instructions.
+  90500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+  90500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+  90500: system.cpu.rob: [tid:0] Reading Head Instr.
+  90500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+  90500: system.cpu.rob: [tid:0] Reading Head Instr.
+  90500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+  91000: system.cpu.iq: Adding instruction [sn:1] PC (0x401ef4=>0x401ef8).(0=>1) to the IQ.
+  91000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x401ef4=>0x401ef8).(0=>1) opclass:1 [sn:1].
+  91000: system.cpu.iq: Adding instruction [sn:2] PC (0x401ef8=>0x401efc).(0=>1) to the IQ.
+  91000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x401ef8=>0x401efc).(0=>1) opclass:1 [sn:2].
+  91000: system.cpu.iq: Adding instruction [sn:3] PC (0x401efc=>0x401f00).(0=>1) to the IQ.
+  91000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x401efc=>0x401f00).(0=>1) opclass:1 [sn:3].
+  91000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+  91000: system.cpu.iq: Thread 0: Issuing instruction PC (0x401ef4=>0x401ef8).(0=>1) [sn:1]
+  91000: system.cpu.iq: Thread 0: Issuing instruction PC (0x401ef8=>0x401efc).(0=>1) [sn:2]
+  91000: system.cpu.iq: Thread 0: Issuing instruction PC (0x401efc=>0x401f00).(0=>1) [sn:3]
+  91000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+  91000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+  91000: system.cpu.rob: [tid:0] Reading Head Instr.
+  91000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+  91000: system.cpu.rob: [tid:0] Reading Head Instr.
+  91000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+  91500: system.cpu.iq: Waking dependents of completed instruction.
+  91500: system.cpu.iq: Waking any dependents on register 42 (IntRegClass).
+  91500: system.cpu.iq: Waking dependents of completed instruction.
+  91500: system.cpu.iq: Waking any dependents on register 43 (IntRegClass).
+  91500: system.cpu.iq: Waking dependents of completed instruction.
+  91500: system.cpu.iq: Waking any dependents on register 44 (IntRegClass).
+  91500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+  91500: system.cpu.iq: Not able to schedule any instructions.
+  91500: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 0
+  91500: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 0
+  91500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+  91500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+  91500: system.cpu.rob: [tid:0] Reading Head Instr.
+  91500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+  91500: system.cpu.rob: [tid:0] Reading Head Instr.
+  91500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+  92000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+  92000: system.cpu.iq: Not able to schedule any instructions.
+  92000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+  92000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+  92000: system.cpu.rob: [tid:0] Reading Head Instr.
+  92000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+  92000: system.cpu.rob: [tid:0] Reading Head Instr.
+  92000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+  92500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+  92500: system.cpu.iq: Not able to schedule any instructions.
+  92500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+  92500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+  92500: system.cpu.rob: [tid:0] Reading Head Instr.
+  92500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+  92500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+  92500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x401ef4=>0x401ef8).(0=>1), [sn:1]
+  92500: system.cpu.rob: Updating global head ptr.
+  92500: system.cpu.rob: [tid:0] Getting Head Bank: 1
+  92500: system.cpu.rob: [tid:0] Getting Tail Bank: 2
+  92500: system.cpu.rob: [tid:0] Getting Head Bank: 1
+  92500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 1 size=1
+  92500: system.cpu.rob: [tid:0] Reading Head Instr.
+  92500: system.cpu.rob: [tid:0] Getting Head Bank: 1
+  92500: system.cpu.rob: [tid:0] Getting Head Bank: 1
+  92500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x401ef8=>0x401efc).(0=>1), [sn:2]
+  92500: system.cpu.rob: Updating global head ptr.
+  92500: system.cpu.rob: [tid:0] Getting Head Bank: 2
+  92500: system.cpu.rob: [tid:0] Getting Tail Bank: 2
+  92500: system.cpu.rob: [tid:0] Getting Head Bank: 2
+  92500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 2 size=1
+  92500: system.cpu.rob: [tid:0] Reading Head Instr.
+  92500: system.cpu.rob: [tid:0] Getting Head Bank: 2
+  92500: system.cpu.rob: [tid:0] Getting Head Bank: 2
+  92500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x401efc=>0x401f00).(0=>1), [sn:3]
+  92500: system.cpu.rob: Updating global head ptr.
+  92500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+  92500: system.cpu.rob: [tid:0] Getting Tail Bank: 0
+  93000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+  93000: system.cpu.iq: Not able to schedule any instructions.
+  93000: system.cpu.iq: [tid:0] Committing instructions older than [sn:3]
+  93500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+  93500: system.cpu.iq: Not able to schedule any instructions.
+  93500: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 0
+  93500: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 0
+  94000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+  94000: system.cpu.iq: Not able to schedule any instructions.
+  94500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+  94500: system.cpu.iq: Not able to schedule any instructions.
+  95000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+  95000: system.cpu.iq: Not able to schedule any instructions.
+  95500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+  95500: system.cpu.iq: Not able to schedule any instructions.
+  96000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+  96000: system.cpu.iq: Not able to schedule any instructions.
+  96500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+  96500: system.cpu.iq: Not able to schedule any instructions.
+  97000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+  97000: system.cpu.iq: Not able to schedule any instructions.
+  97500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+  97500: system.cpu.iq: Not able to schedule any instructions.
+  98000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+  98000: system.cpu.iq: Not able to schedule any instructions.
+  98500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+  98500: system.cpu.iq: Not able to schedule any instructions.
+ 161500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 161500: system.cpu.iq: Not able to schedule any instructions.
+ 162000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 162000: system.cpu.iq: Not able to schedule any instructions.
+ 162500: global: [sn:4] has 1 ready out of 1 sources. RTI 0)
+ 162500: global: [sn:5] has 1 ready out of 1 sources. RTI 0)
+ 162500: global: [sn:6] has 1 ready out of 1 sources. RTI 0)
+ 162500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 162500: system.cpu.iq: Not able to schedule any instructions.
+ 163000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 163000: system.cpu.iq: Not able to schedule any instructions.
+ 163000: system.cpu.rob: Adding inst PC (0x401f00=>0x401f04).(0=>1) to the ROB.
+ 163000: system.cpu.rob: [tid:0] Now has 1 instructions.
+ 163000: system.cpu.rob: Adding inst PC (0x401f04=>0x401f08).(0=>1) to the ROB.
+ 163000: system.cpu.rob: [tid:0] Getting Tail Bank: 0
+ 163000: system.cpu.rob: [tid:0] Now has 2 instructions.
+ 163000: system.cpu.rob: Adding inst PC (0x401f08=>0x401f0c).(0=>1) to the ROB.
+ 163000: system.cpu.rob: [tid:0] Getting Tail Bank: 1
+ 163000: system.cpu.rob: [tid:0] Now has 3 instructions.
+ 163000: system.cpu.rob: Adding inst PC (0x401f0c=>0x401f10).(0=>1) to the ROB.
+ 163000: system.cpu.rob: [tid:0] Getting Tail Bank: 2
+ 163000: system.cpu.rob: [tid:0] Now has 4 instructions.
+ 163000: system.cpu.rob: Adding inst PC (0x401f10=>0x401f14).(0=>1) to the ROB.
+ 163000: system.cpu.rob: [tid:0] Getting Tail Bank: 3
+ 163000: system.cpu.rob: [tid:0] Now has 5 instructions.
+ 163000: system.cpu.rob: Adding inst PC (0x401f14=>0x401f18).(0=>1) to the ROB.
+ 163000: system.cpu.rob: [tid:0] Getting Tail Bank: 4
+ 163000: system.cpu.rob: [tid:0] Now has 6 instructions.
+ 163000: system.cpu.rob: Adding inst PC (0x401f18=>0x401f1c).(0=>1) to the ROB.
+ 163000: system.cpu.rob: [tid:0] Getting Tail Bank: 5
+ 163000: system.cpu.rob: [tid:0] Now has 7 instructions.
+ 163000: system.cpu.rob: Adding inst PC (0x401f1c=>0x401f20).(0=>1) to the ROB.
+ 163000: system.cpu.rob: [tid:0] Getting Tail Bank: 6
+ 163000: system.cpu.rob: [tid:0] Now has 8 instructions.
+ 163000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 163000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+ 163000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 163000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 163000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 163000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 163500: system.cpu.iew.lsq.thread0: Inserting load PC (0x401f00=>0x401f04).(0=>1), idx:0 [sn:4]
+ 163500: system.cpu.iq: Adding instruction [sn:4] PC (0x401f00=>0x401f04).(0=>1) to the IQ.
+ 163500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x401f00=>0x401f04).(0=>1) opclass:47 [sn:4].
+ 163500: system.cpu.iq: Adding instruction [sn:5] PC (0x401f04=>0x401f08).(0=>1) to the IQ.
+ 163500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x401f04=>0x401f08).(0=>1) opclass:1 [sn:5].
+ 163500: system.cpu.iq: Adding instruction [sn:6] PC (0x401f08=>0x401f0c).(0=>1) to the IQ.
+ 163500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x401f08=>0x401f0c).(0=>1) opclass:1 [sn:6].
+ 163500: system.cpu.iq: Adding instruction [sn:7] PC (0x401f0c=>0x401f10).(0=>1) to the IQ.
+ 163500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x401f0c=>0x401f10).(0=>1) opclass:1 [sn:7].
+ 163500: system.cpu.iq: Adding instruction [sn:8] PC (0x401f10=>0x401f14).(0=>1) to the IQ.
+ 163500: system.cpu.iq: Instruction PC (0x401f10=>0x401f14).(0=>1) has src reg 48 (IntRegClass) that is being added to the dependency chain.
+ 163500: system.cpu.iq: Adding instruction [sn:9] PC (0x401f14=>0x401f18).(0=>1) to the IQ.
+ 163500: system.cpu.iq: Instruction PC (0x401f14=>0x401f18).(0=>1) has src reg 49 (IntRegClass) that is being added to the dependency chain.
+ 163500: system.cpu.iq: Adding instruction [sn:10] PC (0x401f18=>0x401f1c).(0=>1) to the IQ.
+ 163500: system.cpu.iq: Instruction PC (0x401f18=>0x401f1c).(0=>1) has src reg 50 (IntRegClass) that is being added to the dependency chain.
+ 163500: system.cpu.iq: Adding instruction [sn:11] PC (0x401f1c=>0x401f20).(0=>1) to the IQ.
+ 163500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x401f1c=>0x401f20).(0=>1) opclass:1 [sn:11].
+ 163500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 163500: system.cpu.iq: Thread 0: Issuing instruction PC (0x401f00=>0x401f04).(0=>1) [sn:4]
+ 163500: system.cpu.iq: Thread 0: Issuing instruction PC (0x401f04=>0x401f08).(0=>1) [sn:5]
+ 163500: system.cpu.iq: Thread 0: Issuing instruction PC (0x401f08=>0x401f0c).(0=>1) [sn:6]
+ 163500: system.cpu.iq: Thread 0: Issuing instruction PC (0x401f0c=>0x401f10).(0=>1) [sn:7]
+ 163500: system.cpu.iq: Thread 0: Issuing instruction PC (0x401f1c=>0x401f20).(0=>1) [sn:11]
+ 163500: system.cpu.rob: Adding inst PC (0x401f20=>0x401f24).(0=>1) to the ROB.
+ 163500: system.cpu.rob: [tid:0] Getting Tail Bank: 7
+ 163500: system.cpu.rob: [tid:0] Now has 9 instructions.
+ 163500: system.cpu.rob: Adding inst PC (0x401f24=>0x401f28).(0=>1) to the ROB.
+ 163500: system.cpu.rob: [tid:0] Getting Tail Bank: 8
+ 163500: system.cpu.rob: [tid:0] Now has 10 instructions.
+ 163500: system.cpu.rob: Adding inst PC (0x401f28=>0x401f2c).(0=>1) to the ROB.
+ 163500: system.cpu.rob: [tid:0] Getting Tail Bank: 9
+ 163500: system.cpu.rob: [tid:0] Now has 11 instructions.
+ 163500: system.cpu.rob: Adding inst PC (0x401f2c=>0x401f30).(0=>1) to the ROB.
+ 163500: system.cpu.rob: [tid:0] Getting Tail Bank: 10
+ 163500: system.cpu.rob: [tid:0] Now has 12 instructions.
+ 163500: system.cpu.rob: Adding inst PC (0x401f30=>0x401f34).(0=>1) to the ROB.
+ 163500: system.cpu.rob: [tid:0] Getting Tail Bank: 11
+ 163500: system.cpu.rob: [tid:0] Now has 13 instructions.
+ 163500: system.cpu.rob: Adding inst PC (0x401f34=>0x401f38).(0=>1) to the ROB.
+ 163500: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 163500: system.cpu.rob: [tid:0] Now has 14 instructions.
+ 163500: system.cpu.rob: Adding inst PC (0x401f38=>0x401f3c).(0=>1) to the ROB.
+ 163500: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 163500: system.cpu.rob: [tid:0] Now has 15 instructions.
+ 163500: system.cpu.rob: Adding inst PC (0x401f3c=>0x401f40).(0=>1) to the ROB.
+ 163500: system.cpu.rob: [tid:0] Getting Tail Bank: 14
+ 163500: system.cpu.rob: [tid:0] Now has 16 instructions.
+ 163500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 163500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+ 163500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 163500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 163500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 163500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 164000: system.cpu.iq: Adding instruction [sn:12] PC (0x401f20=>0x401f24).(0=>1) to the IQ.
+ 164000: system.cpu.iq: Instruction PC (0x401f20=>0x401f24).(0=>1) has src reg 52 (IntRegClass) that is being added to the dependency chain.
+ 164000: system.cpu.iq: Adding instruction [sn:13] PC (0x401f24=>0x401f28).(0=>1) to the IQ.
+ 164000: system.cpu.iq: Instruction PC (0x401f24=>0x401f28).(0=>1) has src reg 53 (IntRegClass) that is being added to the dependency chain.
+ 164000: system.cpu.iq: Adding instruction [sn:14] PC (0x401f28=>0x401f2c).(0=>1) to the IQ.
+ 164000: system.cpu.iq: Instruction PC (0x401f28=>0x401f2c).(0=>1) has src reg 54 (IntRegClass) that is being added to the dependency chain.
+ 164000: system.cpu.iq: Adding instruction [sn:15] PC (0x401f2c=>0x401f30).(0=>1) to the IQ.
+ 164000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x401f2c=>0x401f30).(0=>1) opclass:1 [sn:15].
+ 164000: system.cpu.iq: Adding instruction [sn:16] PC (0x401f30=>0x401f34).(0=>1) to the IQ.
+ 164000: system.cpu.iq: Instruction PC (0x401f30=>0x401f34).(0=>1) has src reg 56 (IntRegClass) that is being added to the dependency chain.
+ 164000: system.cpu.iq: Adding instruction [sn:17] PC (0x401f34=>0x401f38).(0=>1) to the IQ.
+ 164000: system.cpu.iq: Instruction PC (0x401f34=>0x401f38).(0=>1) has src reg 57 (IntRegClass) that is being added to the dependency chain.
+ 164000: system.cpu.iq: Adding instruction [sn:18] PC (0x401f38=>0x401f3c).(0=>1) to the IQ.
+ 164000: system.cpu.iq: Instruction PC (0x401f38=>0x401f3c).(0=>1) has src reg 58 (IntRegClass) that is being added to the dependency chain.
+ 164000: system.cpu.iq: Adding instruction [sn:19] PC (0x401f3c=>0x401f40).(0=>1) to the IQ.
+ 164000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x401f3c=>0x401f40).(0=>1) opclass:1 [sn:19].
+ 164000: system.cpu.iew.lsq.thread0: Executing load PC (0x401f00=>0x401f04).(0=>1), [sn:4]
+ 164000: system.cpu.iew.lsq.thread0: Read called, load idx: 0, store idx: 1, storeHead: 0 addr: 0x320da0
+ 164000: system.cpu.iew.lsq.thread0: Doing memory access for inst [sn:4] PC (0x401f00=>0x401f04).(0=>1)
+ 164000: system.cpu.iew.lsq.thread0: Memory request (pkt: ReadReq [320da0:320da7]) from inst [sn:4] was sent (cache is blocked: 0, cache_got_blocked: 0)
+ 164000: system.cpu.iew.lsq.thread0: Package sent to cache
+ 164000: system.cpu.iew.lsq.thread0: Package sent successfully
+ 164000: system.cpu.rob: [tid:0] Assigned Load Vector Pointer: 16383
+ 164000: system.cpu.iew.lsq.thread0: Got load vector index from WIB
+ 164000: system.cpu.iew.lsq.thread0: Setting Destination Register wait bit 45 (IntRegClass) with WIB Index (16383)
+ 164000: system.cpu.iq: Waking dependents of completed instruction.
+ 164000: system.cpu.iq: Waking any dependents on register 46 (IntRegClass).
+ 164000: system.cpu.iq: Waking dependents of completed instruction.
+ 164000: system.cpu.iq: Waking any dependents on register 47 (IntRegClass).
+ 164000: system.cpu.iq: Waking dependents of completed instruction.
+ 164000: system.cpu.iq: Waking any dependents on register 48 (IntRegClass).
+ 164000: system.cpu.iq: Waking up a dependent instruction, [sn:8] PC (0x401f10=>0x401f14).(0=>1).
+ 164000: global: [sn:8] has 1 ready out of 1 sources. RTI 0)
+ 164000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x401f10=>0x401f14).(0=>1) opclass:1 [sn:8].
+ 164000: system.cpu.iq: Waking dependents of completed instruction.
+ 164000: system.cpu.iq: Waking any dependents on register 52 (IntRegClass).
+ 164000: system.cpu.iq: Waking up a dependent instruction, [sn:12] PC (0x401f20=>0x401f24).(0=>1).
+ 164000: global: [sn:12] has 1 ready out of 1 sources. RTI 0)
+ 164000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x401f20=>0x401f24).(0=>1) opclass:1 [sn:12].
+ 164000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 164000: system.cpu.iq: Thread 0: Issuing instruction PC (0x401f10=>0x401f14).(0=>1) [sn:8]
+ 164000: system.cpu.iq: Thread 0: Issuing instruction PC (0x401f20=>0x401f24).(0=>1) [sn:12]
+ 164000: system.cpu.iq: Thread 0: Issuing instruction PC (0x401f2c=>0x401f30).(0=>1) [sn:15]
+ 164000: system.cpu.iq: Thread 0: Issuing instruction PC (0x401f3c=>0x401f40).(0=>1) [sn:19]
+ 164000: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 1
+ 164000: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 0
+ 164000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 164000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+ 164000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 164000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 164000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 164000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 164500: system.cpu.iq: Waking dependents of completed instruction.
+ 164500: system.cpu.iq: Waking any dependents on register 49 (IntRegClass).
+ 164500: system.cpu.iq: Waking up a dependent instruction, [sn:9] PC (0x401f14=>0x401f18).(0=>1).
+ 164500: global: [sn:9] has 1 ready out of 1 sources. RTI 0)
+ 164500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x401f14=>0x401f18).(0=>1) opclass:1 [sn:9].
+ 164500: system.cpu.iq: Waking dependents of completed instruction.
+ 164500: system.cpu.iq: Waking any dependents on register 53 (IntRegClass).
+ 164500: system.cpu.iq: Waking up a dependent instruction, [sn:13] PC (0x401f24=>0x401f28).(0=>1).
+ 164500: global: [sn:13] has 1 ready out of 1 sources. RTI 0)
+ 164500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x401f24=>0x401f28).(0=>1) opclass:1 [sn:13].
+ 164500: system.cpu.iq: Waking dependents of completed instruction.
+ 164500: system.cpu.iq: Waking any dependents on register 56 (IntRegClass).
+ 164500: system.cpu.iq: Waking up a dependent instruction, [sn:16] PC (0x401f30=>0x401f34).(0=>1).
+ 164500: global: [sn:16] has 1 ready out of 1 sources. RTI 0)
+ 164500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x401f30=>0x401f34).(0=>1) opclass:1 [sn:16].
+ 164500: system.cpu.iq: Waking dependents of completed instruction.
+ 164500: system.cpu.iq: Waking any dependents on register 60 (IntRegClass).
+ 164500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 164500: system.cpu.iq: Thread 0: Issuing instruction PC (0x401f14=>0x401f18).(0=>1) [sn:9]
+ 164500: system.cpu.iq: Thread 0: Issuing instruction PC (0x401f24=>0x401f28).(0=>1) [sn:13]
+ 164500: system.cpu.iq: Thread 0: Issuing instruction PC (0x401f30=>0x401f34).(0=>1) [sn:16]
+ 164500: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 1
+ 164500: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 0
+ 164500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 164500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+ 164500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 164500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 164500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 164500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 165000: system.cpu.iq: Waking dependents of completed instruction.
+ 165000: system.cpu.iq: Waking any dependents on register 50 (IntRegClass).
+ 165000: system.cpu.iq: Waking up a dependent instruction, [sn:10] PC (0x401f18=>0x401f1c).(0=>1).
+ 165000: global: [sn:10] has 1 ready out of 1 sources. RTI 0)
+ 165000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x401f18=>0x401f1c).(0=>1) opclass:1 [sn:10].
+ 165000: system.cpu.iq: Waking dependents of completed instruction.
+ 165000: system.cpu.iq: Waking any dependents on register 54 (IntRegClass).
+ 165000: system.cpu.iq: Waking up a dependent instruction, [sn:14] PC (0x401f28=>0x401f2c).(0=>1).
+ 165000: global: [sn:14] has 1 ready out of 1 sources. RTI 0)
+ 165000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x401f28=>0x401f2c).(0=>1) opclass:1 [sn:14].
+ 165000: system.cpu.iq: Waking dependents of completed instruction.
+ 165000: system.cpu.iq: Waking any dependents on register 57 (IntRegClass).
+ 165000: system.cpu.iq: Waking up a dependent instruction, [sn:17] PC (0x401f34=>0x401f38).(0=>1).
+ 165000: global: [sn:17] has 1 ready out of 1 sources. RTI 0)
+ 165000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x401f34=>0x401f38).(0=>1) opclass:1 [sn:17].
+ 165000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 165000: system.cpu.iq: Thread 0: Issuing instruction PC (0x401f18=>0x401f1c).(0=>1) [sn:10]
+ 165000: system.cpu.iq: Thread 0: Issuing instruction PC (0x401f28=>0x401f2c).(0=>1) [sn:14]
+ 165000: system.cpu.iq: Thread 0: Issuing instruction PC (0x401f34=>0x401f38).(0=>1) [sn:17]
+ 165000: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 1
+ 165000: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 0
+ 165000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 165000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+ 165000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 165000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 165000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 165000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 165500: system.cpu.iq: Waking dependents of completed instruction.
+ 165500: system.cpu.iq: Waking any dependents on register 51 (IntRegClass).
+ 165500: system.cpu.iq: Waking dependents of completed instruction.
+ 165500: system.cpu.iq: Waking any dependents on register 55 (IntRegClass).
+ 165500: system.cpu.iq: Waking dependents of completed instruction.
+ 165500: system.cpu.iq: Waking any dependents on register 58 (IntRegClass).
+ 165500: system.cpu.iq: Waking up a dependent instruction, [sn:18] PC (0x401f38=>0x401f3c).(0=>1).
+ 165500: global: [sn:18] has 1 ready out of 1 sources. RTI 0)
+ 165500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x401f38=>0x401f3c).(0=>1) opclass:1 [sn:18].
+ 165500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 165500: system.cpu.iq: Thread 0: Issuing instruction PC (0x401f38=>0x401f3c).(0=>1) [sn:18]
+ 165500: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 1
+ 165500: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 0
+ 165500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 165500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+ 165500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 165500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 165500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 165500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 166000: system.cpu.iq: Waking dependents of completed instruction.
+ 166000: system.cpu.iq: Waking any dependents on register 59 (IntRegClass).
+ 166000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 166000: system.cpu.iq: Not able to schedule any instructions.
+ 166000: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 1
+ 166000: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 0
+ 166000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 166000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+ 166000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 166000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 166000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 166000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 166500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 166500: system.cpu.iq: Not able to schedule any instructions.
+ 166500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 166500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+ 166500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 166500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 166500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 166500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 167000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 167000: system.cpu.iq: Not able to schedule any instructions.
+ 167000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 167000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+ 167000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 167000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 167000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 167000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 167500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 167500: system.cpu.iq: Not able to schedule any instructions.
+ 167500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 167500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+ 167500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 167500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 167500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 167500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 168000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 168000: system.cpu.iq: Not able to schedule any instructions.
+ 168000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 168000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+ 168000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 168000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 168000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 168000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 168500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 168500: system.cpu.iq: Not able to schedule any instructions.
+ 168500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 168500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+ 168500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 168500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 168500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 168500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 169000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 169000: system.cpu.iq: Not able to schedule any instructions.
+ 169000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 169000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+ 169000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 169000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 169000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 169000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 169500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 169500: system.cpu.iq: Not able to schedule any instructions.
+ 169500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 169500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+ 169500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 169500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 169500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 169500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 170000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 170000: system.cpu.iq: Not able to schedule any instructions.
+ 170000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 170000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+ 170000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 170000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 170000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 170000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 170500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 170500: system.cpu.iq: Not able to schedule any instructions.
+ 170500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 170500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+ 170500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 170500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 170500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 170500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 171000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 171000: system.cpu.iq: Not able to schedule any instructions.
+ 171000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 171000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+ 171000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 171000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 171000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 171000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 249500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 249500: system.cpu.iq: Not able to schedule any instructions.
+ 249500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 249500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+ 249500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 249500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 249500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 249500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 250000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 250000: system.cpu.iq: Not able to schedule any instructions.
+ 250000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 250000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+ 250000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 250000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 250000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 250000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 250500: global: [sn:20] has 1 ready out of 1 sources. RTI 0)
+ 250500: global: [sn:21] has 1 ready out of 2 sources. RTI 0)
+ 250500: global: [sn:22] has 1 ready out of 2 sources. RTI 0)
+ 250500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 250500: system.cpu.iq: Not able to schedule any instructions.
+ 250500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 250500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+ 250500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 250500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 250500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 250500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 251000: global: [sn:28] has 1 ready out of 2 sources. RTI 0)
+ 251000: global: [sn:29] has 1 ready out of 2 sources. RTI 0)
+ 251000: global: [sn:30] has 1 ready out of 2 sources. RTI 0)
+ 251000: global: [sn:30] has 2 ready out of 2 sources. RTI 0)
+ 251000: global: [sn:32] has 1 ready out of 2 sources. RTI 0)
+ 251000: global: [sn:33] has 1 ready out of 2 sources. RTI 0)
+ 251000: global: [sn:34] has 1 ready out of 2 sources. RTI 0)
+ 251000: global: [sn:34] has 2 ready out of 2 sources. RTI 0)
+ 251000: global: [sn:35] has 1 ready out of 2 sources. RTI 0)
+ 251000: global: [sn:35] has 2 ready out of 2 sources. RTI 0)
+ 251000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 251000: system.cpu.iq: Not able to schedule any instructions.
+ 251000: system.cpu.rob: Adding inst PC (0x418500=>0x418504).(0=>1) to the ROB.
+ 251000: system.cpu.rob: [tid:0] Getting Tail Bank: 15
+ 251000: system.cpu.rob: [tid:0] Now has 17 instructions.
+ 251000: system.cpu.rob: Adding inst PC (0x418500=>0x418504).(1=>2) to the ROB.
+ 251000: system.cpu.rob: [tid:0] Getting Tail Bank: 0
+ 251000: system.cpu.rob: [tid:0] Now has 18 instructions.
+ 251000: system.cpu.rob: Adding inst PC (0x418500=>0x418504).(2=>3) to the ROB.
+ 251000: system.cpu.rob: [tid:0] Getting Tail Bank: 1
+ 251000: system.cpu.rob: [tid:0] Now has 19 instructions.
+ 251000: system.cpu.rob: Adding inst PC (0x418500=>0x418504).(3=>4) to the ROB.
+ 251000: system.cpu.rob: [tid:0] Getting Tail Bank: 2
+ 251000: system.cpu.rob: [tid:0] Now has 20 instructions.
+ 251000: system.cpu.rob: Adding inst PC (0x418504=>0x418508).(0=>1) to the ROB.
+ 251000: system.cpu.rob: [tid:0] Getting Tail Bank: 3
+ 251000: system.cpu.rob: [tid:0] Now has 21 instructions.
+ 251000: system.cpu.rob: Adding inst PC (0x418508=>0x41850c).(0=>1) to the ROB.
+ 251000: system.cpu.rob: [tid:0] Getting Tail Bank: 4
+ 251000: system.cpu.rob: [tid:0] Now has 22 instructions.
+ 251000: system.cpu.rob: Adding inst PC (0x41850c=>0x418510).(0=>1) to the ROB.
+ 251000: system.cpu.rob: [tid:0] Getting Tail Bank: 5
+ 251000: system.cpu.rob: [tid:0] Now has 23 instructions.
+ 251000: system.cpu.rob: Adding inst PC (0x418510=>0x418514).(0=>1) to the ROB.
+ 251000: system.cpu.rob: [tid:0] Getting Tail Bank: 6
+ 251000: system.cpu.rob: [tid:0] Now has 24 instructions.
+ 251000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 251000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=2
+ 251000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 251000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 251000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 251000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 251500: global: [sn:37] has 1 ready out of 2 sources. RTI 0)
+ 251500: global: [sn:38] has 1 ready out of 2 sources. RTI 0)
+ 251500: global: [sn:40] has 1 ready out of 2 sources. RTI 0)
+ 251500: global: [sn:41] has 1 ready out of 2 sources. RTI 0)
+ 251500: global: [sn:42] has 1 ready out of 2 sources. RTI 0)
+ 251500: system.cpu.iq: Adding instruction [sn:20] PC (0x418500=>0x418504).(0=>1) to the IQ.
+ 251500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418500=>0x418504).(0=>1) opclass:1 [sn:20].
+ 251500: system.cpu.iew.lsq.thread0: Inserting store PC (0x418500=>0x418504).(1=>2), idx:0 [sn:21]
+ 251500: system.cpu.iq: Adding instruction [sn:21] PC (0x418500=>0x418504).(1=>2) to the IQ.
+ 251500: system.cpu.iq: Instruction PC (0x418500=>0x418504).(1=>2) has src reg 61 (IntRegClass) that is being added to the dependency chain.
+ 251500: system.cpu.iew.lsq.thread0: Inserting store PC (0x418500=>0x418504).(2=>3), idx:1 [sn:22]
+ 251500: system.cpu.iq: Adding instruction [sn:22] PC (0x418500=>0x418504).(2=>3) to the IQ.
+ 251500: system.cpu.iq: Instruction PC (0x418500=>0x418504).(2=>3) has src reg 61 (IntRegClass) that is being added to the dependency chain.
+ 251500: system.cpu.iq: Adding instruction [sn:23] PC (0x418500=>0x418504).(3=>4) to the IQ.
+ 251500: system.cpu.iq: Instruction PC (0x418500=>0x418504).(3=>4) has src reg 61 (IntRegClass) that is being added to the dependency chain.
+ 251500: system.cpu.iq: Adding instruction [sn:24] PC (0x418504=>0x418508).(0=>1) to the IQ.
+ 251500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418504=>0x418508).(0=>1) opclass:1 [sn:24].
+ 251500: system.cpu.iq: Adding instruction [sn:25] PC (0x418508=>0x41850c).(0=>1) to the IQ.
+ 251500: system.cpu.iq: Instruction PC (0x418508=>0x41850c).(0=>1) has src reg 62 (IntRegClass) that is being added to the dependency chain.
+ 251500: system.cpu.iew.lsq.thread0: Inserting load PC (0x41850c=>0x418510).(0=>1), idx:1 [sn:26]
+ 251500: system.cpu.iq: Adding instruction [sn:26] PC (0x41850c=>0x418510).(0=>1) to the IQ.
+ 251500: system.cpu.iq: Instruction PC (0x41850c=>0x418510).(0=>1) has src reg 63 (IntRegClass) that is being added to the dependency chain.
+ 251500: system.cpu.iq: Adding instruction [sn:27] PC (0x418510=>0x418514).(0=>1) to the IQ.
+ 251500: system.cpu.iq: Instruction PC (0x418510=>0x418514).(0=>1) has src reg 62 (IntRegClass) that is being added to the dependency chain.
+ 251500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 251500: system.cpu.iq: Thread 0: Issuing instruction PC (0x418500=>0x418504).(0=>1) [sn:20]
+ 251500: system.cpu.iq: Thread 0: Issuing instruction PC (0x418504=>0x418508).(0=>1) [sn:24]
+ 251500: system.cpu.rob: Adding inst PC (0x418510=>0x418514).(1=>2) to the ROB.
+ 251500: system.cpu.rob: [tid:0] Getting Tail Bank: 7
+ 251500: system.cpu.rob: [tid:0] Now has 25 instructions.
+ 251500: system.cpu.rob: Adding inst PC (0x418510=>0x418514).(2=>3) to the ROB.
+ 251500: system.cpu.rob: [tid:0] Getting Tail Bank: 8
+ 251500: system.cpu.rob: [tid:0] Now has 26 instructions.
+ 251500: system.cpu.rob: Adding inst PC (0x418514=>0x418518).(0=>1) to the ROB.
+ 251500: system.cpu.rob: [tid:0] Getting Tail Bank: 9
+ 251500: system.cpu.rob: [tid:0] Now has 27 instructions.
+ 251500: system.cpu.rob: Adding inst PC (0x418518=>0x41851c).(0=>1) to the ROB.
+ 251500: system.cpu.rob: [tid:0] Getting Tail Bank: 10
+ 251500: system.cpu.rob: [tid:0] Now has 28 instructions.
+ 251500: system.cpu.rob: Adding inst PC (0x418518=>0x41851c).(1=>2) to the ROB.
+ 251500: system.cpu.rob: [tid:0] Getting Tail Bank: 11
+ 251500: system.cpu.rob: [tid:0] Now has 29 instructions.
+ 251500: system.cpu.rob: Adding inst PC (0x418518=>0x41851c).(2=>3) to the ROB.
+ 251500: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 251500: system.cpu.rob: [tid:0] Now has 30 instructions.
+ 251500: system.cpu.rob: Adding inst PC (0x41851c=>0x418520).(0=>1) to the ROB.
+ 251500: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 251500: system.cpu.rob: [tid:0] Now has 31 instructions.
+ 251500: system.cpu.rob: Adding inst PC (0x418520=>0x418524).(0=>1) to the ROB.
+ 251500: system.cpu.rob: [tid:0] Getting Tail Bank: 14
+ 251500: system.cpu.rob: [tid:0] Now has 32 instructions.
+ 251500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 251500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=2
+ 251500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 251500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 251500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 251500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 252000: global: [sn:46] has 1 ready out of 2 sources. RTI 0)
+ 252000: global: [sn:47] has 1 ready out of 2 sources. RTI 0)
+ 252000: system.cpu.iew.lsq.thread0: Inserting store PC (0x418510=>0x418514).(1=>2), idx:2 [sn:28]
+ 252000: system.cpu.iq: Adding instruction [sn:28] PC (0x418510=>0x418514).(1=>2) to the IQ.
+ 252000: system.cpu.iq: Instruction PC (0x418510=>0x418514).(1=>2) has src reg 66 (IntRegClass) that is being added to the dependency chain.
+ 252000: system.cpu.iew.lsq.thread0: Inserting store PC (0x418510=>0x418514).(2=>3), idx:3 [sn:29]
+ 252000: system.cpu.iq: Adding instruction [sn:29] PC (0x418510=>0x418514).(2=>3) to the IQ.
+ 252000: system.cpu.iq: Instruction PC (0x418510=>0x418514).(2=>3) has src reg 66 (IntRegClass) that is being added to the dependency chain.
+ 252000: system.cpu.iq: Adding instruction [sn:30] PC (0x418514=>0x418518).(0=>1) to the IQ.
+ 252000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418514=>0x418518).(0=>1) opclass:1 [sn:30].
+ 252000: system.cpu.iq: Adding instruction [sn:31] PC (0x418518=>0x41851c).(0=>1) to the IQ.
+ 252000: system.cpu.iq: Instruction PC (0x418518=>0x41851c).(0=>1) has src reg 62 (IntRegClass) that is being added to the dependency chain.
+ 252000: system.cpu.iew.lsq.thread0: Inserting store PC (0x418518=>0x41851c).(1=>2), idx:4 [sn:32]
+ 252000: system.cpu.iq: Adding instruction [sn:32] PC (0x418518=>0x41851c).(1=>2) to the IQ.
+ 252000: system.cpu.iq: Instruction PC (0x418518=>0x41851c).(1=>2) has src reg 68 (IntRegClass) that is being added to the dependency chain.
+ 252000: system.cpu.iew.lsq.thread0: Inserting store PC (0x418518=>0x41851c).(2=>3), idx:5 [sn:33]
+ 252000: system.cpu.iq: Adding instruction [sn:33] PC (0x418518=>0x41851c).(2=>3) to the IQ.
+ 252000: system.cpu.iq: Instruction PC (0x418518=>0x41851c).(2=>3) has src reg 68 (IntRegClass) that is being added to the dependency chain.
+ 252000: system.cpu.iq: Adding instruction [sn:34] PC (0x41851c=>0x418520).(0=>1) to the IQ.
+ 252000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x41851c=>0x418520).(0=>1) opclass:1 [sn:34].
+ 252000: system.cpu.iq: Adding instruction [sn:35] PC (0x418520=>0x418524).(0=>1) to the IQ.
+ 252000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418520=>0x418524).(0=>1) opclass:1 [sn:35].
+ 252000: system.cpu.iq: Waking dependents of completed instruction.
+ 252000: system.cpu.iq: Waking any dependents on register 61 (IntRegClass).
+ 252000: system.cpu.iq: Waking up a dependent instruction, [sn:23] PC (0x418500=>0x418504).(3=>4).
+ 252000: global: [sn:23] has 1 ready out of 1 sources. RTI 0)
+ 252000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418500=>0x418504).(3=>4) opclass:1 [sn:23].
+ 252000: system.cpu.iq: Waking up a dependent instruction, [sn:22] PC (0x418500=>0x418504).(2=>3).
+ 252000: global: [sn:22] has 2 ready out of 2 sources. RTI 0)
+ 252000: system.cpu.iq: Checking if memory instruction can issue.
+ 252000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418500=>0x418504).(2=>3) opclass:48 [sn:22].
+ 252000: system.cpu.iq: Waking up a dependent instruction, [sn:21] PC (0x418500=>0x418504).(1=>2).
+ 252000: global: [sn:21] has 2 ready out of 2 sources. RTI 0)
+ 252000: system.cpu.iq: Checking if memory instruction can issue.
+ 252000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418500=>0x418504).(1=>2) opclass:48 [sn:21].
+ 252000: system.cpu.iq: Waking dependents of completed instruction.
+ 252000: system.cpu.iq: Waking any dependents on register 63 (IntRegClass).
+ 252000: system.cpu.iq: Waking up a dependent instruction, [sn:26] PC (0x41850c=>0x418510).(0=>1).
+ 252000: global: [sn:26] has 1 ready out of 1 sources. RTI 0)
+ 252000: system.cpu.iq: Checking if memory instruction can issue.
+ 252000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x41850c=>0x418510).(0=>1) opclass:47 [sn:26].
+ 252000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 252000: system.cpu.iq: Thread 0: Issuing instruction PC (0x418500=>0x418504).(1=>2) [sn:21]
+ 252000: system.cpu.iq: Thread 0: Issuing instruction PC (0x418500=>0x418504).(2=>3) [sn:22]
+ 252000: system.cpu.iq: Thread 0: Issuing instruction PC (0x418500=>0x418504).(3=>4) [sn:23]
+ 252000: system.cpu.iq: Thread 0: Issuing instruction PC (0x41850c=>0x418510).(0=>1) [sn:26]
+ 252000: system.cpu.iq: Thread 0: Issuing instruction PC (0x418514=>0x418518).(0=>1) [sn:30]
+ 252000: system.cpu.iq: Thread 0: Issuing instruction PC (0x41851c=>0x418520).(0=>1) [sn:34]
+ 252000: system.cpu.iq: Thread 0: Issuing instruction PC (0x418520=>0x418524).(0=>1) [sn:35]
+ 252000: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 2
+ 252000: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 6
+ 252000: system.cpu.rob: Adding inst PC (0x418524=>0x418528).(0=>1) to the ROB.
+ 252000: system.cpu.rob: [tid:0] Getting Tail Bank: 15
+ 252000: system.cpu.rob: [tid:0] Now has 33 instructions.
+ 252000: system.cpu.rob: Adding inst PC (0x418524=>0x418528).(1=>2) to the ROB.
+ 252000: system.cpu.rob: [tid:0] Getting Tail Bank: 0
+ 252000: system.cpu.rob: [tid:0] Now has 34 instructions.
+ 252000: system.cpu.rob: Adding inst PC (0x418524=>0x418528).(2=>3) to the ROB.
+ 252000: system.cpu.rob: [tid:0] Getting Tail Bank: 1
+ 252000: system.cpu.rob: [tid:0] Now has 35 instructions.
+ 252000: system.cpu.rob: Adding inst PC (0x418528=>0x41852c).(0=>1) to the ROB.
+ 252000: system.cpu.rob: [tid:0] Getting Tail Bank: 2
+ 252000: system.cpu.rob: [tid:0] Now has 36 instructions.
+ 252000: system.cpu.rob: Adding inst PC (0x418528=>0x41852c).(1=>2) to the ROB.
+ 252000: system.cpu.rob: [tid:0] Getting Tail Bank: 3
+ 252000: system.cpu.rob: [tid:0] Now has 37 instructions.
+ 252000: system.cpu.rob: Adding inst PC (0x418528=>0x41852c).(2=>3) to the ROB.
+ 252000: system.cpu.rob: [tid:0] Getting Tail Bank: 4
+ 252000: system.cpu.rob: [tid:0] Now has 38 instructions.
+ 252000: system.cpu.rob: Adding inst PC (0x41852c=>0x418530).(0=>1) to the ROB.
+ 252000: system.cpu.rob: [tid:0] Getting Tail Bank: 5
+ 252000: system.cpu.rob: [tid:0] Now has 39 instructions.
+ 252000: system.cpu.rob: Adding inst PC (0x418530=>0x418534).(0=>1) to the ROB.
+ 252000: system.cpu.rob: [tid:0] Getting Tail Bank: 6
+ 252000: system.cpu.rob: [tid:0] Now has 40 instructions.
+ 252000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 252000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=3
+ 252000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 252000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 252000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 252000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 252500: system.cpu.iq: Adding instruction [sn:36] PC (0x418524=>0x418528).(0=>1) to the IQ.
+ 252500: system.cpu.iq: Instruction PC (0x418524=>0x418528).(0=>1) has src reg 62 (IntRegClass) that is being added to the dependency chain.
+ 252500: system.cpu.iew.lsq.thread0: Inserting store PC (0x418524=>0x418528).(1=>2), idx:6 [sn:37]
+ 252500: system.cpu.iq: Adding instruction [sn:37] PC (0x418524=>0x418528).(1=>2) to the IQ.
+ 252500: system.cpu.iq: Instruction PC (0x418524=>0x418528).(1=>2) has src reg 71 (IntRegClass) that is being added to the dependency chain.
+ 252500: system.cpu.iew.lsq.thread0: Inserting store PC (0x418524=>0x418528).(2=>3), idx:7 [sn:38]
+ 252500: system.cpu.iq: Adding instruction [sn:38] PC (0x418524=>0x418528).(2=>3) to the IQ.
+ 252500: system.cpu.iq: Instruction PC (0x418524=>0x418528).(2=>3) has src reg 71 (IntRegClass) that is being added to the dependency chain.
+ 252500: system.cpu.iq: Adding instruction [sn:39] PC (0x418528=>0x41852c).(0=>1) to the IQ.
+ 252500: system.cpu.iq: Instruction PC (0x418528=>0x41852c).(0=>1) has src reg 62 (IntRegClass) that is being added to the dependency chain.
+ 252500: system.cpu.iew.lsq.thread0: Inserting store PC (0x418528=>0x41852c).(1=>2), idx:8 [sn:40]
+ 252500: system.cpu.iq: Adding instruction [sn:40] PC (0x418528=>0x41852c).(1=>2) to the IQ.
+ 252500: system.cpu.iq: Instruction PC (0x418528=>0x41852c).(1=>2) has src reg 72 (IntRegClass) that is being added to the dependency chain.
+ 252500: system.cpu.iew.lsq.thread0: Inserting store PC (0x418528=>0x41852c).(2=>3), idx:9 [sn:41]
+ 252500: system.cpu.iq: Adding instruction [sn:41] PC (0x418528=>0x41852c).(2=>3) to the IQ.
+ 252500: system.cpu.iq: Instruction PC (0x418528=>0x41852c).(2=>3) has src reg 72 (IntRegClass) that is being added to the dependency chain.
+ 252500: system.cpu.iew.lsq.thread0: Inserting store PC (0x41852c=>0x418530).(0=>1), idx:10 [sn:42]
+ 252500: system.cpu.iq: Adding instruction [sn:42] PC (0x41852c=>0x418530).(0=>1) to the IQ.
+ 252500: system.cpu.iq: Instruction PC (0x41852c=>0x418530).(0=>1) has src reg 62 (IntRegClass) that is being added to the dependency chain.
+ 252500: system.cpu.iew.lsq.thread0: Inserting store PC (0x418530=>0x418534).(0=>1), idx:11 [sn:43]
+ 252500: system.cpu.iq: Adding instruction [sn:43] PC (0x418530=>0x418534).(0=>1) to the IQ.
+ 252500: system.cpu.iq: Instruction PC (0x418530=>0x418534).(0=>1) has src reg 62 (IntRegClass) that is being added to the dependency chain.
+ 252500: system.cpu.iq: Instruction PC (0x418530=>0x418534).(0=>1) has src reg 45 (IntRegClass) that is being added to the dependency chain.
+ 252500: system.cpu.iew.lsq.thread0: Executing store PC (0x418500=>0x418504).(1=>2) [sn:21]
+ 252500: system.cpu.iew.lsq.thread0: Doing write to store idx 0, addr 0x320c20 | storeHead:0 [sn:21]
+ 252500: system.cpu.iew.lsq.thread0: Executing store PC (0x418500=>0x418504).(2=>3) [sn:22]
+ 252500: system.cpu.iew.lsq.thread0: Doing write to store idx 1, addr 0x320c28 | storeHead:0 [sn:22]
+ 252500: system.cpu.iew.lsq.thread0: Executing load PC (0x41850c=>0x418510).(0=>1), [sn:26]
+ 252500: system.cpu.iew.lsq.thread0: Read called, load idx: 1, store idx: 3, storeHead: 0 addr: 0x7d3a0
+ 252500: system.cpu.iew.lsq.thread0: Doing memory access for inst [sn:26] PC (0x41850c=>0x418510).(0=>1)
+ 252500: system.cpu.iew.lsq.thread0: Memory request (pkt: ReadReq [7d3a0:7d3a7]) from inst [sn:26] was sent (cache is blocked: 0, cache_got_blocked: 0)
+ 252500: system.cpu.iew.lsq.thread0: Package sent to cache
+ 252500: system.cpu.iew.lsq.thread0: Package sent successfully
+ 252500: system.cpu.rob: [tid:0] Assigned Load Vector Pointer: 16382
+ 252500: system.cpu.iew.lsq.thread0: Got load vector index from WIB
+ 252500: system.cpu.iew.lsq.thread0: Setting Destination Register wait bit 65 (IntRegClass) with WIB Index (16382)
+ 252500: system.cpu.iq: Waking dependents of completed instruction.
+ 252500: system.cpu.iq: Completing mem instruction PC: (0x418500=>0x418504).(1=>2) [sn:21]
+ 252500: system.cpu.iq: Waking dependents of completed instruction.
+ 252500: system.cpu.iq: Completing mem instruction PC: (0x418500=>0x418504).(2=>3) [sn:22]
+ 252500: system.cpu.iq: Waking dependents of completed instruction.
+ 252500: system.cpu.iq: Waking any dependents on register 62 (IntRegClass).
+ 252500: system.cpu.iq: Waking up a dependent instruction, [sn:43] PC (0x418530=>0x418534).(0=>1).
+ 252500: global: [sn:43] has 1 ready out of 2 sources. RTI 0)
+ 252500: system.cpu.iq: Waking up a dependent instruction, [sn:42] PC (0x41852c=>0x418530).(0=>1).
+ 252500: global: [sn:42] has 2 ready out of 2 sources. RTI 0)
+ 252500: system.cpu.iq: Checking if memory instruction can issue.
+ 252500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x41852c=>0x418530).(0=>1) opclass:48 [sn:42].
+ 252500: system.cpu.iq: Waking up a dependent instruction, [sn:39] PC (0x418528=>0x41852c).(0=>1).
+ 252500: global: [sn:39] has 1 ready out of 1 sources. RTI 0)
+ 252500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418528=>0x41852c).(0=>1) opclass:1 [sn:39].
+ 252500: system.cpu.iq: Waking up a dependent instruction, [sn:36] PC (0x418524=>0x418528).(0=>1).
+ 252500: global: [sn:36] has 1 ready out of 1 sources. RTI 0)
+ 252500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418524=>0x418528).(0=>1) opclass:1 [sn:36].
+ 252500: system.cpu.iq: Waking up a dependent instruction, [sn:31] PC (0x418518=>0x41851c).(0=>1).
+ 252500: global: [sn:31] has 1 ready out of 1 sources. RTI 0)
+ 252500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418518=>0x41851c).(0=>1) opclass:1 [sn:31].
+ 252500: system.cpu.iq: Waking up a dependent instruction, [sn:27] PC (0x418510=>0x418514).(0=>1).
+ 252500: global: [sn:27] has 1 ready out of 1 sources. RTI 0)
+ 252500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418510=>0x418514).(0=>1) opclass:1 [sn:27].
+ 252500: system.cpu.iq: Waking up a dependent instruction, [sn:25] PC (0x418508=>0x41850c).(0=>1).
+ 252500: global: [sn:25] has 1 ready out of 1 sources. RTI 0)
+ 252500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418508=>0x41850c).(0=>1) opclass:1 [sn:25].
+ 252500: system.cpu.iq: Waking dependents of completed instruction.
+ 252500: system.cpu.iq: Waking any dependents on register 67 (IntRegClass).
+ 252500: system.cpu.iq: Waking dependents of completed instruction.
+ 252500: system.cpu.iq: Waking any dependents on register 69 (IntRegClass).
+ 252500: system.cpu.iq: Waking dependents of completed instruction.
+ 252500: system.cpu.iq: Waking any dependents on register 70 (IntRegClass).
+ 252500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 252500: system.cpu.iq: Thread 0: Issuing instruction PC (0x418508=>0x41850c).(0=>1) [sn:25]
+ 252500: system.cpu.iq: Thread 0: Issuing instruction PC (0x418510=>0x418514).(0=>1) [sn:27]
+ 252500: system.cpu.iq: Thread 0: Issuing instruction PC (0x418518=>0x41851c).(0=>1) [sn:31]
+ 252500: system.cpu.iq: Thread 0: Issuing instruction PC (0x418524=>0x418528).(0=>1) [sn:36]
+ 252500: system.cpu.iq: Thread 0: Issuing instruction PC (0x418528=>0x41852c).(0=>1) [sn:39]
+ 252500: system.cpu.iq: Thread 0: Issuing instruction PC (0x41852c=>0x418530).(0=>1) [sn:42]
+ 252500: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 2
+ 252500: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 12
+ 252500: system.cpu.rob: Adding inst PC (0x418534=>0x418538).(0=>1) to the ROB.
+ 252500: system.cpu.rob: [tid:0] Getting Tail Bank: 7
+ 252500: system.cpu.rob: [tid:0] Now has 41 instructions.
+ 252500: system.cpu.rob: Adding inst PC (0x418538=>0x41853c).(0=>1) to the ROB.
+ 252500: system.cpu.rob: [tid:0] Getting Tail Bank: 8
+ 252500: system.cpu.rob: [tid:0] Now has 42 instructions.
+ 252500: system.cpu.rob: Adding inst PC (0x418538=>0x41853c).(1=>2) to the ROB.
+ 252500: system.cpu.rob: [tid:0] Getting Tail Bank: 9
+ 252500: system.cpu.rob: [tid:0] Now has 43 instructions.
+ 252500: system.cpu.rob: Adding inst PC (0x418538=>0x41853c).(2=>3) to the ROB.
+ 252500: system.cpu.rob: [tid:0] Getting Tail Bank: 10
+ 252500: system.cpu.rob: [tid:0] Now has 44 instructions.
+ 252500: system.cpu.rob: Adding inst PC (0x41853c=>0x418540).(0=>1) to the ROB.
+ 252500: system.cpu.rob: [tid:0] Getting Tail Bank: 11
+ 252500: system.cpu.rob: [tid:0] Now has 45 instructions.
+ 252500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 252500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=3
+ 252500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 252500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 252500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 252500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 253000: system.cpu.iq: Adding instruction [sn:44] PC (0x418534=>0x418538).(0=>1) to the IQ.
+ 253000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418534=>0x418538).(0=>1) opclass:1 [sn:44].
+ 253000: system.cpu.iq: Adding instruction [sn:45] PC (0x418538=>0x41853c).(0=>1) to the IQ.
+ 253000: system.cpu.iq: Instruction PC (0x418538=>0x41853c).(0=>1) has src reg 62 (IntRegClass) that became ready before it reached the IQ.
+ 253000: global: [sn:45] has 1 ready out of 1 sources. RTI 0)
+ 253000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418538=>0x41853c).(0=>1) opclass:1 [sn:45].
+ 253000: system.cpu.iew.lsq.thread0: Inserting store PC (0x418538=>0x41853c).(1=>2), idx:12 [sn:46]
+ 253000: system.cpu.iq: Adding instruction [sn:46] PC (0x418538=>0x41853c).(1=>2) to the IQ.
+ 253000: system.cpu.iq: Instruction PC (0x418538=>0x41853c).(1=>2) has src reg 74 (IntRegClass) that is being added to the dependency chain.
+ 253000: system.cpu.iew.lsq.thread0: Inserting store PC (0x418538=>0x41853c).(2=>3), idx:13 [sn:47]
+ 253000: system.cpu.iq: Adding instruction [sn:47] PC (0x418538=>0x41853c).(2=>3) to the IQ.
+ 253000: system.cpu.iq: Instruction PC (0x418538=>0x41853c).(2=>3) has src reg 74 (IntRegClass) that is being added to the dependency chain.
+ 253000: system.cpu.iq: Adding instruction [sn:48] PC (0x41853c=>0x418540).(0=>1) to the IQ.
+ 253000: system.cpu.iq: Instruction PC (0x41853c=>0x418540).(0=>1) has src reg 65 (IntRegClass) that is being added to the dependency chain.
+ 253000: system.cpu.iew.lsq.thread0: Executing store PC (0x41852c=>0x418530).(0=>1) [sn:42]
+ 253000: system.cpu.iew.lsq.thread0: Doing write to store idx 10, addr 0x320c70 | storeHead:0 [sn:42]
+ 253000: system.cpu.iq: Waking dependents of completed instruction.
+ 253000: system.cpu.iq: Waking any dependents on register 64 (IntRegClass).
+ 253000: system.cpu.iq: Waking dependents of completed instruction.
+ 253000: system.cpu.iq: Waking any dependents on register 66 (IntRegClass).
+ 253000: system.cpu.iq: Waking up a dependent instruction, [sn:29] PC (0x418510=>0x418514).(2=>3).
+ 253000: global: [sn:29] has 2 ready out of 2 sources. RTI 0)
+ 253000: system.cpu.iq: Checking if memory instruction can issue.
+ 253000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418510=>0x418514).(2=>3) opclass:48 [sn:29].
+ 253000: system.cpu.iq: Waking up a dependent instruction, [sn:28] PC (0x418510=>0x418514).(1=>2).
+ 253000: global: [sn:28] has 2 ready out of 2 sources. RTI 0)
+ 253000: system.cpu.iq: Checking if memory instruction can issue.
+ 253000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418510=>0x418514).(1=>2) opclass:48 [sn:28].
+ 253000: system.cpu.iq: Waking dependents of completed instruction.
+ 253000: system.cpu.iq: Waking any dependents on register 68 (IntRegClass).
+ 253000: system.cpu.iq: Waking up a dependent instruction, [sn:33] PC (0x418518=>0x41851c).(2=>3).
+ 253000: global: [sn:33] has 2 ready out of 2 sources. RTI 0)
+ 253000: system.cpu.iq: Checking if memory instruction can issue.
+ 253000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418518=>0x41851c).(2=>3) opclass:48 [sn:33].
+ 253000: system.cpu.iq: Waking up a dependent instruction, [sn:32] PC (0x418518=>0x41851c).(1=>2).
+ 253000: global: [sn:32] has 2 ready out of 2 sources. RTI 0)
+ 253000: system.cpu.iq: Checking if memory instruction can issue.
+ 253000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418518=>0x41851c).(1=>2) opclass:48 [sn:32].
+ 253000: system.cpu.iq: Waking dependents of completed instruction.
+ 253000: system.cpu.iq: Waking any dependents on register 71 (IntRegClass).
+ 253000: system.cpu.iq: Waking up a dependent instruction, [sn:38] PC (0x418524=>0x418528).(2=>3).
+ 253000: global: [sn:38] has 2 ready out of 2 sources. RTI 0)
+ 253000: system.cpu.iq: Checking if memory instruction can issue.
+ 253000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418524=>0x418528).(2=>3) opclass:48 [sn:38].
+ 253000: system.cpu.iq: Waking up a dependent instruction, [sn:37] PC (0x418524=>0x418528).(1=>2).
+ 253000: global: [sn:37] has 2 ready out of 2 sources. RTI 0)
+ 253000: system.cpu.iq: Checking if memory instruction can issue.
+ 253000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418524=>0x418528).(1=>2) opclass:48 [sn:37].
+ 253000: system.cpu.iq: Waking dependents of completed instruction.
+ 253000: system.cpu.iq: Waking any dependents on register 72 (IntRegClass).
+ 253000: system.cpu.iq: Waking up a dependent instruction, [sn:41] PC (0x418528=>0x41852c).(2=>3).
+ 253000: global: [sn:41] has 2 ready out of 2 sources. RTI 0)
+ 253000: system.cpu.iq: Checking if memory instruction can issue.
+ 253000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418528=>0x41852c).(2=>3) opclass:48 [sn:41].
+ 253000: system.cpu.iq: Waking up a dependent instruction, [sn:40] PC (0x418528=>0x41852c).(1=>2).
+ 253000: global: [sn:40] has 2 ready out of 2 sources. RTI 0)
+ 253000: system.cpu.iq: Checking if memory instruction can issue.
+ 253000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418528=>0x41852c).(1=>2) opclass:48 [sn:40].
+ 253000: system.cpu.iq: Waking dependents of completed instruction.
+ 253000: system.cpu.iq: Completing mem instruction PC: (0x41852c=>0x418530).(0=>1) [sn:42]
+ 253000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 253000: system.cpu.iq: Thread 0: Issuing instruction PC (0x418510=>0x418514).(1=>2) [sn:28]
+ 253000: system.cpu.iq: Thread 0: Issuing instruction PC (0x418510=>0x418514).(2=>3) [sn:29]
+ 253000: system.cpu.iq: Thread 0: Issuing instruction PC (0x418518=>0x41851c).(1=>2) [sn:32]
+ 253000: system.cpu.iq: Thread 0: Issuing instruction PC (0x418518=>0x41851c).(2=>3) [sn:33]
+ 253000: system.cpu.iq: Thread 0: Issuing instruction PC (0x418534=>0x418538).(0=>1) [sn:44]
+ 253000: system.cpu.iq: Thread 0: Issuing instruction PC (0x418538=>0x41853c).(0=>1) [sn:45]
+ 253000: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 2
+ 253000: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 14
+ 253000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 253000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=3
+ 253000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 253000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 253000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 253000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 253500: system.cpu.iew.lsq.thread0: Executing store PC (0x418510=>0x418514).(1=>2) [sn:28]
+ 253500: system.cpu.iew.lsq.thread0: Doing write to store idx 2, addr 0x320c30 | storeHead:0 [sn:28]
+ 253500: system.cpu.iew.lsq.thread0: Executing store PC (0x418510=>0x418514).(2=>3) [sn:29]
+ 253500: system.cpu.iew.lsq.thread0: Doing write to store idx 3, addr 0x320c38 | storeHead:0 [sn:29]
+ 253500: system.cpu.iew.lsq.thread0: Executing store PC (0x418518=>0x41851c).(1=>2) [sn:32]
+ 253500: system.cpu.iew.lsq.thread0: Doing write to store idx 4, addr 0x320c40 | storeHead:0 [sn:32]
+ 253500: system.cpu.iew.lsq.thread0: Executing store PC (0x418518=>0x41851c).(2=>3) [sn:33]
+ 253500: system.cpu.iew.lsq.thread0: Doing write to store idx 5, addr 0x320c48 | storeHead:0 [sn:33]
+ 253500: system.cpu.iq: Waking dependents of completed instruction.
+ 253500: system.cpu.iq: Completing mem instruction PC: (0x418510=>0x418514).(1=>2) [sn:28]
+ 253500: system.cpu.iq: Waking dependents of completed instruction.
+ 253500: system.cpu.iq: Completing mem instruction PC: (0x418510=>0x418514).(2=>3) [sn:29]
+ 253500: system.cpu.iq: Waking dependents of completed instruction.
+ 253500: system.cpu.iq: Completing mem instruction PC: (0x418518=>0x41851c).(1=>2) [sn:32]
+ 253500: system.cpu.iq: Waking dependents of completed instruction.
+ 253500: system.cpu.iq: Completing mem instruction PC: (0x418518=>0x41851c).(2=>3) [sn:33]
+ 253500: system.cpu.iq: Waking dependents of completed instruction.
+ 253500: system.cpu.iq: Waking any dependents on register 73 (IntRegClass).
+ 253500: system.cpu.iq: Waking dependents of completed instruction.
+ 253500: system.cpu.iq: Waking any dependents on register 74 (IntRegClass).
+ 253500: system.cpu.iq: Waking up a dependent instruction, [sn:47] PC (0x418538=>0x41853c).(2=>3).
+ 253500: global: [sn:47] has 2 ready out of 2 sources. RTI 0)
+ 253500: system.cpu.iq: Checking if memory instruction can issue.
+ 253500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418538=>0x41853c).(2=>3) opclass:48 [sn:47].
+ 253500: system.cpu.iq: Waking up a dependent instruction, [sn:46] PC (0x418538=>0x41853c).(1=>2).
+ 253500: global: [sn:46] has 2 ready out of 2 sources. RTI 0)
+ 253500: system.cpu.iq: Checking if memory instruction can issue.
+ 253500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418538=>0x41853c).(1=>2) opclass:48 [sn:46].
+ 253500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 253500: system.cpu.iq: Thread 0: Issuing instruction PC (0x418524=>0x418528).(1=>2) [sn:37]
+ 253500: system.cpu.iq: Thread 0: Issuing instruction PC (0x418524=>0x418528).(2=>3) [sn:38]
+ 253500: system.cpu.iq: Thread 0: Issuing instruction PC (0x418528=>0x41852c).(1=>2) [sn:40]
+ 253500: system.cpu.iq: Thread 0: Issuing instruction PC (0x418528=>0x41852c).(2=>3) [sn:41]
+ 253500: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 2
+ 253500: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 14
+ 253500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 253500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=3
+ 253500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 253500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 253500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 253500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 254000: system.cpu.iew.lsq.thread0: Executing store PC (0x418524=>0x418528).(1=>2) [sn:37]
+ 254000: system.cpu.iew.lsq.thread0: Doing write to store idx 6, addr 0x320c50 | storeHead:0 [sn:37]
+ 254000: system.cpu.iew.lsq.thread0: Executing store PC (0x418524=>0x418528).(2=>3) [sn:38]
+ 254000: system.cpu.iew.lsq.thread0: Doing write to store idx 7, addr 0x320c58 | storeHead:0 [sn:38]
+ 254000: system.cpu.iew.lsq.thread0: Executing store PC (0x418528=>0x41852c).(1=>2) [sn:40]
+ 254000: system.cpu.iew.lsq.thread0: Doing write to store idx 8, addr 0x320c60 | storeHead:0 [sn:40]
+ 254000: system.cpu.iew.lsq.thread0: Executing store PC (0x418528=>0x41852c).(2=>3) [sn:41]
+ 254000: system.cpu.iew.lsq.thread0: Doing write to store idx 9, addr 0x320c68 | storeHead:0 [sn:41]
+ 254000: system.cpu.iq: Waking dependents of completed instruction.
+ 254000: system.cpu.iq: Completing mem instruction PC: (0x418524=>0x418528).(1=>2) [sn:37]
+ 254000: system.cpu.iq: Waking dependents of completed instruction.
+ 254000: system.cpu.iq: Completing mem instruction PC: (0x418524=>0x418528).(2=>3) [sn:38]
+ 254000: system.cpu.iq: Waking dependents of completed instruction.
+ 254000: system.cpu.iq: Completing mem instruction PC: (0x418528=>0x41852c).(1=>2) [sn:40]
+ 254000: system.cpu.iq: Waking dependents of completed instruction.
+ 254000: system.cpu.iq: Completing mem instruction PC: (0x418528=>0x41852c).(2=>3) [sn:41]
+ 254000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 254000: system.cpu.iq: Thread 0: Issuing instruction PC (0x418538=>0x41853c).(1=>2) [sn:46]
+ 254000: system.cpu.iq: Thread 0: Issuing instruction PC (0x418538=>0x41853c).(2=>3) [sn:47]
+ 254000: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 2
+ 254000: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 14
+ 254000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 254000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=3
+ 254000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 254000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 254000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 254000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 254500: system.cpu.iew.lsq.thread0: Executing store PC (0x418538=>0x41853c).(1=>2) [sn:46]
+ 254500: system.cpu.iew.lsq.thread0: Doing write to store idx 12, addr 0x320c90 | storeHead:0 [sn:46]
+ 254500: system.cpu.iew.lsq.thread0: Executing store PC (0x418538=>0x41853c).(2=>3) [sn:47]
+ 254500: system.cpu.iew.lsq.thread0: Doing write to store idx 13, addr 0x320c98 | storeHead:0 [sn:47]
+ 254500: system.cpu.iq: Waking dependents of completed instruction.
+ 254500: system.cpu.iq: Completing mem instruction PC: (0x418538=>0x41853c).(1=>2) [sn:46]
+ 254500: system.cpu.iq: Waking dependents of completed instruction.
+ 254500: system.cpu.iq: Completing mem instruction PC: (0x418538=>0x41853c).(2=>3) [sn:47]
+ 254500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 254500: system.cpu.iq: Not able to schedule any instructions.
+ 254500: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 2
+ 254500: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 14
+ 254500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 254500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=3
+ 254500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 254500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 254500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 254500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 255000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 255000: system.cpu.iq: Not able to schedule any instructions.
+ 255000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 255000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=3
+ 255000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 255000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 255000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 255000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 255500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 255500: system.cpu.iq: Not able to schedule any instructions.
+ 255500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 255500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=3
+ 255500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 255500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 255500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 255500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 256000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 256000: system.cpu.iq: Not able to schedule any instructions.
+ 256000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 256000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=3
+ 256000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 256000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 256000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 256000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 256500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 256500: system.cpu.iq: Not able to schedule any instructions.
+ 256500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 256500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=3
+ 256500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 256500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 256500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 256500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 257000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 257000: system.cpu.iq: Not able to schedule any instructions.
+ 257000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 257000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=3
+ 257000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 257000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 257000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 257000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 257500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 257500: system.cpu.iq: Not able to schedule any instructions.
+ 257500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 257500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=3
+ 257500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 257500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 257500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 257500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 258000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 258000: system.cpu.iq: Not able to schedule any instructions.
+ 258000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 258000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=3
+ 258000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 258000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 258000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 258000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 258500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 258500: system.cpu.iq: Not able to schedule any instructions.
+ 258500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 258500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=3
+ 258500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 258500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 258500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 258500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 259000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 259000: system.cpu.iq: Not able to schedule any instructions.
+ 259000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 259000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=3
+ 259000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 259000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 259000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 259000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 259500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 259500: system.cpu.iq: Not able to schedule any instructions.
+ 259500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 259500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=3
+ 259500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 259500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 259500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 259500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 269500: system.cpu.iq: Waking dependents of completed instruction.
+ 269500: system.cpu.iq: Completing mem instruction PC: (0x401f00=>0x401f04).(0=>1) [sn:4]
+ 269500: system.cpu.iq: Waking any dependents on register 45 (IntRegClass).
+ 269500: system.cpu.iq: Waking up a dependent instruction, [sn:43] PC (0x418530=>0x418534).(0=>1).
+ 269500: global: [sn:43] has 2 ready out of 2 sources. RTI 0)
+ 269500: system.cpu.iq: Checking if memory instruction can issue.
+ 269500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418530=>0x418534).(0=>1) opclass:48 [sn:43].
+ 269500: system.cpu.iq: Clearing WIB entry of the waiting load with destination register (45) and WIB Index (16383)
+ 269500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 269500: system.cpu.iq: Getting wait bit for reg 45: 0
+ 269500: system.cpu.iq: Thread 0: Issuing instruction PC (0x418530=>0x418534).(0=>1) [sn:43]
+ 269500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 269500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=3
+ 269500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 269500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 269500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 269500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 270000: system.cpu.iew.lsq.thread0: Executing store PC (0x418530=>0x418534).(0=>1) [sn:43]
+ 270000: system.cpu.iew.lsq.thread0: Doing write to store idx 11, addr 0x320c8c | storeHead:0 [sn:43]
+ 270000: system.cpu.iq: Waking dependents of completed instruction.
+ 270000: system.cpu.iq: Completing mem instruction PC: (0x418530=>0x418534).(0=>1) [sn:43]
+ 270000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 270000: system.cpu.iq: Not able to schedule any instructions.
+ 270000: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 2
+ 270000: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 14
+ 270000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 270000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=3
+ 270000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 270000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 270000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 270000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 270500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 270500: system.cpu.iq: Not able to schedule any instructions.
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 270500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=3
+ 270500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 270500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x401f00=>0x401f04).(0=>1), [sn:4]
+ 270500: system.cpu.rob: Updating global head ptr.
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 1
+ 270500: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 1
+ 270500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 1 size=3
+ 270500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 1
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 1
+ 270500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x401f04=>0x401f08).(0=>1), [sn:5]
+ 270500: system.cpu.rob: Updating global head ptr.
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 2
+ 270500: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 2
+ 270500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 2 size=3
+ 270500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 2
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 2
+ 270500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x401f08=>0x401f0c).(0=>1), [sn:6]
+ 270500: system.cpu.rob: Updating global head ptr.
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 3
+ 270500: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 3
+ 270500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 3 size=3
+ 270500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 3
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 3
+ 270500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x401f0c=>0x401f10).(0=>1), [sn:7]
+ 270500: system.cpu.rob: Updating global head ptr.
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 4
+ 270500: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 4
+ 270500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 4 size=3
+ 270500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 4
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 4
+ 270500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x401f10=>0x401f14).(0=>1), [sn:8]
+ 270500: system.cpu.rob: Updating global head ptr.
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 5
+ 270500: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 5
+ 270500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 5 size=3
+ 270500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 5
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 5
+ 270500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x401f14=>0x401f18).(0=>1), [sn:9]
+ 270500: system.cpu.rob: Updating global head ptr.
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 270500: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 270500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=3
+ 270500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 270500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x401f18=>0x401f1c).(0=>1), [sn:10]
+ 270500: system.cpu.rob: Updating global head ptr.
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 7
+ 270500: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 7
+ 270500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 7 size=3
+ 270500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 7
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 7
+ 270500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x401f1c=>0x401f20).(0=>1), [sn:11]
+ 270500: system.cpu.rob: Updating global head ptr.
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 8
+ 270500: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 270500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 8
+ 270500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 270500: system.cpu.rob: [tid:0] Getting Head Bank: 8
+ 271000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 271000: system.cpu.iq: Not able to schedule any instructions.
+ 271000: system.cpu.iew.lsq.thread0: Committing head load instruction, PC (0x401f00=>0x401f04).(0=>1)
+ 271000: system.cpu.iq: [tid:0] Committing instructions older than [sn:11]
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 8
+ 271000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 8 size=3
+ 271000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 8
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 8
+ 271000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x401f20=>0x401f24).(0=>1), [sn:12]
+ 271000: system.cpu.rob: Updating global head ptr.
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 9
+ 271000: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 9
+ 271000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 9 size=3
+ 271000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 9
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 9
+ 271000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x401f24=>0x401f28).(0=>1), [sn:13]
+ 271000: system.cpu.rob: Updating global head ptr.
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 10
+ 271000: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 10
+ 271000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 10 size=3
+ 271000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 10
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 10
+ 271000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x401f28=>0x401f2c).(0=>1), [sn:14]
+ 271000: system.cpu.rob: Updating global head ptr.
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 11
+ 271000: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 11
+ 271000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 11 size=3
+ 271000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 11
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 11
+ 271000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x401f2c=>0x401f30).(0=>1), [sn:15]
+ 271000: system.cpu.rob: Updating global head ptr.
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 12
+ 271000: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 12
+ 271000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 12 size=3
+ 271000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 12
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 12
+ 271000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x401f30=>0x401f34).(0=>1), [sn:16]
+ 271000: system.cpu.rob: Updating global head ptr.
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 13
+ 271000: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 13
+ 271000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 13 size=2
+ 271000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 13
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 13
+ 271000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x401f34=>0x401f38).(0=>1), [sn:17]
+ 271000: system.cpu.rob: Updating global head ptr.
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 14
+ 271000: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 14
+ 271000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 14 size=2
+ 271000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 14
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 14
+ 271000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x401f38=>0x401f3c).(0=>1), [sn:18]
+ 271000: system.cpu.rob: Updating global head ptr.
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 15
+ 271000: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 15
+ 271000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 15 size=2
+ 271000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 15
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 15
+ 271000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x401f3c=>0x418500).(0=>1), [sn:19]
+ 271000: system.cpu.rob: Updating global head ptr.
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 271000: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 271000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 271000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 271000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 271500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 271500: system.cpu.iq: Not able to schedule any instructions.
+ 271500: system.cpu.iq: [tid:0] Committing instructions older than [sn:19]
+ 271500: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 1
+ 271500: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 14
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 271500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=2
+ 271500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 271500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418500=>0x418504).(0=>1), [sn:20]
+ 271500: system.cpu.rob: Updating global head ptr.
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 1
+ 271500: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 1
+ 271500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 1 size=2
+ 271500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 1
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 1
+ 271500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418500=>0x418504).(1=>2), [sn:21]
+ 271500: system.cpu.rob: Updating global head ptr.
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 2
+ 271500: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 2
+ 271500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 2 size=2
+ 271500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 2
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 2
+ 271500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418500=>0x418504).(2=>3), [sn:22]
+ 271500: system.cpu.rob: Updating global head ptr.
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 3
+ 271500: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 3
+ 271500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 3 size=2
+ 271500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 3
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 3
+ 271500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418500=>0x418504).(3=>4), [sn:23]
+ 271500: system.cpu.rob: Updating global head ptr.
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 4
+ 271500: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 4
+ 271500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 4 size=2
+ 271500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 4
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 4
+ 271500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418504=>0x418508).(0=>1), [sn:24]
+ 271500: system.cpu.rob: Updating global head ptr.
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 5
+ 271500: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 5
+ 271500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 5 size=2
+ 271500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 5
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 5
+ 271500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418508=>0x41850c).(0=>1), [sn:25]
+ 271500: system.cpu.rob: Updating global head ptr.
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 271500: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 271500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=2
+ 271500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 271500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 271500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 272000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 272000: system.cpu.iq: Not able to schedule any instructions.
+ 272000: system.cpu.iew.lsq.thread0: Marking store as able to write back, PC (0x418500=>0x418504).(1=>2) [sn:21]
+ 272000: system.cpu.iew.lsq.thread0: Marking store as able to write back, PC (0x418500=>0x418504).(2=>3) [sn:22]
+ 272000: system.cpu.iq: [tid:0] Committing instructions older than [sn:25]
+ 272000: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 1
+ 272000: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 14
+ 272000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 272000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=2
+ 272000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 272000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 272000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 272000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 272500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 272500: system.cpu.iq: Not able to schedule any instructions.
+ 272500: system.cpu.iew.lsq.thread0: D-Cache: Writing back store idx:1 PC:(0x418500=>0x418504).(1=>2) to Addr:0x320c20, data:0 [sn:21]
+ 272500: system.cpu.iew.lsq.thread0: Memory request (pkt: WriteReq [320c20:320c27]) from inst [sn:21] was sent (cache is blocked: 0, cache_got_blocked: 0)
+ 272500: system.cpu.iew.lsq.thread0: D-Cache: Writing back store idx:2 PC:(0x418500=>0x418504).(2=>3) to Addr:0x320c28, data:0x40 [sn:22]
+ 272500: system.cpu.iew.lsq.thread0: Memory request (pkt: WriteReq [320c28:320c2f]) from inst [sn:22] was sent (cache is blocked: 0, cache_got_blocked: 0)
+ 272500: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 1
+ 272500: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 14
+ 272500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 272500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=2
+ 272500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 272500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 272500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 272500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 273000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 273000: system.cpu.iq: Not able to schedule any instructions.
+ 273000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 273000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=2
+ 273000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 273000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 273000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 273000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 273500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 273500: system.cpu.iq: Not able to schedule any instructions.
+ 273500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 273500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=2
+ 273500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 273500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 273500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 273500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 274000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 274000: system.cpu.iq: Not able to schedule any instructions.
+ 274000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 274000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=2
+ 274000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 274000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 274000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 274000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 274500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 274500: system.cpu.iq: Not able to schedule any instructions.
+ 274500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 274500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=2
+ 274500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 274500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 274500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 274500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 275000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 275000: system.cpu.iq: Not able to schedule any instructions.
+ 275000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 275000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=2
+ 275000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 275000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 275000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 275000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 275500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 275500: system.cpu.iq: Not able to schedule any instructions.
+ 275500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 275500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=2
+ 275500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 275500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 275500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 275500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 276000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 276000: system.cpu.iq: Not able to schedule any instructions.
+ 276000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 276000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=2
+ 276000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 276000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 276000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 276000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 276500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 276500: system.cpu.iq: Not able to schedule any instructions.
+ 276500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 276500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=2
+ 276500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 276500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 276500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 276500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 277000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 277000: system.cpu.iq: Not able to schedule any instructions.
+ 277000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 277000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=2
+ 277000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 277000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 277000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 277000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 277500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 277500: system.cpu.iq: Not able to schedule any instructions.
+ 277500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 277500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=2
+ 277500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 277500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 277500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 277500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 323500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 323500: system.cpu.iq: Not able to schedule any instructions.
+ 323500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 323500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=2
+ 323500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 323500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 323500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 323500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 324000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 324000: system.cpu.iq: Not able to schedule any instructions.
+ 324000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 324000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=2
+ 324000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 324000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 324000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 324000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 324500: global: [sn:51] has 1 ready out of 5 sources. RTI 0)
+ 324500: global: [sn:51] has 2 ready out of 5 sources. RTI 0)
+ 324500: global: [sn:52] has 1 ready out of 1 sources. RTI 0)
+ 324500: global: [sn:54] has 1 ready out of 1 sources. RTI 0)
+ 324500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 324500: system.cpu.iq: Not able to schedule any instructions.
+ 324500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 324500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=2
+ 324500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 324500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 324500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 324500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 325000: global: [sn:59] has 1 ready out of 2 sources. RTI 0)
+ 325000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 325000: system.cpu.iq: Not able to schedule any instructions.
+ 325000: system.cpu.rob: Adding inst PC (0x418540=>0x418544).(0=>1) to the ROB.
+ 325000: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 325000: system.cpu.rob: [tid:0] Now has 24 instructions.
+ 325000: system.cpu.rob: Adding inst PC (0x418544=>0x418548).(0=>1) to the ROB.
+ 325000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 325000: system.cpu.rob: [tid:0] Now has 25 instructions.
+ 325000: system.cpu.rob: Adding inst PC (0x418548=>0x41854c).(0=>1) to the ROB.
+ 325000: system.cpu.rob: [tid:0] Getting Tail Bank: 14
+ 325000: system.cpu.rob: [tid:0] Now has 26 instructions.
+ 325000: system.cpu.rob: Adding inst PC (0x41854c=>0x418550).(0=>1) to the ROB.
+ 325000: system.cpu.rob: [tid:0] Getting Tail Bank: 15
+ 325000: system.cpu.rob: [tid:0] Now has 27 instructions.
+ 325000: system.cpu.rob: Adding inst PC (0x418550=>0x418554).(0=>1) to the ROB.
+ 325000: system.cpu.rob: [tid:0] Getting Tail Bank: 0
+ 325000: system.cpu.rob: [tid:0] Now has 28 instructions.
+ 325000: system.cpu.rob: Adding inst PC (0x418554=>0x418558).(0=>1) to the ROB.
+ 325000: system.cpu.rob: [tid:0] Getting Tail Bank: 1
+ 325000: system.cpu.rob: [tid:0] Now has 29 instructions.
+ 325000: system.cpu.rob: Adding inst PC (0x418558=>0x41855c).(0=>1) to the ROB.
+ 325000: system.cpu.rob: [tid:0] Getting Tail Bank: 2
+ 325000: system.cpu.rob: [tid:0] Now has 30 instructions.
+ 325000: system.cpu.rob: Adding inst PC (0x41855c=>0x418560).(0=>1) to the ROB.
+ 325000: system.cpu.rob: [tid:0] Getting Tail Bank: 3
+ 325000: system.cpu.rob: [tid:0] Now has 31 instructions.
+ 325000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 325000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=2
+ 325000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 325000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 325000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 325000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 325500: system.cpu.iew.lsq.thread0: Inserting load PC (0x418540=>0x418544).(0=>1), idx:2 [sn:49]
+ 325500: system.cpu.iq: Adding instruction [sn:49] PC (0x418540=>0x418544).(0=>1) to the IQ.
+ 325500: system.cpu.iq: Instruction PC (0x418540=>0x418544).(0=>1) has src reg 65 (IntRegClass) that is being added to the dependency chain.
+ 325500: system.cpu.iq: Adding instruction [sn:50] PC (0x418544=>0x418548).(0=>1) to the IQ.
+ 325500: system.cpu.iq: Instruction PC (0x418544=>0x418548).(0=>1) has src reg 75 (IntRegClass) that is being added to the dependency chain.
+ 325500: system.cpu.iq: Adding instruction [sn:51] PC (0x418548=>0x41854c).(0=>1) to the IQ.
+ 325500: system.cpu.iq: Instruction PC (0x418548=>0x41854c).(0=>1) has src reg 6 (CCRegClass) that is being added to the dependency chain.
+ 325500: system.cpu.iq: Instruction PC (0x418548=>0x41854c).(0=>1) has src reg 8 (CCRegClass) that is being added to the dependency chain.
+ 325500: system.cpu.iq: Instruction PC (0x418548=>0x41854c).(0=>1) has src reg 7 (CCRegClass) that is being added to the dependency chain.
+ 325500: system.cpu.iew.lsq.thread0: Inserting load PC (0x41854c=>0x418550).(0=>1), idx:3 [sn:52]
+ 325500: system.cpu.iq: Adding instruction [sn:52] PC (0x41854c=>0x418550).(0=>1) to the IQ.
+ 325500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x41854c=>0x418550).(0=>1) opclass:47 [sn:52].
+ 325500: system.cpu.iq: Adding instruction [sn:53] PC (0x418550=>0x418554).(0=>1) to the IQ.
+ 325500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418550=>0x418554).(0=>1) opclass:1 [sn:53].
+ 325500: system.cpu.iew.lsq.thread0: Inserting load PC (0x418554=>0x418558).(0=>1), idx:4 [sn:54]
+ 325500: system.cpu.iq: Adding instruction [sn:54] PC (0x418554=>0x418558).(0=>1) to the IQ.
+ 325500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418554=>0x418558).(0=>1) opclass:47 [sn:54].
+ 325500: system.cpu.iq: Adding instruction [sn:55] PC (0x418558=>0x41855c).(0=>1) to the IQ.
+ 325500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418558=>0x41855c).(0=>1) opclass:1 [sn:55].
+ 325500: system.cpu.iq: Adding instruction [sn:56] PC (0x41855c=>0x418560).(0=>1) to the IQ.
+ 325500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x41855c=>0x418560).(0=>1) opclass:1 [sn:56].
+ 325500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 325500: system.cpu.iq: Thread 0: Issuing instruction PC (0x41854c=>0x418550).(0=>1) [sn:52]
+ 325500: system.cpu.iq: Thread 0: Issuing instruction PC (0x418550=>0x418554).(0=>1) [sn:53]
+ 325500: system.cpu.iq: Thread 0: Issuing instruction PC (0x418554=>0x418558).(0=>1) [sn:54]
+ 325500: system.cpu.iq: Thread 0: Issuing instruction PC (0x418558=>0x41855c).(0=>1) [sn:55]
+ 325500: system.cpu.iq: Thread 0: Issuing instruction PC (0x41855c=>0x418560).(0=>1) [sn:56]
+ 325500: system.cpu.rob: Adding inst PC (0x418560=>0x418564).(0=>1) to the ROB.
+ 325500: system.cpu.rob: [tid:0] Getting Tail Bank: 4
+ 325500: system.cpu.rob: [tid:0] Now has 32 instructions.
+ 325500: system.cpu.rob: Adding inst PC (0x418564=>0x418568).(0=>1) to the ROB.
+ 325500: system.cpu.rob: [tid:0] Getting Tail Bank: 5
+ 325500: system.cpu.rob: [tid:0] Now has 33 instructions.
+ 325500: system.cpu.rob: Adding inst PC (0x418568=>0x41856c).(0=>1) to the ROB.
+ 325500: system.cpu.rob: [tid:0] Getting Tail Bank: 6
+ 325500: system.cpu.rob: [tid:0] Now has 34 instructions.
+ 325500: system.cpu.rob: Adding inst PC (0x41856c=>0x418570).(0=>1) to the ROB.
+ 325500: system.cpu.rob: [tid:0] Getting Tail Bank: 7
+ 325500: system.cpu.rob: [tid:0] Now has 35 instructions.
+ 325500: system.cpu.rob: Adding inst PC (0x418570=>0x418574).(0=>1) to the ROB.
+ 325500: system.cpu.rob: [tid:0] Getting Tail Bank: 8
+ 325500: system.cpu.rob: [tid:0] Now has 36 instructions.
+ 325500: system.cpu.rob: Adding inst PC (0x418574=>0x418578).(0=>1) to the ROB.
+ 325500: system.cpu.rob: [tid:0] Getting Tail Bank: 9
+ 325500: system.cpu.rob: [tid:0] Now has 37 instructions.
+ 325500: system.cpu.rob: Adding inst PC (0x418578=>0x41857c).(0=>1) to the ROB.
+ 325500: system.cpu.rob: [tid:0] Getting Tail Bank: 10
+ 325500: system.cpu.rob: [tid:0] Now has 38 instructions.
+ 325500: system.cpu.rob: Adding inst PC (0x418578=>0x41857c).(1=>2) to the ROB.
+ 325500: system.cpu.rob: [tid:0] Getting Tail Bank: 11
+ 325500: system.cpu.rob: [tid:0] Now has 39 instructions.
+ 325500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 325500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=3
+ 325500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 325500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 325500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 325500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 326000: system.cpu.iew.lsq.thread0: Inserting store PC (0x418560=>0x418564).(0=>1), idx:14 [sn:57]
+ 326000: system.cpu.iq: Adding instruction [sn:57] PC (0x418560=>0x418564).(0=>1) to the IQ.
+ 326000: system.cpu.iq: Instruction PC (0x418560=>0x418564).(0=>1) has src reg 80 (IntRegClass) that is being added to the dependency chain.
+ 326000: system.cpu.iq: Instruction PC (0x418560=>0x418564).(0=>1) has src reg 76 (IntRegClass) that is being added to the dependency chain.
+ 326000: system.cpu.iq: Adding instruction [sn:58] PC (0x418564=>0x418568).(0=>1) to the IQ.
+ 326000: system.cpu.iq: Instruction PC (0x418564=>0x418568).(0=>1) has src reg 79 (IntRegClass) that is being added to the dependency chain.
+ 326000: system.cpu.iq: Instruction PC (0x418564=>0x418568).(0=>1) has src reg 77 (IntRegClass) that is being added to the dependency chain.
+ 326000: system.cpu.iew.lsq.thread0: Inserting store PC (0x418568=>0x41856c).(0=>1), idx:15 [sn:59]
+ 326000: system.cpu.iq: Adding instruction [sn:59] PC (0x418568=>0x41856c).(0=>1) to the IQ.
+ 326000: system.cpu.iq: Instruction PC (0x418568=>0x41856c).(0=>1) has src reg 81 (IntRegClass) that is being added to the dependency chain.
+ 326000: system.cpu.iq: Adding instruction [sn:60] PC (0x41856c=>0x418570).(0=>1) to the IQ.
+ 326000: system.cpu.iq: Instruction PC (0x41856c=>0x418570).(0=>1) has src reg 82 (IntRegClass) that is being added to the dependency chain.
+ 326000: system.cpu.iew.lsq.thread0: Inserting store PC (0x418570=>0x418574).(0=>1), idx:16 [sn:61]
+ 326000: system.cpu.iq: Adding instruction [sn:61] PC (0x418570=>0x418574).(0=>1) to the IQ.
+ 326000: system.cpu.iq: Instruction PC (0x418570=>0x418574).(0=>1) has src reg 78 (IntRegClass) that is being added to the dependency chain.
+ 326000: system.cpu.iq: Instruction PC (0x418570=>0x418574).(0=>1) has src reg 83 (IntRegClass) that is being added to the dependency chain.
+ 326000: system.cpu.iew.lsq.thread0: Inserting load PC (0x418578=>0x41857c).(0=>1), idx:5 [sn:63]
+ 326000: system.cpu.iq: Adding instruction [sn:63] PC (0x418578=>0x41857c).(0=>1) to the IQ.
+ 326000: system.cpu.iq: Instruction PC (0x418578=>0x41857c).(0=>1) has src reg 83 (IntRegClass) that is being added to the dependency chain.
+ 326000: system.cpu.iq: Adding instruction [sn:64] PC (0x418578=>0x41857c).(1=>2) to the IQ.
+ 326000: system.cpu.iq: Instruction PC (0x418578=>0x41857c).(1=>2) has src reg 83 (IntRegClass) that is being added to the dependency chain.
+ 326000: system.cpu.iew.lsq.thread0: Executing load PC (0x41854c=>0x418550).(0=>1), [sn:52]
+ 326000: system.cpu.iew.lsq.thread0: Read called, load idx: 3, store idx: 15, storeHead: 0 addr: 0x320c90
+ 326000: system.cpu.iew.lsq.thread0: Forwarding from store idx 13 to load to addr 0x7ffffefc90
+ 326000: system.cpu.iew.lsq.thread0: Executing load PC (0x418554=>0x418558).(0=>1), [sn:54]
+ 326000: system.cpu.iew.lsq.thread0: Read called, load idx: 4, store idx: 15, storeHead: 0 addr: 0x320c8c
+ 326000: system.cpu.iew.lsq.thread0: Forwarding from store idx 12 to load to addr 0x7ffffefc8c
+ 326000: system.cpu.iq: Waking dependents of completed instruction.
+ 326000: system.cpu.iq: Waking any dependents on register 78 (IntRegClass).
+ 326000: system.cpu.iq: Waking up a dependent instruction, [sn:61] PC (0x418570=>0x418574).(0=>1).
+ 326000: global: [sn:61] has 1 ready out of 2 sources. RTI 0)
+ 326000: system.cpu.iq: Waking dependents of completed instruction.
+ 326000: system.cpu.iq: Waking any dependents on register 80 (IntRegClass).
+ 326000: system.cpu.iq: Waking up a dependent instruction, [sn:57] PC (0x418560=>0x418564).(0=>1).
+ 326000: global: [sn:57] has 1 ready out of 2 sources. RTI 0)
+ 326000: system.cpu.iq: Waking dependents of completed instruction.
+ 326000: system.cpu.iq: Waking any dependents on register 81 (IntRegClass).
+ 326000: system.cpu.iq: Waking up a dependent instruction, [sn:59] PC (0x418568=>0x41856c).(0=>1).
+ 326000: global: [sn:59] has 2 ready out of 2 sources. RTI 0)
+ 326000: system.cpu.iq: Checking if memory instruction can issue.
+ 326000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418568=>0x41856c).(0=>1) opclass:48 [sn:59].
+ 326000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 326000: system.cpu.iq: Thread 0: Issuing instruction PC (0x418568=>0x41856c).(0=>1) [sn:59]
+ 326000: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 5
+ 326000: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 17
+ 326000: system.cpu.rob: Adding inst PC (0x41857c=>0x418580).(0=>1) to the ROB.
+ 326000: system.cpu.rob: [tid:0] Getting Tail Bank: 12
+ 326000: system.cpu.rob: [tid:0] Now has 40 instructions.
+ 326000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 326000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=3
+ 326000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 326000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 326000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 326000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 326500: system.cpu.iq: Adding instruction [sn:65] PC (0x41857c=>0x418580).(0=>1) to the IQ.
+ 326500: system.cpu.iq: Instruction PC (0x41857c=>0x418580).(0=>1) has src reg 84 (IntRegClass) that is being added to the dependency chain.
+ 326500: system.cpu.iew.lsq.thread0: Executing store PC (0x418568=>0x41856c).(0=>1) [sn:59]
+ 326500: system.cpu.iew.lsq.thread0: Doing write to store idx 15, addr 0xa6ef8 | storeHead:0 [sn:59]
+ 326500: system.cpu.iq: Waking dependents of completed instruction.
+ 326500: system.cpu.iq: Completing mem instruction PC: (0x418554=>0x418558).(0=>1) [sn:54]
+ 326500: system.cpu.iq: Waking any dependents on register 79 (IntRegClass).
+ 326500: system.cpu.iq: Waking up a dependent instruction, [sn:58] PC (0x418564=>0x418568).(0=>1).
+ 326500: global: [sn:58] has 1 ready out of 2 sources. RTI 0)
+ 326500: system.cpu.iq: Waking dependents of completed instruction.
+ 326500: system.cpu.iq: Completing mem instruction PC: (0x41854c=>0x418550).(0=>1) [sn:52]
+ 326500: system.cpu.iq: Waking any dependents on register 77 (IntRegClass).
+ 326500: system.cpu.iq: Waking up a dependent instruction, [sn:58] PC (0x418564=>0x418568).(0=>1).
+ 326500: global: [sn:58] has 2 ready out of 2 sources. RTI 0)
+ 326500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418564=>0x418568).(0=>1) opclass:1 [sn:58].
+ 326500: system.cpu.iq: Waking dependents of completed instruction.
+ 326500: system.cpu.iq: Completing mem instruction PC: (0x418568=>0x41856c).(0=>1) [sn:59]
+ 326500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 326500: system.cpu.iq: Thread 0: Issuing instruction PC (0x418564=>0x418568).(0=>1) [sn:58]
+ 326500: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 5
+ 326500: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 17
+ 326500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 326500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=3
+ 326500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 326500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 326500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 326500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 327000: system.cpu.iq: Waking dependents of completed instruction.
+ 327000: system.cpu.iq: Waking any dependents on register 82 (IntRegClass).
+ 327000: system.cpu.iq: Waking up a dependent instruction, [sn:60] PC (0x41856c=>0x418570).(0=>1).
+ 327000: global: [sn:60] has 1 ready out of 1 sources. RTI 0)
+ 327000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x41856c=>0x418570).(0=>1) opclass:1 [sn:60].
+ 327000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 327000: system.cpu.iq: Thread 0: Issuing instruction PC (0x41856c=>0x418570).(0=>1) [sn:60]
+ 327000: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 5
+ 327000: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 17
+ 327000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 327000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=3
+ 327000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 327000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 327000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 327000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 327500: system.cpu.iq: Waking dependents of completed instruction.
+ 327500: system.cpu.iq: Waking any dependents on register 83 (IntRegClass).
+ 327500: system.cpu.iq: Waking up a dependent instruction, [sn:64] PC (0x418578=>0x41857c).(1=>2).
+ 327500: global: [sn:64] has 1 ready out of 1 sources. RTI 0)
+ 327500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418578=>0x41857c).(1=>2) opclass:1 [sn:64].
+ 327500: system.cpu.iq: Waking up a dependent instruction, [sn:63] PC (0x418578=>0x41857c).(0=>1).
+ 327500: global: [sn:63] has 1 ready out of 1 sources. RTI 0)
+ 327500: system.cpu.iq: Checking if memory instruction can issue.
+ 327500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418578=>0x41857c).(0=>1) opclass:47 [sn:63].
+ 327500: system.cpu.iq: Waking up a dependent instruction, [sn:61] PC (0x418570=>0x418574).(0=>1).
+ 327500: global: [sn:61] has 2 ready out of 2 sources. RTI 0)
+ 327500: system.cpu.iq: Checking if memory instruction can issue.
+ 327500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418570=>0x418574).(0=>1) opclass:48 [sn:61].
+ 327500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 327500: system.cpu.iq: Thread 0: Issuing instruction PC (0x418570=>0x418574).(0=>1) [sn:61]
+ 327500: system.cpu.iq: Thread 0: Issuing instruction PC (0x418578=>0x41857c).(0=>1) [sn:63]
+ 327500: system.cpu.iq: Thread 0: Issuing instruction PC (0x418578=>0x41857c).(1=>2) [sn:64]
+ 327500: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 5
+ 327500: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 17
+ 327500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 327500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=3
+ 327500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 327500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 327500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 327500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 328000: system.cpu.iew.lsq.thread0: Executing store PC (0x418570=>0x418574).(0=>1) [sn:61]
+ 328000: system.cpu.iew.lsq.thread0: Doing write to store idx 16, addr 0xaa2f8 | storeHead:0 [sn:61]
+ 328000: system.cpu.iew.lsq.thread0: Executing load PC (0x418578=>0x41857c).(0=>1), [sn:63]
+ 328000: system.cpu.iew.lsq.thread0: Read called, load idx: 5, store idx: 18, storeHead: 0 addr: 0x320dc0
+ 328000: system.cpu.iew.lsq.thread0: Doing memory access for inst [sn:63] PC (0x418578=>0x41857c).(0=>1)
+ 328000: system.cpu.iew.lsq.thread0: Memory request (pkt: ReadReq [320dc0:320dc7]) from inst [sn:63] was sent (cache is blocked: 0, cache_got_blocked: 0)
+ 328000: system.cpu.iew.lsq.thread0: Package sent to cache
+ 328000: system.cpu.iew.lsq.thread0: Package sent successfully
+ 328000: system.cpu.rob: [tid:0] Assigned Load Vector Pointer: 16383
+ 328000: system.cpu.iew.lsq.thread0: Got load vector index from WIB
+ 328000: system.cpu.iew.lsq.thread0: Setting Destination Register wait bit 84 (IntRegClass) with WIB Index (16383)
+ 328000: system.cpu.iq: Waking up a wait dependent instruction, [sn:65] PC (0x41857c=>0x418580).(0=>1).
+ 328000: global: [sn:65] has 1 ready out of 1 sources. RTI 0)
+ 328000: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x41857c=>0x418580).(0=>1) opclass:1 [sn:65].
+ 328000: system.cpu.iq: Waking dependents of completed instruction.
+ 328000: system.cpu.iq: Completing mem instruction PC: (0x418570=>0x418574).(0=>1) [sn:61]
+ 328000: system.cpu.iq: Waking dependents of completed instruction.
+ 328000: system.cpu.iq: Waking any dependents on register 85 (IntRegClass).
+ 328000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 328000: system.cpu.iq: Thread 0: Moving instruction PC (0x41857c=>0x418580).(0=>1) [sn:65] to WIB (wait)
+ 328000: system.cpu.iq: [tid:0] IQ pushed to WIB. [sn:65]
+ 328000: system.cpu.rob: [tid:0] Instruction has been pushed to WIB. [sn:65]
+ 328000: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 5
+ 328000: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 17
+ 328000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 328000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=3
+ 328000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 328000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 328000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 328000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 328500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 328500: system.cpu.iq: Not able to schedule any instructions.
+ 328500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 328500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=3
+ 328500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 328500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 328500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 328500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 329000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 329000: system.cpu.iq: Not able to schedule any instructions.
+ 329000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 329000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=3
+ 329000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 329000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 329000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 329000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 329500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 329500: system.cpu.iq: Not able to schedule any instructions.
+ 329500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 329500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=3
+ 329500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 329500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 329500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 329500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 330000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 330000: system.cpu.iq: Not able to schedule any instructions.
+ 330000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 330000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=3
+ 330000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 330000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 330000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 330000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 330500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 330500: system.cpu.iq: Not able to schedule any instructions.
+ 330500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 330500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=3
+ 330500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 330500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 330500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 330500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 331000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 331000: system.cpu.iq: Not able to schedule any instructions.
+ 331000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 331000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=3
+ 331000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 331000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 331000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 331000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 331500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 331500: system.cpu.iq: Not able to schedule any instructions.
+ 331500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 331500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=3
+ 331500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 331500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 331500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 331500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 332000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 332000: system.cpu.iq: Not able to schedule any instructions.
+ 332000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 332000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=3
+ 332000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 332000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 332000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 332000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 332500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 332500: system.cpu.iq: Not able to schedule any instructions.
+ 332500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 332500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=3
+ 332500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 332500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 332500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 332500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 333000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 333000: system.cpu.iq: Not able to schedule any instructions.
+ 333000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 333000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=3
+ 333000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 333000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 333000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 333000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 338500: system.cpu.iq: Waking dependents of completed instruction.
+ 338500: system.cpu.iq: Completing mem instruction PC: (0x41850c=>0x418510).(0=>1) [sn:26]
+ 338500: system.cpu.iq: Waking any dependents on register 65 (IntRegClass).
+ 338500: system.cpu.iq: Waking up a dependent instruction, [sn:49] PC (0x418540=>0x418544).(0=>1).
+ 338500: global: [sn:49] has 1 ready out of 1 sources. RTI 0)
+ 338500: system.cpu.iq: Checking if memory instruction can issue.
+ 338500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x418540=>0x418544).(0=>1) opclass:47 [sn:49].
+ 338500: system.cpu.iq: Waking up a dependent instruction, [sn:48] PC (0x41853c=>0x418540).(0=>1).
+ 338500: global: [sn:48] has 1 ready out of 1 sources. RTI 0)
+ 338500: system.cpu.iq: Instruction is ready to issue, putting it onto the ready list, PC (0x41853c=>0x418540).(0=>1) opclass:1 [sn:48].
+ 338500: system.cpu.iq: Clearing WIB entry of the waiting load with destination register (65) and WIB Index (16382)
+ 338500: system.cpu.rob: [tid:0] Cleared load vector pointer 16382 for instruction in WIB. [sn:65]
+ 338500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 338500: system.cpu.iq: Thread 0: Issuing instruction PC (0x41853c=>0x418540).(0=>1) [sn:48]
+ 338500: system.cpu.iq: Thread 0: Issuing instruction PC (0x418540=>0x418544).(0=>1) [sn:49]
+ 338500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 338500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=3
+ 338500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 338500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 338500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 338500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 339000: system.cpu.iew.lsq.thread0: Executing load PC (0x418540=>0x418544).(0=>1), [sn:49]
+ 339000: system.cpu.iew.lsq.thread0: Load [sn:49] not executed from fault
+ 339000: system.cpu.iq: Waking dependents of completed instruction.
+ 339000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 339000: system.cpu.iq: Not able to schedule any instructions.
+ 339000: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 5
+ 339000: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 17
+ 339000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 339000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=3
+ 339000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 339000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 339000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 339000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 339500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 339500: system.cpu.iq: Not able to schedule any instructions.
+ 339500: system.cpu.rob: Starting to squash within the ROB.
+ 339500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 339500: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 339500: system.cpu.rob: [tid:0] Setting cursors to tails
+ 339500: system.cpu.rob: [tid:0] squash cursor now pointing to bank: 13
+ 339500: system.cpu.rob: [tid:0] Setting squash bank iterator with bank: 13
+ 339500: system.cpu.rob: [tid:0] Squashing instructions until [sn:48].
+ 339500: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 339500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 339500: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 339500: system.cpu.rob: [tid:0] Squashing instruction PC (0x41857c=>0x418580).(0=>1), seq num 65.
+ 339500: system.cpu.rob: [tid:0] Decrementing squash cursor
+ 339500: system.cpu.rob: [tid:0] Decrementing squash bank iterator
+ 339500: system.cpu.rob: [tid:0] squash cursor now pointing to bank: 12
+ 339500: system.cpu.rob: [tid:0] Squashing instruction PC (0x418578=>0x41857c).(1=>2), seq num 64.
+ 339500: system.cpu.rob: [tid:0] Decrementing squash cursor
+ 339500: system.cpu.rob: [tid:0] Decrementing squash bank iterator
+ 339500: system.cpu.rob: [tid:0] squash cursor now pointing to bank: 11
+ 339500: system.cpu.rob: [tid:0] Squashing instruction PC (0x418578=>0x41857c).(0=>1), seq num 63.
+ 339500: system.cpu.rob: [tid:0] Decrementing squash cursor
+ 339500: system.cpu.rob: [tid:0] Decrementing squash bank iterator
+ 339500: system.cpu.rob: [tid:0] squash cursor now pointing to bank: 10
+ 339500: system.cpu.rob: [tid:0] Squashing instruction PC (0x418574=>0x418578).(0=>1), seq num 62.
+ 339500: system.cpu.rob: [tid:0] Decrementing squash cursor
+ 339500: system.cpu.rob: [tid:0] Decrementing squash bank iterator
+ 339500: system.cpu.rob: [tid:0] squash cursor now pointing to bank: 9
+ 339500: system.cpu.rob: [tid:0] Squashing instruction PC (0x418570=>0x418574).(0=>1), seq num 61.
+ 339500: system.cpu.rob: [tid:0] Decrementing squash cursor
+ 339500: system.cpu.rob: [tid:0] Decrementing squash bank iterator
+ 339500: system.cpu.rob: [tid:0] squash cursor now pointing to bank: 8
+ 339500: system.cpu.rob: [tid:0] Squashing instruction PC (0x41856c=>0x418570).(0=>1), seq num 60.
+ 339500: system.cpu.rob: [tid:0] Decrementing squash cursor
+ 339500: system.cpu.rob: [tid:0] Decrementing squash bank iterator
+ 339500: system.cpu.rob: [tid:0] squash cursor now pointing to bank: 7
+ 339500: system.cpu.rob: [tid:0] Squashing instruction PC (0x418568=>0x41856c).(0=>1), seq num 59.
+ 339500: system.cpu.rob: [tid:0] Decrementing squash cursor
+ 339500: system.cpu.rob: [tid:0] Decrementing squash bank iterator
+ 339500: system.cpu.rob: [tid:0] squash cursor now pointing to bank: 6
+ 339500: system.cpu.rob: [tid:0] Squashing instruction PC (0x418564=>0x418568).(0=>1), seq num 58.
+ 339500: system.cpu.rob: [tid:0] Decrementing squash cursor
+ 339500: system.cpu.rob: [tid:0] Decrementing squash bank iterator
+ 339500: system.cpu.rob: [tid:0] squash cursor now pointing to bank: 5
+ 339500: system.cpu.rob: Updating global tail ptr.
+ 339500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 339500: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 339500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 339500: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 339500: system.cpu.rob: [tid:0] Checking for squash instruction with seq. number: 48
+ 339500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 339500: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 339500: system.cpu.rob: [tid:0] Setting search bank iterator with bank: 6
+ 339500: system.cpu.rob: [tid:0] Setting cursors to heads.
+ 339500: system.cpu.rob: [tid:0] Bank 6 has 3 instructions.
+ 339500: system.cpu.rob: [tid:0] Incrementing search cursor
+ 339500: system.cpu.rob: [tid:0] Incrementing search bank iterator
+ 339500: system.cpu.rob: [tid:0] search cursor now pointing to bank: 7
+ 339500: system.cpu.rob: [tid:0] Bank 7 has 3 instructions.
+ 339500: system.cpu.rob: [tid:0] Incrementing search cursor
+ 339500: system.cpu.rob: [tid:0] Incrementing search bank iterator
+ 339500: system.cpu.rob: [tid:0] search cursor now pointing to bank: 8
+ 339500: system.cpu.rob: [tid:0] Bank 8 has 3 instructions.
+ 339500: system.cpu.rob: [tid:0] Incrementing search cursor
+ 339500: system.cpu.rob: [tid:0] Incrementing search bank iterator
+ 339500: system.cpu.rob: [tid:0] search cursor now pointing to bank: 9
+ 339500: system.cpu.rob: [tid:0] Bank 9 has 3 instructions.
+ 339500: system.cpu.rob: [tid:0] Incrementing search cursor
+ 339500: system.cpu.rob: [tid:0] Incrementing search bank iterator
+ 339500: system.cpu.rob: [tid:0] search cursor now pointing to bank: 10
+ 339500: system.cpu.rob: [tid:0] Bank 10 has 3 instructions.
+ 339500: system.cpu.rob: [tid:0] Incrementing search cursor
+ 339500: system.cpu.rob: [tid:0] Incrementing search bank iterator
+ 339500: system.cpu.rob: [tid:0] search cursor now pointing to bank: 11
+ 339500: system.cpu.rob: [tid:0] Bank 11 has 3 instructions.
+ 339500: system.cpu.rob: [tid:0] Incrementing search cursor
+ 339500: system.cpu.rob: [tid:0] Incrementing search bank iterator
+ 339500: system.cpu.rob: [tid:0] search cursor now pointing to bank: 12
+ 339500: system.cpu.rob: [tid:0] Bank 12 has 3 instructions.
+ 339500: system.cpu.rob: [tid:0] Incrementing search cursor
+ 339500: system.cpu.rob: [tid:0] Incrementing search bank iterator
+ 339500: system.cpu.rob: [tid:0] search cursor now pointing to bank: 13
+ 339500: system.cpu.rob: [tid:0] Bank 13 has 3 instructions.
+ 339500: system.cpu.rob: [tid:0] Incrementing search cursor
+ 339500: system.cpu.rob: [tid:0] Incrementing search bank iterator
+ 339500: system.cpu.rob: [tid:0] search cursor now pointing to bank: 14
+ 339500: system.cpu.rob: [tid:0] Bank 14 has 2 instructions.
+ 339500: system.cpu.rob: [tid:0] Incrementing search cursor
+ 339500: system.cpu.rob: [tid:0] Incrementing search bank iterator
+ 339500: system.cpu.rob: [tid:0] search cursor now pointing to bank: 15
+ 339500: system.cpu.rob: [tid:0] Bank 15 has 2 instructions.
+ 339500: system.cpu.rob: [tid:0] Incrementing search cursor
+ 339500: system.cpu.rob: [tid:0] Incrementing search bank iterator
+ 339500: system.cpu.rob: [tid:0] search cursor now pointing to bank: 0
+ 339500: system.cpu.rob: [tid:0] Bank 0 has 2 instructions.
+ 339500: system.cpu.rob: [tid:0] Incrementing search cursor
+ 339500: system.cpu.rob: [tid:0] Incrementing search bank iterator
+ 339500: system.cpu.rob: [tid:0] search cursor now pointing to bank: 1
+ 339500: system.cpu.rob: [tid:0] Bank 1 has 2 instructions.
+ 339500: system.cpu.rob: [tid:0] Incrementing search cursor
+ 339500: system.cpu.rob: [tid:0] Incrementing search bank iterator
+ 339500: system.cpu.rob: [tid:0] search cursor now pointing to bank: 2
+ 339500: system.cpu.rob: [tid:0] Bank 2 has 2 instructions.
+ 339500: system.cpu.rob: [tid:0] Incrementing search cursor
+ 339500: system.cpu.rob: [tid:0] Incrementing search bank iterator
+ 339500: system.cpu.rob: [tid:0] search cursor now pointing to bank: 3
+ 339500: system.cpu.rob: [tid:0] Bank 3 has 2 instructions.
+ 339500: system.cpu.rob: [tid:0] Incrementing search cursor
+ 339500: system.cpu.rob: [tid:0] Incrementing search bank iterator
+ 339500: system.cpu.rob: [tid:0] search cursor now pointing to bank: 4
+ 339500: system.cpu.rob: [tid:0] Bank 4 has 2 instructions.
+ 339500: system.cpu.rob: [tid:0] Incrementing search cursor
+ 339500: system.cpu.rob: [tid:0] Incrementing search bank iterator
+ 339500: system.cpu.rob: [tid:0] search cursor now pointing to bank: 5
+ 339500: system.cpu.rob: [tid:0] Bank 5 has 2 instructions.
+ 339500: system.cpu.rob: [tid:0] Incrementing search cursor
+ 339500: system.cpu.rob: [tid:0] Incrementing search bank iterator
+ 339500: system.cpu.rob: [tid:0] search cursor now pointing to bank: 6
+ 339500: system.cpu.rob: [tid:0] Bank 6 has 3 instructions.
+ 339500: system.cpu.rob: [tid:0] Incrementing search cursor
+ 339500: system.cpu.rob: [tid:0] Incrementing search bank iterator
+ 339500: system.cpu.rob: [tid:0] search cursor now pointing to bank: 7
+ 339500: system.cpu.rob: [tid:0] Bank 7 has 3 instructions.
+ 339500: system.cpu.rob: [tid:0] Incrementing search cursor
+ 339500: system.cpu.rob: [tid:0] Incrementing search bank iterator
+ 339500: system.cpu.rob: [tid:0] search cursor now pointing to bank: 8
+ 339500: system.cpu.rob: [tid:0] Bank 8 has 3 instructions.
+ 339500: system.cpu.rob: [tid:0] Incrementing search cursor
+ 339500: system.cpu.rob: [tid:0] Incrementing search bank iterator
+ 339500: system.cpu.rob: [tid:0] search cursor now pointing to bank: 9
+ 339500: system.cpu.rob: [tid:0] Bank 9 has 3 instructions.
+ 339500: system.cpu.rob: [tid:0] Incrementing search cursor
+ 339500: system.cpu.rob: [tid:0] Incrementing search bank iterator
+ 339500: system.cpu.rob: [tid:0] search cursor now pointing to bank: 10
+ 339500: system.cpu.rob: [tid:0] Bank 10 has 3 instructions.
+ 339500: system.cpu.rob: [tid:0] Incrementing search cursor
+ 339500: system.cpu.rob: [tid:0] Incrementing search bank iterator
+ 339500: system.cpu.rob: [tid:0] search cursor now pointing to bank: 11
+ 339500: system.cpu.rob: [tid:0] Bank 11 has 3 instructions.
+ 339500: system.cpu.rob: [tid:0] Incrementing search cursor
+ 339500: system.cpu.rob: [tid:0] Incrementing search bank iterator
+ 339500: system.cpu.rob: [tid:0] search cursor now pointing to bank: 12
+ 339500: system.cpu.rob: [tid:0] Bank 12 has 3 instructions.
+ 339500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 339500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 339500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 339500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 340000: system.cpu.rob: [tid:0] Reading Tail Instr.
+ 340000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 340000: system.cpu.iq: [tid:0] Starting to squash instructions in the IQ.
+ 340000: system.cpu.iq: [tid:0] Squashing until sequence number 48!
+ 340000: system.cpu.iq: [tid:0] Instruction [sn:65] PC (0x41857c=>0x418580).(0=>1) squashed.
+ 340000: system.cpu.iq: [tid:0] Instruction [sn:63] PC (0x418578=>0x41857c).(0=>1) squashed.
+ 340000: system.cpu.iq: [tid:0] Instruction [sn:57] PC (0x418560=>0x418564).(0=>1) squashed.
+ 340000: system.cpu.iq: [tid:0] Instruction [sn:51] PC (0x418548=>0x41854c).(0=>1) squashed.
+ 340000: system.cpu.iq: [tid:0] Instruction [sn:50] PC (0x418544=>0x418548).(0=>1) squashed.
+ 340000: system.cpu.iq: [tid:0] Instruction [sn:49] PC (0x418540=>0x418544).(0=>1) squashed.
+ 340000: system.cpu.iew.lsq.thread0: Squashing until [sn:48]!(Loads:5 Stores:17)
+ 340000: system.cpu.iew.lsq.thread0: Load Instruction PC (0x418578=>0x41857c).(0=>1) squashed, [sn:63]
+ 340000: system.cpu.iew.lsq.thread0: Load Instruction PC (0x418554=>0x418558).(0=>1) squashed, [sn:54]
+ 340000: system.cpu.iew.lsq.thread0: Load Instruction PC (0x41854c=>0x418550).(0=>1) squashed, [sn:52]
+ 340000: system.cpu.iew.lsq.thread0: Load Instruction PC (0x418540=>0x418544).(0=>1) squashed, [sn:49]
+ 340000: system.cpu.iew.lsq.thread0: Store Instruction PC (0x418570=>0x418574).(0=>1) squashed, idx:17 [sn:61]
+ 340000: system.cpu.iew.lsq.thread0: Store Instruction PC (0x418568=>0x41856c).(0=>1) squashed, idx:16 [sn:59]
+ 340000: system.cpu.iew.lsq.thread0: Store Instruction PC (0x418560=>0x418564).(0=>1) squashed, idx:15 [sn:57]
+ 340000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 340000: system.cpu.iq: Not able to schedule any instructions.
+ 340000: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 1
+ 340000: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 14
+ 340000: system.cpu.rob: [tid:0] Squashing instructions until [sn:48].
+ 340000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 340000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 340000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 340000: system.cpu.rob: [tid:0] Squashing instruction PC (0x418560=>0x418564).(0=>1), seq num 57.
+ 340000: system.cpu.rob: [tid:0] Decrementing squash cursor
+ 340000: system.cpu.rob: [tid:0] Decrementing squash bank iterator
+ 340000: system.cpu.rob: [tid:0] squash cursor now pointing to bank: 4
+ 340000: system.cpu.rob: [tid:0] Squashing instruction PC (0x41855c=>0x418560).(0=>1), seq num 56.
+ 340000: system.cpu.rob: [tid:0] Decrementing squash cursor
+ 340000: system.cpu.rob: [tid:0] Decrementing squash bank iterator
+ 340000: system.cpu.rob: [tid:0] squash cursor now pointing to bank: 3
+ 340000: system.cpu.rob: [tid:0] Squashing instruction PC (0x418558=>0x41855c).(0=>1), seq num 55.
+ 340000: system.cpu.rob: [tid:0] Decrementing squash cursor
+ 340000: system.cpu.rob: [tid:0] Decrementing squash bank iterator
+ 340000: system.cpu.rob: [tid:0] squash cursor now pointing to bank: 2
+ 340000: system.cpu.rob: [tid:0] Squashing instruction PC (0x418554=>0x418558).(0=>1), seq num 54.
+ 340000: system.cpu.rob: [tid:0] Decrementing squash cursor
+ 340000: system.cpu.rob: [tid:0] Decrementing squash bank iterator
+ 340000: system.cpu.rob: [tid:0] squash cursor now pointing to bank: 1
+ 340000: system.cpu.rob: [tid:0] Squashing instruction PC (0x418550=>0x418554).(0=>1), seq num 53.
+ 340000: system.cpu.rob: [tid:0] Decrementing squash cursor
+ 340000: system.cpu.rob: [tid:0] Decrementing squash bank iterator
+ 340000: system.cpu.rob: [tid:0] squash cursor now pointing to bank: 0
+ 340000: system.cpu.rob: [tid:0] Squashing instruction PC (0x41854c=>0x418550).(0=>1), seq num 52.
+ 340000: system.cpu.rob: [tid:0] Decrementing squash cursor
+ 340000: system.cpu.rob: [tid:0] Decrementing squash bank iterator
+ 340000: system.cpu.rob: [tid:0] squash cursor now pointing to bank: 15
+ 340000: system.cpu.rob: [tid:0] Squashing instruction PC (0x418548=>0x41854c).(0=>1), seq num 51.
+ 340000: system.cpu.rob: [tid:0] Decrementing squash cursor
+ 340000: system.cpu.rob: [tid:0] Decrementing squash bank iterator
+ 340000: system.cpu.rob: [tid:0] squash cursor now pointing to bank: 14
+ 340000: system.cpu.rob: [tid:0] Squashing instruction PC (0x418544=>0x418548).(0=>1), seq num 50.
+ 340000: system.cpu.rob: [tid:0] Decrementing squash cursor
+ 340000: system.cpu.rob: [tid:0] Decrementing squash bank iterator
+ 340000: system.cpu.rob: [tid:0] squash cursor now pointing to bank: 13
+ 340000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 340000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 340000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 340000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 340500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 340500: system.cpu.iq: Not able to schedule any instructions.
+ 340500: system.cpu.rob: [tid:0] Squashing instructions until [sn:48].
+ 340500: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 340500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 340500: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 340500: system.cpu.rob: [tid:0] Squashing instruction PC (0x418540=>0x418544).(0=>1), seq num 49.
+ 340500: system.cpu.rob: [tid:0] Decrementing squash cursor
+ 340500: system.cpu.rob: [tid:0] Decrementing squash bank iterator
+ 340500: system.cpu.rob: [tid:0] squash cursor now pointing to bank: 12
+ 340500: system.cpu.rob: [tid:0] Done squashing instructions.
+ 340500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 340500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 340500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 340500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 341000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 341000: system.cpu.iq: Not able to schedule any instructions.
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 341000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=3
+ 341000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 341000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x41850c=>0x418510).(0=>1), [sn:26]
+ 341000: system.cpu.rob: Updating global head ptr.
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 7
+ 341000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 7
+ 341000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 7 size=3
+ 341000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 7
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 7
+ 341000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418510=>0x418514).(0=>1), [sn:27]
+ 341000: system.cpu.rob: Updating global head ptr.
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 8
+ 341000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 8
+ 341000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 8 size=3
+ 341000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 8
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 8
+ 341000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418510=>0x418514).(1=>2), [sn:28]
+ 341000: system.cpu.rob: Updating global head ptr.
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 9
+ 341000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 9
+ 341000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 9 size=3
+ 341000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 9
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 9
+ 341000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418510=>0x418514).(2=>3), [sn:29]
+ 341000: system.cpu.rob: Updating global head ptr.
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 10
+ 341000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 10
+ 341000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 10 size=3
+ 341000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 10
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 10
+ 341000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418514=>0x418518).(0=>1), [sn:30]
+ 341000: system.cpu.rob: Updating global head ptr.
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 11
+ 341000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 11
+ 341000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 11 size=3
+ 341000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 11
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 11
+ 341000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418518=>0x41851c).(0=>1), [sn:31]
+ 341000: system.cpu.rob: Updating global head ptr.
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 12
+ 341000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 12
+ 341000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 12 size=3
+ 341000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 12
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 12
+ 341000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418518=>0x41851c).(1=>2), [sn:32]
+ 341000: system.cpu.rob: Updating global head ptr.
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 13
+ 341000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 13
+ 341000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 13 size=3
+ 341000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 13
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 13
+ 341000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418518=>0x41851c).(2=>3), [sn:33]
+ 341000: system.cpu.rob: Updating global head ptr.
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 14
+ 341000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 341000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 14
+ 341000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 341000: system.cpu.rob: [tid:0] Getting Head Bank: 14
+ 341500: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 341500: system.cpu.iq: Not able to schedule any instructions.
+ 341500: system.cpu.iew.lsq.thread0: Marking store as able to write back, PC (0x418510=>0x418514).(1=>2) [sn:28]
+ 341500: system.cpu.iew.lsq.thread0: Marking store as able to write back, PC (0x418510=>0x418514).(2=>3) [sn:29]
+ 341500: system.cpu.iew.lsq.thread0: Marking store as able to write back, PC (0x418518=>0x41851c).(1=>2) [sn:32]
+ 341500: system.cpu.iew.lsq.thread0: Marking store as able to write back, PC (0x418518=>0x41851c).(2=>3) [sn:33]
+ 341500: system.cpu.iew.lsq.thread0: Committing head load instruction, PC (0x41850c=>0x418510).(0=>1)
+ 341500: system.cpu.iq: [tid:0] Committing instructions older than [sn:33]
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 14
+ 341500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 14 size=2
+ 341500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 14
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 14
+ 341500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x41851c=>0x418520).(0=>1), [sn:34]
+ 341500: system.cpu.rob: Updating global head ptr.
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 15
+ 341500: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 15
+ 341500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 15 size=2
+ 341500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 15
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 15
+ 341500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418520=>0x418524).(0=>1), [sn:35]
+ 341500: system.cpu.rob: Updating global head ptr.
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 341500: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 341500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=2
+ 341500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 341500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x41857c=>0x418580).(0=>1), [sn:65]
+ 341500: system.cpu.rob: Updating global head ptr.
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 1
+ 341500: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 1
+ 341500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 1 size=2
+ 341500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 1
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 1
+ 341500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418524=>0x418528).(1=>2), [sn:37]
+ 341500: system.cpu.rob: Updating global head ptr.
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 2
+ 341500: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 2
+ 341500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 2 size=2
+ 341500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 2
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 2
+ 341500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418524=>0x418528).(2=>3), [sn:38]
+ 341500: system.cpu.rob: Updating global head ptr.
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 3
+ 341500: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 3
+ 341500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 3 size=2
+ 341500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 3
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 3
+ 341500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418528=>0x41852c).(0=>1), [sn:39]
+ 341500: system.cpu.rob: Updating global head ptr.
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 4
+ 341500: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 4
+ 341500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 4 size=2
+ 341500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 4
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 4
+ 341500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418528=>0x41852c).(1=>2), [sn:40]
+ 341500: system.cpu.rob: Updating global head ptr.
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 5
+ 341500: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 5
+ 341500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 5 size=2
+ 341500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 5
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 5
+ 341500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418528=>0x41852c).(2=>3), [sn:41]
+ 341500: system.cpu.rob: Updating global head ptr.
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 341500: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 341500: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=2
+ 341500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 341500: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x41852c=>0x418530).(0=>1), [sn:42]
+ 341500: system.cpu.rob: Updating global head ptr.
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 7
+ 341500: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 341500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 7
+ 341500: system.cpu.rob: [tid:0] Reading Head Instr.
+ 341500: system.cpu.rob: [tid:0] Getting Head Bank: 7
+ 342000: system.cpu.iq: Attempting to schedule ready instructions from the IQ.
+ 342000: system.cpu.iq: Not able to schedule any instructions.
+ 342000: system.cpu.iew.lsq.thread0: D-Cache: Writing back store idx:3 PC:(0x418510=>0x418514).(1=>2) to Addr:0x320c30, data:0 [sn:28]
+ 342000: system.cpu.iew.lsq.thread0: Memory request (pkt: WriteReq [320c30:320c37]) from inst [sn:28] was sent (cache is blocked: 0, cache_got_blocked: 0)
+ 342000: system.cpu.iew.lsq.thread0: D-Cache: Writing back store idx:4 PC:(0x418510=>0x418514).(2=>3) to Addr:0x320c38, data:0 [sn:29]
+ 342000: system.cpu.iew.lsq.thread0: Memory request (pkt: WriteReq [320c38:320c3f]) from inst [sn:29] was sent (cache is blocked: 0, cache_got_blocked: 0)
+ 342000: system.cpu.iew.lsq.thread0: D-Cache: Writing back store idx:5 PC:(0x418518=>0x41851c).(1=>2) to Addr:0x320c40, data:0 [sn:32]
+ 342000: system.cpu.iew.lsq.thread0: Memory request (pkt: WriteReq [320c40:320c47]) from inst [sn:32] was sent (cache is blocked: 0, cache_got_blocked: 0)
+ 342000: system.cpu.iew.lsq.thread0: D-Cache: Writing back store idx:6 PC:(0x418518=>0x41851c).(2=>3) to Addr:0x320c48, data:0 [sn:33]
+ 342000: system.cpu.iew.lsq.thread0: Memory request (pkt: WriteReq [320c48:320c4f]) from inst [sn:33] was sent (cache is blocked: 0, cache_got_blocked: 0)
+ 342000: system.cpu.iew.lsq.thread0: Marking store as able to write back, PC (0x418524=>0x418528).(1=>2) [sn:37]
+ 342000: system.cpu.iew.lsq.thread0: Marking store as able to write back, PC (0x418524=>0x418528).(2=>3) [sn:38]
+ 342000: system.cpu.iew.lsq.thread0: Marking store as able to write back, PC (0x418528=>0x41852c).(1=>2) [sn:40]
+ 342000: system.cpu.iew.lsq.thread0: Marking store as able to write back, PC (0x418528=>0x41852c).(2=>3) [sn:41]
+ 342000: system.cpu.iew.lsq.thread0: Marking store as able to write back, PC (0x41852c=>0x418530).(0=>1) [sn:42]
+ 342000: system.cpu.iq: [tid:0] Committing instructions older than [sn:42]
+ 342000: system.cpu.iew.lsq.thread0: LQ size: 32, #loads occupied: 0
+ 342000: system.cpu.iew.lsq.thread0: SQ size: 32, #stores occupied: 14
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 7
+ 342000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 7 size=2
+ 342000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 7
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 7
+ 342000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418530=>0x418534).(0=>1), [sn:43]
+ 342000: system.cpu.rob: Updating global head ptr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 8
+ 342000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 8
+ 342000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 8 size=2
+ 342000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 8
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 8
+ 342000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418534=>0x418538).(0=>1), [sn:44]
+ 342000: system.cpu.rob: Updating global head ptr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 9
+ 342000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 9
+ 342000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 9 size=2
+ 342000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 9
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 9
+ 342000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418538=>0x41853c).(0=>1), [sn:45]
+ 342000: system.cpu.rob: Updating global head ptr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 10
+ 342000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 10
+ 342000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 10 size=2
+ 342000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 10
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 10
+ 342000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418538=>0x41853c).(1=>2), [sn:46]
+ 342000: system.cpu.rob: Updating global head ptr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 11
+ 342000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 11
+ 342000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 11 size=2
+ 342000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 11
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 11
+ 342000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418538=>0x41853c).(2=>3), [sn:47]
+ 342000: system.cpu.rob: Updating global head ptr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 12
+ 342000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 12
+ 342000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 12 size=2
+ 342000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 12
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 12
+ 342000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x41853c=>0x41854c).(0=>1), [sn:48]
+ 342000: system.cpu.rob: Updating global head ptr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 13
+ 342000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 13 size=2
+ 342000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 13
+ 342000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418540=>0x418544).(0=>1), [sn:49]
+ 342000: system.cpu.rob: Updating global head ptr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 14
+ 342000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 14
+ 342000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 14 size=1
+ 342000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 14
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 14
+ 342000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418544=>0x418548).(0=>1), [sn:50]
+ 342000: system.cpu.rob: Updating global head ptr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 15
+ 342000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 15
+ 342000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 15 size=1
+ 342000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 15
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 15
+ 342000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418548=>0x41854c).(0=>1), [sn:51]
+ 342000: system.cpu.rob: Updating global head ptr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 342000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 342000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 0 size=1
+ 342000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 0
+ 342000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x41854c=>0x418550).(0=>1), [sn:52]
+ 342000: system.cpu.rob: Updating global head ptr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 1
+ 342000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 1
+ 342000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 1 size=1
+ 342000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 1
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 1
+ 342000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418550=>0x418554).(0=>1), [sn:53]
+ 342000: system.cpu.rob: Updating global head ptr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 2
+ 342000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 2
+ 342000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 2 size=1
+ 342000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 2
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 2
+ 342000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418554=>0x418558).(0=>1), [sn:54]
+ 342000: system.cpu.rob: Updating global head ptr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 3
+ 342000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 3
+ 342000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 3 size=1
+ 342000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 3
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 3
+ 342000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418558=>0x41855c).(0=>1), [sn:55]
+ 342000: system.cpu.rob: Updating global head ptr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 4
+ 342000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 4
+ 342000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 4 size=1
+ 342000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 4
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 4
+ 342000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x41855c=>0x418560).(0=>1), [sn:56]
+ 342000: system.cpu.rob: Updating global head ptr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 5
+ 342000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 5
+ 342000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 5 size=1
+ 342000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 5
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 5
+ 342000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418560=>0x418564).(0=>1), [sn:57]
+ 342000: system.cpu.rob: Updating global head ptr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 342000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 342000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 6 size=1
+ 342000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 6
+ 342000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418564=>0x418568).(0=>1), [sn:58]
+ 342000: system.cpu.rob: Updating global head ptr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 7
+ 342000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 7
+ 342000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 7 size=1
+ 342000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 7
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 7
+ 342000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418568=>0x41856c).(0=>1), [sn:59]
+ 342000: system.cpu.rob: Updating global head ptr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 8
+ 342000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 8
+ 342000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 8 size=1
+ 342000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 8
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 8
+ 342000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x41856c=>0x418570).(0=>1), [sn:60]
+ 342000: system.cpu.rob: Updating global head ptr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 9
+ 342000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 9
+ 342000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 9 size=1
+ 342000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 9
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 9
+ 342000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418570=>0x418574).(0=>1), [sn:61]
+ 342000: system.cpu.rob: Updating global head ptr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 10
+ 342000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 10
+ 342000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 10 size=1
+ 342000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 10
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 10
+ 342000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418574=>0x418578).(0=>1), [sn:62]
+ 342000: system.cpu.rob: Updating global head ptr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 11
+ 342000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 11
+ 342000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 11 size=1
+ 342000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 11
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 11
+ 342000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418578=>0x41857c).(0=>1), [sn:63]
+ 342000: system.cpu.rob: Updating global head ptr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 12
+ 342000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 12
+ 342000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 12 size=1
+ 342000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 12
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 12
+ 342000: system.cpu.rob: [tid:0] Retiring head instruction, instruction PC (0x418578=>0x41857c).(1=>2), [sn:64]
+ 342000: system.cpu.rob: Updating global head ptr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Tail Bank: 13
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 13
+ 342000: system.cpu.rob: [tid:0] Checking if head is ready. Head bank: 13 size=1
+ 342000: system.cpu.rob: [tid:0] Reading Head Instr.
+ 342000: system.cpu.rob: [tid:0] Getting Head Bank: 13

@@ -292,9 +292,9 @@ void ROB::wibPush(ThreadID tid, DynInstPtr instr, std::vector<int> loadPtrs){
 }
 
 bool 
-ROB::instrWaiting(int *loadPtrs){
+ROB::instrWaiting(WIBEntry *wibEntry){
     for(int i=0; i<numLoadVectors; i++){
-        if(loadPtrs[i] == 1){
+        if(wibEntry->loadPtrs[i] == 1){
             return true;
         }
     }
@@ -334,7 +334,7 @@ ROB::readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs){
     for(unsigned bank_num=initial; bank_num < 2*issueWidth; bank_num+=2){
         for(auto it = WIB[tid][bank_num].begin(); it != WIB[tid][bank_num].end(); it++){
             WIBEntry* wibEntry = *it;
-            if(!instrWaiting(wibEntry->loadPtrs)){
+            if(!instrWaiting(wibEntry)){
                 DPRINTF(ROB, "[tid:%d] Instruction is ready to re-issue from WIB. [sn:%llu]\n", tid, wibEntry->instr->seqNum);
                 
                 readyInstrs.push_back(wibEntry->instr);
@@ -353,12 +353,13 @@ ROB::readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs){
 
 void 
 ROB::clearLoadWaiting(ThreadID tid, int loadPtr){
+    freeLoadVectors[tid].push_back(loadPtr);
     for(unsigned bank_num=0; bank_num < 2*issueWidth; bank_num++){
         for(auto it = WIB[tid][bank_num].begin(); it != WIB[tid][bank_num].end(); it++){
             WIBEntry* wibEntry = *it;
             wibEntry->loadPtrs[loadPtr] = 0;
-            freeLoadVectors[tid].push_back(loadPtr);
             DPRINTF(ROB, "[tid:%d] Cleared load vector pointer %d for instruction in WIB. [sn:%llu]\n", tid, loadPtr, wibEntry->instr->seqNum);
+            assert(!(wibEntry->loadPtrs[loadPtr]));
         }
     }
 }
@@ -557,9 +558,9 @@ ROB::retireHead(ThreadID tid)
     DynInstPtr head_inst = std::move(*head_it);
     instList[tid][bank_num].erase(head_it);
 
-    // if(!instList[tid][bank_num].empty()) {
-    //     assert(!(head_inst == instList[tid][bank_num].front()));
-    // }
+    if(!instList[tid][bank_num].empty()) {
+        assert(!(head_inst == instList[tid][bank_num].front()));
+    }
 
     assert(head_inst->readyToCommit());
 

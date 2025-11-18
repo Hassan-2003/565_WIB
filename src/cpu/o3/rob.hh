@@ -333,7 +333,7 @@ class ROB
     bool wibPop(ThreadID tid, int loadPtr, 
                 DynInstPtr instr, unsigned bank_num);
     
-    bool instrWaiting(int *loadPtrs);
+    bool instrWaiting(WIBEntry *wibEntry);
 
     void readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs);
                 
