@@ -104,7 +104,7 @@ class ROB
     /** ROB resource sharing policy for SMT mode. */
     SMTQueuePolicy robPolicy;
 
-    int numLoadVectors;
+    unsigned numLoadVectors;
 
   public:
     /** ROB constructor.
@@ -112,7 +112,6 @@ class ROB
      *  @param params The cpu params including several ROB-specific parameters.
      */
     ROB(CPU *_cpu, const BaseO3CPUParams &params);
-    // ~ROB();
 
     std::string name() const;
 
@@ -317,17 +316,17 @@ class ROB
     /** Interface functions for WIB **/
 
     // Clears all WIB entries waiting on a specific load
-    void clearLoadWaiting(ThreadID tid, int loadPtr);
+    void clearLoadWaiting(ThreadID tid, unsigned loadPtr);
 
     // Request any available load vector pointer
-    bool getLoadVectorPtr(ThreadID tid, int &loadPtr);
+    bool getLoadVectorPtr(ThreadID tid, unsigned &loadPtr);
 
     // Given an instruction, get its ROB bank number
     // void get_bank(ThreadID tid, DynInstPtr instr, unsigned &bank_num);
 
     // Only called assuming load vector ptr was assigned succesfully
     void wibPush(ThreadID tid, DynInstPtr instr, 
-                std::vector<int> loadPtrs);
+                int *loadPtrs);
     
     // Called only by squash but its logic is replicated in readCycle to avoid redundant looping
     bool wibPop(ThreadID tid, unsigned loadPtr, 

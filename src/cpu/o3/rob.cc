@@ -97,7 +97,12 @@ ROB::ROB(CPU *_cpu, const BaseO3CPUParams &params)
     }
 
     numLoadVectors = params.numLoadVectors;
+
     for(ThreadID tid = 0; tid < numThreads; tid++) {
+        threadEntries[tid] = 0;
+        headptr[tid] = 0;
+        tailptr[tid] = 0;
+
         for(unsigned loadVector = 0; loadVector < numLoadVectors; loadVector++) {
             freeLoadVectors[tid].push_back(loadVector);
         }
@@ -106,9 +111,6 @@ ROB::ROB(CPU *_cpu, const BaseO3CPUParams &params)
     for (ThreadID tid = numThreads; tid < MaxThreads; tid++) {
         maxEntries[tid] = 0;
     }
-
-    DPRINTF(ROB, "Checking freeLoadVector value. Front: %d, Back: %d \n", 
-            freeLoadVectors[0].front(), freeLoadVectors[0].back());
 
     even = 1;
     resetState();
@@ -246,7 +248,7 @@ ROB::ROB(CPU *_cpu, const BaseO3CPUParams &params)
 //     }
 // }
 
-void ROB::wibPush(ThreadID tid, DynInstPtr instr, std::vector<int> loadPtrs){
+void ROB::wibPush(ThreadID tid, DynInstPtr instr, int *loadPtrs){
 
     WIBEntry* wibEntry = new WIBEntry;
 
@@ -257,14 +259,9 @@ void ROB::wibPush(ThreadID tid, DynInstPtr instr, std::vector<int> loadPtrs){
         wibEntry->loadPtrs[i] = 0;
     }
 
-    while(!loadPtrs.empty()){
-        int i = loadPtrs.back();
-        loadPtrs.pop_back();
-
-        if(i >= 0){
-            if(wibEntry->loadPtrs[i] == 0){
-                wibEntry->loadPtrs[i] = 1;
-            }
+    for(int i=0; i<instr->numSrcRegs(); i++){
+        if(wibEntry->loadPtrs[loadPtrs[i]] == 0){
+            wibEntry->loadPtrs[loadPtrs[i]] = 1;
         }
     }
 
@@ -346,7 +343,7 @@ ROB::clearLoadWaiting(ThreadID tid, unsigned loadPtr){
 }
 
 bool 
-ROB::getLoadVectorPtr(ThreadID tid, int &loadPtr){
+ROB::getLoadVectorPtr(ThreadID tid, unsigned &loadPtr){
     if(!freeLoadVectors[tid].empty()){
         loadPtr = freeLoadVectors[tid].back();
         freeLoadVectors[tid].pop_back();
@@ -532,9 +529,9 @@ ROB::retireHead(ThreadID tid)
     DynInstPtr head_inst = std::move(*head_it);
     instList[tid].erase(head_it);
 
-    if(!instList[tid][bank_num].empty()) {
-        assert(!(head_inst == instList[tid][bank_num].front()));
-    }
+    // if(!instList[tid][bank_num].empty()) {
+    //     assert(!(head_inst == instList[tid][bank_num].front()));
+    // }
 
     assert(head_inst->readyToCommit());
 
