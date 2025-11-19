@@ -103,7 +103,7 @@ ROB::ROB(CPU *_cpu, const BaseO3CPUParams &params)
         headptr[tid] = 0;
         tailptr[tid] = 0;
 
-        for(unsigned loadVector = 0; loadVector < numLoadVectors; loadVector++) {
+        for(int loadVector = 0; loadVector < numLoadVectors; loadVector++) {
             freeLoadVectors[tid].push_back(loadVector);
         }
     }
@@ -116,139 +116,7 @@ ROB::ROB(CPU *_cpu, const BaseO3CPUParams &params)
     resetState();
 }
 
-// void ROB::get_tail_bank(ThreadID tid, unsigned &bank_num)
-// {   
-//     unsigned ptr = tailptr[tid];
-//     if( ptr == (unsigned)-1 ) {
-//         bank_num = 0;
-//         DPRINTF(ROB, "[tid:%d] Getting Tail Bank: %d\n",tid, bank_num);
-//         return;
-//     }
-//     bank_num = ptr%(2*issueWidth);
-//     DPRINTF(ROB, "[tid:%d] Getting Tail Bank: %d\n",tid, bank_num);
-// }
-
-// void ROB::get_head_bank(ThreadID tid, unsigned &bank_num)
-// {   
-//     unsigned ptr = headptr[tid];
-//     if( ptr == (unsigned)-1 ) {
-//         bank_num = 0;
-//         DPRINTF(ROB, "[tid:%d] Getting Head Bank: %d\n",tid, bank_num);
-//         return;
-//     }
-//     bank_num = ptr%(2*issueWidth);
-//     DPRINTF(ROB, "[tid:%d] Getting Head Bank: %d\n",tid, bank_num);
-//     return;
-// }
-
-// void 
-// ROB::set_squashCursors(ThreadID tid)
-// {
-//     DPRINTF(ROB, "[tid:%d] Setting cursors to tails\n",tid);
-//     for (unsigned bank_num = 0; bank_num < 2*issueWidth; bank_num++) {
-//         squashCursorIt[tid][bank_num] = instList[tid][bank_num].end();
-//         if(!instList[tid][bank_num].empty())
-//             {squashCursorIt[tid][bank_num]--;}
-//     }
-// }
-
-// void 
-// ROB::set_searchBankIt(ThreadID tid, unsigned bank_num)
-// {
-//     searchBankIt[tid] = bank_num;
-//     DPRINTF(ROB, "[tid:%d] Setting search bank iterator with bank: %d\n",tid, bank_num);
-// }
-
-// void 
-// ROB::set_squashBankIt(ThreadID tid, unsigned bank_num)
-// {
-//     squashBankIt[tid] = bank_num;
-//     DPRINTF(ROB, "[tid:%d] Setting squash bank iterator with bank: %d\n",tid, bank_num);
-// }
-
-// void 
-// ROB::increment_searchBankIt(ThreadID tid)
-// {
-//     DPRINTF(ROB, "[tid:%d] Incrementing search bank iterator\n",tid);
-//     searchBankIt[tid] = (searchBankIt[tid]+1) % (2*issueWidth);
-// }
-
-// void 
-// ROB::decrement_squashBankIt(ThreadID tid)
-// {
-//     DPRINTF(ROB, "[tid:%d] Decrementing squash bank iterator\n",tid);
-//     if(squashBankIt[tid] == 0){
-//         squashBankIt[tid] = 2*issueWidth - 1;
-//     } else {
-//         squashBankIt[tid] = (squashBankIt[tid]-1) % (2*issueWidth);
-//     }
-// }
-
-// void 
-// ROB::get_squashCursor(ThreadID tid, unsigned bank_num, InstIt &it)
-// {   
-//     DPRINTF(ROB, "[tid:%d] squash cursor now pointing to bank: %d\n",tid, bank_num);
-//     it = squashCursorIt[tid][bank_num];
-// }
-
-// void 
-// ROB::get_searchCursor(ThreadID tid, unsigned bank_num, InstIt &it)
-// {   
-//     DPRINTF(ROB, "[tid:%d] search cursor now pointing to bank: %d\n",tid, bank_num);
-//     it = searchCursorIt[tid][bank_num];
-// }
-
-// void 
-// ROB::set_searchCursors(ThreadID tid)
-// {
-//     DPRINTF(ROB, "[tid:%i] Setting cursors to heads.\n",
-//                 tid);
-//     for (unsigned bank_num = 0; bank_num < 2*issueWidth; bank_num++) {
-//         searchCursorIt[tid][bank_num] = instList[tid][bank_num].begin();
-//     }
-// }
-
-// void 
-// ROB::decrement_cursor(ThreadID tid, unsigned bank_num){
-//     DPRINTF(ROB, "[tid:%d] Decrementing squash cursor\n",tid);
-//     // cursorIt[tid][bank_num] = instList[tid][bank_num].end();
-//     unsigned tail_bank_num;
-//     if (squashCursorIt[tid][bank_num] != instList[tid][bank_num].begin()) {
-//         --squashCursorIt[tid][bank_num];
-//     }else {
-//         DPRINTF(ROB, "[tid:%d] Finished squash scanning bank %d.\n",tid,bank_num);
-//         // get_tail_bank(tid, tail_bank_num);
-//         // squashCursorIt[tid][bank_num] = instList[tid][tail_bank_num].end();
-//         squashCursorIt[tid][bank_num] = instList[tid][bank_num].end();
-//     }
-// }
-
-// void 
-// ROB::increment_cursor(ThreadID tid, unsigned bank_num){
-//     DPRINTF(ROB, "[tid:%d] Incrementing search cursor\n",tid);
-//     unsigned tail_bank_num;
-//     if (searchCursorIt[tid][bank_num] != instList[tid][bank_num].end()) {
-//         ++searchCursorIt[tid][bank_num];
-//     }
-//     else{
-//         DPRINTF(ROB, "[tid:%d] Finished search scanning bank %d.\n",tid,bank_num);
-//         // get_tail_bank(tid, tail_bank_num);
-//         // searchCursorIt[tid][bank_num] = instList[tid][tail_bank_num].end();
-//         searchCursorIt[tid][bank_num] = instList[tid][bank_num].end();
-//     }
-// }
-
-// void ROB::get_bank(ThreadID tid, DynInstPtr instr, unsigned &bank_num){
-//     for(bank_num=0; bank_num<2*MaxWidth; bank_num++){
-//         for(InstIt it = instList[tid][bank_num].begin(); it != instList[tid][bank_num].end(); it++){
-//             if(*it = instr){
-//                 return;
-//             }
-//         }
-//     }
-// }
-
-void ROB::wibPush(ThreadID tid, DynInstPtr instr, int *loadPtrs){
+void ROB::wibPush(ThreadID tid, DynInstPtr instr, std::vector<int> loadPtrs){
 
     WIBEntry* wibEntry = new WIBEntry;
 
@@ -259,24 +127,23 @@ void ROB::wibPush(ThreadID tid, DynInstPtr instr, int *loadPtrs){
         wibEntry->loadPtrs[i] = 0;
     }
 
-    for(int i=0; i<instr->numSrcRegs(); i++){
-        if(wibEntry->loadPtrs[loadPtrs[i]] == 0){
-            wibEntry->loadPtrs[loadPtrs[i]] = 1;
+    while(!loadPtrs.empty()){
+        int i = loadPtrs.back();
+        loadPtrs.pop_back();
+
+        if(i >= 0){
+            if(wibEntry->loadPtrs[i] == 0){
+                wibEntry->loadPtrs[i] = 1;
+            }
         }
     }
 
-    // delete[] loadPtrs;
-
-    // unsigned bank_num;
-    // get_bank(tid, instr, bank_num);
-
-    // WIB[tid][bank_num].push_back(wibEntry);
     WIB[tid].push_back(wibEntry);
     DPRINTF(ROB, "[tid:%d] Instruction has been pushed to WIB. [sn:%llu]\n", tid, wibEntry->instr->seqNum);
 }
 
 bool 
-ROB::instrWaiting(WIBEntry* wibEntry){
+ROB::instrWaiting(WIBEntry *wibEntry){
     for(int i=0; i<numLoadVectors; i++){
         if(wibEntry->loadPtrs[i] == 1){
             return true;
@@ -286,7 +153,7 @@ ROB::instrWaiting(WIBEntry* wibEntry){
 }
 
 bool
-ROB::wibPop(ThreadID tid, unsigned loadPtr, DynInstPtr instr){
+ROB::wibPop(ThreadID tid, int loadPtr, DynInstPtr instr){
     for(auto it = WIB[tid].begin(); it != WIB[tid].end(); it++){
         WIBEntry* wibEntry = *it;
         if(wibEntry->instr == instr){
@@ -308,6 +175,7 @@ ROB::readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs){
     // Currently doing oldest-first checking within even/odd banks
     for(auto it = WIB[tid].begin(); it != WIB[tid].end(); it++){
         WIBEntry* wibEntry = *it;
+        DPRINTF(ROB, "[tid:%d] WIB Reading instruction in bank %d. Waiting Status:%d [sn:%llu]\n", tid, wibEntry->instr->bankNum, instrWaiting(wibEntry), wibEntry->instr->seqNum);
         if((!banksChecked[wibEntry->instr->bankNum]) && (wibEntry->instr->bankNum % 2 == !even)){
             banksChecked[wibEntry->instr->bankNum] = 1;
             if(!instrWaiting(wibEntry)){
@@ -332,8 +200,8 @@ ROB::readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs){
 }
 
 void 
-ROB::clearLoadWaiting(ThreadID tid, unsigned loadPtr){
-    freeLoadVectors[tid].push_back(loadPtr);
+ROB::clearLoadWaiting(ThreadID tid, int loadPtr){
+    freeLoadVectors[tid].push_front(loadPtr);
     for(auto it = WIB[tid].begin(); it != WIB[tid].end(); it++){
         WIBEntry* wibEntry = *it;
         wibEntry->loadPtrs[loadPtr] = 0;
@@ -343,10 +211,10 @@ ROB::clearLoadWaiting(ThreadID tid, unsigned loadPtr){
 }
 
 bool 
-ROB::getLoadVectorPtr(ThreadID tid, unsigned &loadPtr){
+ROB::getLoadVectorPtr(ThreadID tid, int &loadPtr){
     if(!freeLoadVectors[tid].empty()){
-        loadPtr = freeLoadVectors[tid].back();
-        freeLoadVectors[tid].pop_back();
+        loadPtr = freeLoadVectors[tid].front();
+        freeLoadVectors[tid].pop_front();
         DPRINTF(ROB, "[tid:%d] Assigned Load Vector Pointer: %d\n", tid, loadPtr);
         return true;
     }
@@ -468,17 +336,6 @@ ROB::insertInst(const DynInstPtr &inst)
     ThreadID tid = inst->threadNumber;
     assert(threadEntries[tid] < maxEntries[tid]);
 
-    // unsigned int bank_num;
-
-    // if(threadEntries[tid] == 0) {
-    //     bank_num = 0;
-    // } else {
-    //     // get_tail_bank(tid, bank_num);
-    //     if(bank_num == (2*issueWidth -1)) {
-    //         bank_num = -1;
-    //     }
-    // }
-
     //Set Up headptr if this is the 1st instruction for this thread in ROB
     if (threadEntries[tid] == 0) {
         headptr[tid] = 0;
@@ -569,8 +426,11 @@ ROB::isHeadReady(ThreadID tid)
     if (threadEntries[tid] != 0) {
         // unsigned int bank_num;
         // get_head_bank(tid, bank_num);
-        DPRINTF(ROB, "[tid:%u] Checking if head is ready. Head bank: %u size=%d\n",
-        tid, instList[tid].size());
+        // InstIt head_it = instList[tid].begin();
+        // DynInstPtr head_inst = std::move(*head_it);
+
+        DPRINTF(ROB, "[tid:%u] Checking if head is ready. ROB size=%d\n. HEAD SN=%llu",
+        tid, instList[tid].size(), instList[tid].front()->seqNum);
 
         assert(!instList[tid].empty());
         // if(instList[tid][bank_num].empty()) {

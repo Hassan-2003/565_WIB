@@ -104,7 +104,7 @@ class ROB
     /** ROB resource sharing policy for SMT mode. */
     SMTQueuePolicy robPolicy;
 
-    unsigned numLoadVectors;
+    int numLoadVectors;
 
   public:
     /** ROB constructor.
@@ -284,52 +284,23 @@ class ROB
     size_t countInsts(ThreadID tid);
 
     /** WIB Support functions **/
-
-    // /** Given a pointer, return the bank number and index in bank for tail ptr */
-    // void get_tail_bank(ThreadID tid, unsigned &bank_num);
-
-    // /** Given a pointer, return the bank number and index in bank for head ptr */
-    // void get_head_bank(ThreadID tid, unsigned &bank_num);
-
-    // void get_squashCursor(ThreadID tid, unsigned bank_num, InstIt &it);
-    // void get_searchCursor(ThreadID tid, unsigned bank_num, InstIt &it);
-    // void decrement_cursor(ThreadID tid, unsigned bank_num);
-
-    // void set_squashCursors(ThreadID tid);
-    // void set_searchCursors(ThreadID tid);
-
-    // void increment_cursor(ThreadID tid, unsigned bank_num);
-
-    // void set_searchBankIt(ThreadID tid, unsigned bank_num);
-
-    // void increment_searchBankIt(ThreadID tid);
-
-    // // void decrement_searchBankIt(ThreadID tid);
-
-    // void set_squashBankIt(ThreadID tid, unsigned bank_num);
-
-    // void decrement_squashBankIt(ThreadID tid);
-
-    
-
-    
     /** Interface functions for WIB **/
 
     // Clears all WIB entries waiting on a specific load
-    void clearLoadWaiting(ThreadID tid, unsigned loadPtr);
+    void clearLoadWaiting(ThreadID tid, int loadPtr);
 
     // Request any available load vector pointer
-    bool getLoadVectorPtr(ThreadID tid, unsigned &loadPtr);
+    bool getLoadVectorPtr(ThreadID tid, int &loadPtr);
 
     // Given an instruction, get its ROB bank number
     // void get_bank(ThreadID tid, DynInstPtr instr, unsigned &bank_num);
 
     // Only called assuming load vector ptr was assigned succesfully
     void wibPush(ThreadID tid, DynInstPtr instr, 
-                int *loadPtrs);
+                std::vector<int> loadPtrs);
     
     // Called only by squash but its logic is replicated in readCycle to avoid redundant looping
-    bool wibPop(ThreadID tid, unsigned loadPtr, 
+    bool wibPop(ThreadID tid, int loadPtr, 
                 DynInstPtr instr);
     
     bool instrWaiting(WIBEntry *entry);
@@ -372,7 +343,7 @@ class ROB
     int even;
     
     // Stack to track free load vector pointers
-    std::vector<int> freeLoadVectors[MaxThreads];
+    std::list<int> freeLoadVectors[MaxThreads];
 
   public:
     /** Iterator pointing to the instruction which is the last instruction

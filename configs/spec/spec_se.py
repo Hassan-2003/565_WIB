@@ -209,7 +209,7 @@ if args.elastic_trace_en:
 # All cpus belong to a common cpu_clk_domain, therefore running at a common
 # frequency.
 for cpu in system.cpu:
-    cpu.numLoadVectors = 16384
+    cpu.numLoadVectors = 2048
     cpu.clk_domain = system.cpu_clk_domain
 
 if ObjectList.is_kvm_cpu(CPUClass) or ObjectList.is_kvm_cpu(FutureClass):

@@ -894,6 +894,8 @@ IEW::dispatchInsts(ThreadID tid)
     std::list<DynInstPtr> readyInstrs;
     DPRINTF(IEW, "[tid:%i] Getting list of reinsertion ready instructions from WIB\n", tid);
     rob->readCycle(tid, readyInstrs);
+    DPRINTF(IEW, "[tid:%i] There are %d reinsertion ready instructions from WIB\n", tid, readyInstrs.size());
+    
     while (dis_num_inst < dispatchWidth &&
            readyInstrs.size() != 0)
     {
