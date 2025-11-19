@@ -917,6 +917,7 @@ IEW::dispatchInsts(ThreadID tid)
 
         // Read the 1st instruction from the WIB ready instructions for reinsertion
         DynInstPtr wib_inst = readyInstrs.front();
+        readyInstrs.pop_front();
 
         DPRINTF(IEW, "[tid:%i] Issue: Adding PC %s [sn:%lli] [tid:%i] from WIB to "
                 "IQ.\n",
