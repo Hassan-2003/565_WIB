@@ -116,9 +116,9 @@ ROB::ROB(CPU *_cpu, const BaseO3CPUParams &params)
     resetState();
 }
 
-void ROB::wibPush(ThreadID tid, DynInstPtr instr, std::vector<int> loadPtrs){
+void ROB::wibPush(ThreadID tid, DynInstPtr instr, std::vector<int> &loadPtrs){
 
-    WIBEntry* wibEntry = new WIBEntry;
+    WIBEntry* wibEntry = new WIBEntry();
 
     wibEntry->loadPtrs = new int[numLoadVectors];
     wibEntry->instr = instr;
@@ -133,19 +133,22 @@ void ROB::wibPush(ThreadID tid, DynInstPtr instr, std::vector<int> loadPtrs){
 
         if(i >= 0){
             if(wibEntry->loadPtrs[i] == 0){
+                DPRINTF(ROB, "WIB: [tid:%d] loadPtr %d set for instruction. [sn:%llu]\n", tid, i, wibEntry->instr->seqNum);
                 wibEntry->loadPtrs[i] = 1;
+                assert(wibEntry->loadPtrs[i]);
             }
         }
     }
 
     WIB[tid].push_back(wibEntry);
-    DPRINTF(ROB, "[tid:%d] Instruction has been pushed to WIB. [sn:%llu]\n", tid, wibEntry->instr->seqNum);
+    // DPRINTF(ROB, "[tid:%d] Instruction has been pushed to WIB. [sn:%llu]\n", tid, wibEntry->instr->seqNum);
 }
 
 bool 
 ROB::instrWaiting(WIBEntry *wibEntry){
     for(int i=0; i<numLoadVectors; i++){
         if(wibEntry->loadPtrs[i] == 1){
+            DPRINTF(ROB, "WIB: Instruction waiting on loadPtr %d. [sn:%llu]\n",i, wibEntry->instr->seqNum);
             return true;
         }
     }
@@ -173,25 +176,32 @@ ROB::readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs){
     unsigned banksChecked[2*MaxWidth] = {0};
 
     // Currently doing oldest-first checking within even/odd banks
-    for(auto it = WIB[tid].begin(); it != WIB[tid].end(); it++){
+    auto it = WIB[tid].begin();
+    while(it != WIB[tid].end()){
         WIBEntry* wibEntry = *it;
-        DPRINTF(ROB, "[tid:%d] WIB Reading instruction in bank %d. Waiting Status:%d [sn:%llu]\n", tid, wibEntry->instr->bankNum, instrWaiting(wibEntry), wibEntry->instr->seqNum);
-        if((!banksChecked[wibEntry->instr->bankNum]) && (wibEntry->instr->bankNum % 2 == !even)){
-            banksChecked[wibEntry->instr->bankNum] = 1;
+        int bank = wibEntry->instr->bankNum;
+
+        DPRINTF(ROB, "[tid:%d] WIB Reading instruction in bank %d. Waiting Status:%d [sn:%llu]\n", tid, bank, instrWaiting(wibEntry),wibEntry->instr->seqNum);
+        
+        if((!banksChecked[bank]) && (bank % 2 == !even)){
+            banksChecked[bank] = 1;
+
             if(!instrWaiting(wibEntry)){
                 DPRINTF(ROB, "[tid:%d] Instruction is ready to re-issue from WIB. [sn:%llu]\n", tid, wibEntry->instr->seqNum);
                 
                 readyInstrs.push_back(wibEntry->instr);
-
+                
                 //Remove from WIB
-                WIB[tid].erase(it);
+                it = WIB[tid].erase(it);
                 delete[] wibEntry->loadPtrs;
                 delete wibEntry;
 
-                //Break to avoid iterator invalidation
-                break;
+                // //Break to avoid iterator invalidation
+                // break;
+                continue;
             }
         }
+        ++it;
     }
 
     // Alternate between checking even or odd banks each cycle
@@ -202,10 +212,12 @@ ROB::readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs){
 void 
 ROB::clearLoadWaiting(ThreadID tid, int loadPtr){
     freeLoadVectors[tid].push_front(loadPtr);
+    DPRINTF(ROB, "[tid:%d] Freed WIB Load Vector Pointer: %d\n", tid, loadPtr);
     for(auto it = WIB[tid].begin(); it != WIB[tid].end(); it++){
-        WIBEntry* wibEntry = *it;
-        wibEntry->loadPtrs[loadPtr] = 0;
-        DPRINTF(ROB, "[tid:%d] Cleared load vector pointer %d for instruction in WIB. [sn:%llu]\n", tid, loadPtr, wibEntry->instr->seqNum);
+        // WIBEntry* wibEntry = *it;
+        (*it)->loadPtrs[loadPtr] = 0;
+        assert(!((*it)->loadPtrs[loadPtr]));
+        DPRINTF(ROB, "[tid:%d] Cleared load vector pointer %d for instruction in WIB. [sn:%llu]\n", tid, loadPtr, (*it)->instr->seqNum);
     }
     
 }
@@ -215,7 +227,7 @@ ROB::getLoadVectorPtr(ThreadID tid, int &loadPtr){
     if(!freeLoadVectors[tid].empty()){
         loadPtr = freeLoadVectors[tid].front();
         freeLoadVectors[tid].pop_front();
-        DPRINTF(ROB, "[tid:%d] Assigned Load Vector Pointer: %d\n", tid, loadPtr);
+        DPRINTF(ROB, "[tid:%d] Assigned WIB Load Vector Pointer: %d\n", tid, loadPtr);
         return true;
     }
 

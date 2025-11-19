@@ -297,7 +297,7 @@ class ROB
 
     // Only called assuming load vector ptr was assigned succesfully
     void wibPush(ThreadID tid, DynInstPtr instr, 
-                std::vector<int> loadPtrs);
+                std::vector<int> &loadPtrs);
     
     // Called only by squash but its logic is replicated in readCycle to avoid redundant looping
     bool wibPop(ThreadID tid, int loadPtr, 
