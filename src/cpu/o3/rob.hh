@@ -82,12 +82,12 @@ class ROB
     
     typedef std::pair<RegIndex, RegIndex> UnmapInfo;
     typedef typename std::list<DynInstPtr>::iterator InstIt;
-    typedef std::list<DynInstPtr> InstListPerThread;
-    using bank = InstListPerThread;
-    using BanksPerThread = std::array<bank, (2*MaxWidth)>;
+    // typedef std::list<DynInstPtr> InstListPerThread;
+    // using bank = InstListPerThread;
+    // using BanksPerThread = std::array<bank, (2*MaxWidth)>;
     
-    typedef std::list<WIBEntry*> loadVectors;
-    using WIBBanks = std::array<loadVectors, (2*MaxWidth)>;
+    // typedef std::list<WIBEntry*> loadVectors;
+    // using WIBBanks = std::array<loadVectors, (2*MaxWidth)>;
 
     /** Possible ROB statuses. */
     enum Status
@@ -286,30 +286,30 @@ class ROB
 
     /** WIB Support functions **/
 
-    /** Given a pointer, return the bank number and index in bank for tail ptr */
-    void get_tail_bank(ThreadID tid, unsigned &bank_num);
+    // /** Given a pointer, return the bank number and index in bank for tail ptr */
+    // void get_tail_bank(ThreadID tid, unsigned &bank_num);
 
-    /** Given a pointer, return the bank number and index in bank for head ptr */
-    void get_head_bank(ThreadID tid, unsigned &bank_num);
+    // /** Given a pointer, return the bank number and index in bank for head ptr */
+    // void get_head_bank(ThreadID tid, unsigned &bank_num);
 
-    void get_squashCursor(ThreadID tid, unsigned bank_num, InstIt &it);
-    void get_searchCursor(ThreadID tid, unsigned bank_num, InstIt &it);
-    void decrement_cursor(ThreadID tid, unsigned bank_num);
+    // void get_squashCursor(ThreadID tid, unsigned bank_num, InstIt &it);
+    // void get_searchCursor(ThreadID tid, unsigned bank_num, InstIt &it);
+    // void decrement_cursor(ThreadID tid, unsigned bank_num);
 
-    void set_squashCursors(ThreadID tid);
-    void set_searchCursors(ThreadID tid);
+    // void set_squashCursors(ThreadID tid);
+    // void set_searchCursors(ThreadID tid);
 
-    void increment_cursor(ThreadID tid, unsigned bank_num);
+    // void increment_cursor(ThreadID tid, unsigned bank_num);
 
-    void set_searchBankIt(ThreadID tid, unsigned bank_num);
+    // void set_searchBankIt(ThreadID tid, unsigned bank_num);
 
-    void increment_searchBankIt(ThreadID tid);
+    // void increment_searchBankIt(ThreadID tid);
 
-    // void decrement_searchBankIt(ThreadID tid);
+    // // void decrement_searchBankIt(ThreadID tid);
 
-    void set_squashBankIt(ThreadID tid, unsigned bank_num);
+    // void set_squashBankIt(ThreadID tid, unsigned bank_num);
 
-    void decrement_squashBankIt(ThreadID tid);
+    // void decrement_squashBankIt(ThreadID tid);
 
     
 
@@ -323,17 +323,17 @@ class ROB
     bool getLoadVectorPtr(ThreadID tid, int &loadPtr);
 
     // Given an instruction, get its ROB bank number
-    void get_bank(ThreadID tid, DynInstPtr instr, unsigned &bank_num);
+    // void get_bank(ThreadID tid, DynInstPtr instr, unsigned &bank_num);
 
     // Only called assuming load vector ptr was assigned succesfully
     void wibPush(ThreadID tid, DynInstPtr instr, 
                 std::vector<int> loadPtrs);
     
     // Called only by squash but its logic is replicated in readCycle to avoid redundant looping
-    bool wibPop(ThreadID tid, int loadPtr, 
-                DynInstPtr instr, unsigned bank_num);
+    bool wibPop(ThreadID tid, unsigned loadPtr, 
+                DynInstPtr instr);
     
-    bool instrWaiting(WIBEntry *wibEntry);
+    bool instrWaiting(WIBEntry *entry);
 
     void readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs);
                 
@@ -358,14 +358,16 @@ class ROB
     unsigned maxEntries[MaxThreads];
 
     /** ROB List of Instructions */ 
-    BanksPerThread instList[MaxThreads];
+    // BanksPerThread instList[MaxThreads];
+    std::list<DynInstPtr> instList[MaxThreads];
 
     /** Number of instructions that can be squashed in a single cycle. */
     unsigned squashWidth;
 
     /** WIB Structures **/
     // WIB Banks per thread
-    WIBBanks WIB[MaxThreads];
+    // WIBBanks WIB[MaxThreads];
+    std::list<WIBEntry*> WIB[MaxThreads];
     
     // Toggle to alternate checking even/odd banks each cycle
     int even;
@@ -394,19 +396,19 @@ class ROB
      *  immediately removed, meaning the tail iterator remains the same before
      *  and after a squash.
      *  This will always be set to cpu->instList.end() if it is invalid.
-     */
+    //  */
     InstIt squashIt[MaxThreads];
 
-    InstIt squashCursorIt[MaxThreads][2*MaxWidth];
-    InstIt searchCursorIt[MaxThreads][2*MaxWidth];
+    // InstIt squashCursorIt[MaxThreads][2*MaxWidth];
+    // InstIt searchCursorIt[MaxThreads][2*MaxWidth];
 
     /** Need bank iterators for search and squash 
     * because of multi-cycle interleaved squash
     * and search
     */
 
-    unsigned searchBankIt[MaxThreads];
-    unsigned squashBankIt[MaxThreads];
+    // unsigned searchBankIt[MaxThreads];
+    // unsigned squashBankIt[MaxThreads];
 
   public:
     /** Number of instructions in the ROB. */

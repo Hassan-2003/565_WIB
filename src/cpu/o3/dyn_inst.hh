@@ -140,6 +140,8 @@ class DynInst : public ExecContext, public RefCounted
     /** InstRecord that tracks this instructions. */
     Trace::InstRecord *traceData = nullptr;
 
+    unsigned bankNum = 0;
+
   protected:
     enum Status
     {
