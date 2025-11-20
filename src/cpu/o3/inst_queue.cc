@@ -1214,7 +1214,11 @@ InstructionQueue::wakeWaitDependents(const DynInstPtr &waiting_inst)
             // so that it knows which of its source registers is
             // ready.  However that would mean that the dependency
             // graph entries would need to hold the src_reg_idx.
-            dep_inst->markSrcRegReady();
+            for (int i = 0; i < dep_inst->numSrcRegs(); i++) {
+                if (dest_reg == dep_inst->renamedSrcIdx(i)) {
+                    dep_inst->markSrcRegReady(i);
+                }
+            }
             
             addIfReady(dep_inst);
             

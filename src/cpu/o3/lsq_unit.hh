@@ -91,6 +91,9 @@ class LSQUnit
   public:
     static constexpr auto MaxDataBytes = MaxVecRegLenInBytes;
 
+    /** Detects load miss happened if the cache response is not received within L1+L2 hit times */
+    //void detectLoadMiss();
+
     using LSQRequest = LSQ::LSQRequest;
   private:
     class LSQEntry
@@ -145,6 +148,11 @@ class LSQUnit
         const uint32_t& size() const { return _size; }
         const DynInstPtr& instruction() const { return _inst; }
         /** @} */
+
+        /** Track the time the load was sent */
+        //Tick loadSentTick;
+        /** Check if a load has already been detected */
+        //bool missDetected = false;
     };
 
     class SQEntry : public LSQEntry

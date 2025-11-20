@@ -1596,6 +1596,10 @@ LSQUnit::read(LSQRequest *request, ssize_t load_idx)
     DPRINTF(LSQUnit,"Package sent to cache\n");
 
     if (request->isSent()) {
+        // Save the time the load was sent to cache
+        // DPRINTF(LSQUnit,"Saving time load was sent\n");
+        // load_entry.loadSentTick = curTick();
+
         DPRINTF(LSQUnit,"Package sent successfully\n");
         // get the bit vector index for the miss
         int wib_index = -1;
@@ -1675,6 +1679,29 @@ LSQUnit::getStoreHeadSeqNum()
     else
         return 0;
 }
+
+// void
+// LSQUnit::detectLoadMiss()
+// {
+//     for (auto& load_entry :loadQueue) {
+        
+//         // Skip if
+//         if (!load_entry.valid() ||                  // not valid
+//             load_entry.request()->isComplete() ||   // already completed
+//             load_entry.missDetected) {              // already detected miss
+//             continue;
+//         }
+
+//         Tick hitLatency = cpu->cyclesToTicks(Cycles(22));
+//         Tick timeSinceSent = curTick() - load_entry.loadSentTick;
+
+//         if (timeSinceSent > hitLatency) {
+//             load_entry.missDetected = true;
+//             DPRINTF(LSQUnit, "Load [sn:%llu] took more than L1+L2 hit latency\n",
+//                     load_entry.instruction()->seqNum);
+//         }
+//     }
+// }
 
 } // namespace o3
 } // namespace gem5

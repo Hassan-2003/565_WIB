@@ -180,6 +180,15 @@ LSQ::tick()
 
     usedLoadPorts = 0;
     usedStorePorts = 0;
+
+    // Check if any load missed in any thread
+    // std::list<ThreadID>::iterator threads = activeThreads->begin();
+    // std::list<ThreadID>::iterator end = activeThreads->end();
+
+    // while (threads != end) {
+    //     ThreadID tid = *threads++;
+    //     thread[tid].detectLoadMiss();
+    // }
 }
 
 bool

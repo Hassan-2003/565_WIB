@@ -80,6 +80,9 @@ class DynInst : public ExecContext, public RefCounted
             InstSeqNum seq_num, CPU *cpu);
 
   public:
+    /** Checks if the instruction is cache miss replayed */
+    //bool isCacheMissReplayed = false;
+
     // The list of instructions iterator type.
     typedef typename std::list<DynInstPtr>::iterator ListIt;
 
