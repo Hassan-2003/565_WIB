@@ -407,11 +407,22 @@ LSQUnit::getMemDepViolator()
     return temp;
 }
 
+void
+LSQUnit::displayLSQ(){
+    DPRINTF(LSQUnit, "Load Queue:\n");
+    for (auto it = loadQueue.begin(); it != loadQueue.end(); ++it) {
+        DPRINTF(LSQUnit, "[sn:%llu] requesting data of size: %u\n",
+                it->instruction()->seqNum,
+                it->size());
+    }
+}
+
 unsigned
 LSQUnit::numFreeLoadEntries()
 {
         DPRINTF(LSQUnit, "LQ size: %d, #loads occupied: %d\n",
                 loadQueue.capacity(), loadQueue.size());
+        displayLSQ();
         return loadQueue.capacity() - loadQueue.size();
 }
 
@@ -1607,6 +1618,7 @@ LSQUnit::read(LSQRequest *request, ssize_t load_idx)
         if(!load_inst->getReqLoadPtr()){
             if (iewStage->rob->getLoadVectorPtr(tid, wib_index)) {
                 load_inst->setReqLoadPtr();
+                load_inst->setLoadVectorIndex(wib_index);
                 DPRINTF(LSQUnit,"Got load vector index from WIB\n");
                 // Setting wait bit for every blocked load
                 // Should also check if the WIB can issue a new b-vector index?

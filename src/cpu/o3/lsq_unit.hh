@@ -301,6 +301,8 @@ class LSQUnit
     /** Returns the memory ordering violator. */
     DynInstPtr getMemDepViolator();
 
+    void displayLSQ();
+
     /** Returns the number of free LQ entries. */
     unsigned numFreeLoadEntries();
 

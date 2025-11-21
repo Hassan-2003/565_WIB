@@ -156,6 +156,10 @@ class DynInst : public ExecContext, public RefCounted
 
     uint8_t realReadyRegs = 0;
 
+    int loadVectorIndex = -1;
+    void setLoadVectorIndex(int index) { loadVectorIndex = index; }
+    int getLoadVectorIndex() { return loadVectorIndex; }
+
   protected:
     enum Status
     {

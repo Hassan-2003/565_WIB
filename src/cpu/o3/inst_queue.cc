@@ -880,6 +880,7 @@ InstructionQueue::scheduleReadyInsts()
             iewStage->rob->wibPush(tid, issuing_inst, wib_indexes);
             issuing_inst->setPushToWIB();
             issuing_inst->clearCanIssue();
+            issuing_inst->clearIssued();
             issuing_inst->setSrcRegReady(issuing_inst->getRealSrcRegReady());
 
             // Set wait bit and wake up the wait dependent instructions
@@ -1110,6 +1111,16 @@ InstructionQueue::wakeDependents(const DynInstPtr &completed_inst)
         memDepUnit[tid].completeInst(completed_inst);
     }
 
+    int wib_index = completed_inst->getLoadVectorIndex();
+        // Clear the WIB entry of the waiting load
+    if (completed_inst->getReqLoadPtr()) {
+        DPRINTF(IQ, "Clearing WIB entry of the waiting load "
+                    "with WIB Index (%d)\n",
+                    wib_index);
+        
+        iewStage->rob->clearLoadWaiting(tid, wib_index);
+    }
+
     for (int dest_reg_idx = 0;
          dest_reg_idx < completed_inst->numDestRegs();
          dest_reg_idx++)
@@ -1153,7 +1164,9 @@ InstructionQueue::wakeDependents(const DynInstPtr &completed_inst)
             // ready.  However that would mean that the dependency
             // graph entries would need to hold the src_reg_idx.
             dep_inst->markSrcRegReady();
-            dep_inst->markRealSrcRegReady();
+            if(!completed_inst->getReqLoadPtr()){
+                dep_inst->markRealSrcRegReady();
+            }
 
             addIfReady(dep_inst);
 
@@ -1166,18 +1179,6 @@ InstructionQueue::wakeDependents(const DynInstPtr &completed_inst)
         // been woken up.
         assert(dependGraph.empty(dest_reg->flatIndex()));
         dependGraph.clearInst(dest_reg->flatIndex());
-
-        int wib_index = getIndex(dest_reg->flatIndex());
-        // Clear the WIB entry of the waiting load
-        if (completed_inst->isLoad() && regScoreboard[dest_reg->flatIndex()].wait_bit) {
-            DPRINTF(IQ, "Clearing WIB entry of the waiting load "
-                        "with destination register (%i) and "
-                        "WIB Index (%d)\n",
-                        dest_reg->index(),
-                        wib_index);
-            
-            iewStage->rob->clearLoadWaiting(tid, wib_index);
-        }
         
         // Mark the scoreboard as having that register ready.
         regScoreboard[dest_reg->flatIndex()].ready = true;
@@ -1484,6 +1485,9 @@ InstructionQueue::doSquash(ThreadID tid)
         // prevents freeing the squashed instruction's DynInst.
         // Thus, we need to manually clear out the squashed instructions'
         // heads of dependency graph.
+        DPRINTF(IQ, "Clearing out dependency graph heads for "
+                "squashed instruction PC %s [sn:%llu].\n",
+                squashed_inst->pcState(), squashed_inst->seqNum);
         for (int dest_reg_idx = 0;
              dest_reg_idx < squashed_inst->numDestRegs();
              dest_reg_idx++)
@@ -1530,7 +1534,24 @@ InstructionQueue::addToDependents(const DynInstPtr &new_inst)
             // it be added to the dependency graph.
             if (src_reg->isFixedMapping()) {
                 continue;
-            } else if (!regScoreboard[src_reg->flatIndex()].ready) {
+            } 
+            else if(!new_inst->getPushToWIB() && regScoreboard[src_reg->flatIndex()].wait_bit) {
+                DPRINTF(IQ, "New Instruction PC %s has src reg %i that "
+                        "is waiting on a load in the WIB.\n",
+                        new_inst->pcState(), src_reg->index());
+
+                new_inst->markSrcRegReady(src_reg_idx);
+            }
+
+            else if(new_inst->getPushToWIB() && regScoreboard[src_reg->flatIndex()].wait_bit) {
+                DPRINTF(IQ, "Indirect waiting Instruction PC %s has src reg %i that "
+                        "is waiting on a load-dependent instruction in the WIB.\n",
+                        new_inst->pcState(), src_reg->index());
+
+                dependGraph.insert(src_reg->flatIndex(), new_inst);
+                return_val = true;
+            }
+            else if (!regScoreboard[src_reg->flatIndex()].ready) {
                 DPRINTF(IQ, "Instruction PC %s has src reg %i (%s) that "
                         "is being added to the dependency chain.\n",
                         new_inst->pcState(), src_reg->index(),
@@ -1549,6 +1570,9 @@ InstructionQueue::addToDependents(const DynInstPtr &new_inst)
                 // Mark a register ready within the instruction.
                 //if (new_inst->numSrcRegs() != new_inst.readyRegs)
                 new_inst->markSrcRegReady(src_reg_idx);
+                if(!new_inst->getPushToWIB()){
+                    new_inst->markRealSrcRegReady();
+                }
             }
         }
     }
