@@ -138,7 +138,7 @@ class BaseO3CPU(BaseCPU):
     LFSTSize = Param.Unsigned(1024, "Last fetched store table size")
     SSITSize = Param.Unsigned(1024, "Store set ID table size")
 
-    numRobs = Param.Unsigned(1, "Number of Reorder Buffers");
+    numRobs = Param.Unsigned(1, "Number of Reorder Buffers")
 
     numPhysIntRegs = Param.Unsigned(256,
             "Number of physical integer registers")

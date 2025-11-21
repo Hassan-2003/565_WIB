@@ -150,6 +150,10 @@ class DynInst : public ExecContext, public RefCounted
     void setPushToWIB() { isPushedToWIB = true; }
     bool getPushToWIB() { return isPushedToWIB; }
 
+    bool reqLoadPtr = false;
+    void setReqLoadPtr() { reqLoadPtr = true; }
+    bool getReqLoadPtr() { return reqLoadPtr; }
+
   protected:
     enum Status
     {

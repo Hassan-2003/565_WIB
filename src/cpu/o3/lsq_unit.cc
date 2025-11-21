@@ -1604,24 +1604,27 @@ LSQUnit::read(LSQRequest *request, ssize_t load_idx)
         // get the bit vector index for the miss
         int wib_index = -1;
         ThreadID tid = load_inst->threadNumber;
-        if (iewStage->rob->getLoadVectorPtr(tid, wib_index)) {
-            DPRINTF(LSQUnit,"Got load vector index from WIB\n");
-            // Setting wait bit for every blocked load
-            // Should also check if the WIB can issue a new b-vector index?
-            for (int i = 0; i < load_inst->numDestRegs(); i++) {
-                // Mark register as waiting ( do we need to check if not pinned?)
-                // if (inst->renamedDestIdx(i)->
-                //         getNumPinnedWritesToComplete() == 0) {
-                DPRINTF(LSQUnit,"Setting Destination Register wait bit %i (%s) "
-                        "with WIB Index (%d)\n",
-                        load_inst->renamedDestIdx(i)->index(),
-                        load_inst->renamedDestIdx(i)->className(),
-                        wib_index);
-                PhysRegIdPtr dest_reg = load_inst->renamedDestIdx(i);
-                iewStage->instQueue.setWait(dest_reg->flatIndex(), wib_index);
+        if(!load_inst->getReqLoadPtr()){
+            if (iewStage->rob->getLoadVectorPtr(tid, wib_index)) {
+                load_inst->setReqLoadPtr();
+                DPRINTF(LSQUnit,"Got load vector index from WIB\n");
+                // Setting wait bit for every blocked load
+                // Should also check if the WIB can issue a new b-vector index?
+                for (int i = 0; i < load_inst->numDestRegs(); i++) {
+                    // Mark register as waiting ( do we need to check if not pinned?)
+                    // if (inst->renamedDestIdx(i)->
+                    //         getNumPinnedWritesToComplete() == 0) {
+                    DPRINTF(LSQUnit,"Setting Destination Register wait bit %i (%s) "
+                            "with WIB Index (%d)\n",
+                            load_inst->renamedDestIdx(i)->index(),
+                            load_inst->renamedDestIdx(i)->className(),
+                            wib_index);
+                    PhysRegIdPtr dest_reg = load_inst->renamedDestIdx(i);
+                    iewStage->instQueue.setWait(dest_reg->flatIndex(), wib_index);
 
-                DPRINTF(LSQUnit, "Waking dependents of the missed load instruction");
-                iewStage->instQueue.wakeWaitDependents(load_inst);
+                    DPRINTF(LSQUnit, "Waking dependents of the missed load instruction");
+                    iewStage->instQueue.wakeWaitDependents(load_inst);
+                }
             }
         }
     }

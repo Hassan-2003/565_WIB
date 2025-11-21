@@ -211,6 +211,15 @@ if args.elastic_trace_en:
 for cpu in system.cpu:
     cpu.numLoadVectors = 2048
     cpu.clk_domain = system.cpu_clk_domain
+    cpu.numROBEntries = 512
+    cpu.LQEntries = cpu.numROBEntries/4
+    cpu.SQEntries = cpu.numROBEntries/4
+    cpu.numPhysIntRegs = cpu.numROBEntries/1
+    cpu.numPhysFloatRegs = cpu.numROBEntries/1
+    cpu.numPhysVecRegs = cpu.numROBEntries/1
+    cpu.numPhysVecPredRegs = cpu.numROBEntries/1
+    cpu.numIQEntries = 64
+    cpu.numLoadVectors = 128
 
 if ObjectList.is_kvm_cpu(CPUClass) or ObjectList.is_kvm_cpu(FutureClass):
     if buildEnv['TARGET_ISA'] == 'x86':
