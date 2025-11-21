@@ -189,7 +189,7 @@ ROB::readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs){
         DPRINTF(ROB, "[tid:%d] WIB Reading instruction in bank %d, Read: %d. Waiting Status:%d [sn:%llu]\n", tid, bank, banksChecked[bank], instrWaiting(wibEntry),wibEntry->instr->seqNum);
         
         if((!banksChecked[bank]) && (bank % 2 == (even ? 0 : 1))){
-
+            
             if(!instrWaiting(wibEntry)){
                 banksChecked[bank] = 1;
                 DPRINTF(ROB, "[tid:%d] Instruction is ready to re-issue from WIB. [sn:%llu]\n", tid, wibEntry->instr->seqNum);

@@ -875,9 +875,12 @@ InstructionQueue::scheduleReadyInsts()
                 }
             }
 
+            
             DPRINTF(IQ, "[tid:%d] IQ pushed to WIB. [sn:%llu]\n", tid, issuing_inst->seqNum);
             iewStage->rob->wibPush(tid, issuing_inst, wib_indexes);
             issuing_inst->setPushToWIB();
+            issuing_inst->clearCanIssue();
+            issuing_inst->setSrcRegReady(issuing_inst->getRealSrcRegReady());
 
             // Set wait bit and wake up the wait dependent instructions
             for (int i = 0; i < issuing_inst->numDestRegs(); i++) {
@@ -887,9 +890,9 @@ InstructionQueue::scheduleReadyInsts()
             
                 dest_reg = issuing_inst->renamedDestIdx(i)->flatIndex();
                 setWait(dest_reg, wib_index);
-
-                wakeWaitDependents(issuing_inst);
             }
+
+            wakeWaitDependents(issuing_inst);
 
              // remove the instruction from the readyInsts queue
             readyInsts[op_class].pop();
@@ -1150,6 +1153,7 @@ InstructionQueue::wakeDependents(const DynInstPtr &completed_inst)
             // ready.  However that would mean that the dependency
             // graph entries would need to hold the src_reg_idx.
             dep_inst->markSrcRegReady();
+            dep_inst->markRealSrcRegReady();
 
             addIfReady(dep_inst);
 
@@ -1217,11 +1221,11 @@ InstructionQueue::wakeWaitDependents(const DynInstPtr &waiting_inst)
             // so that it knows which of its source registers is
             // ready.  However that would mean that the dependency
             // graph entries would need to hold the src_reg_idx.
-            for (int i = 0; i < dep_inst->numSrcRegs(); i++) {
-                if (dest_reg == dep_inst->renamedSrcIdx(i)) {
-                    dep_inst->markSrcRegReady(i);
-                }
-            }
+            // for (int i = 0; i < dep_inst->numSrcRegs(); i++) {
+            //     if (dest_reg == dep_inst->renamedSrcIdx(i)) {
+            dep_inst->markSrcRegReady();
+            //     }
+            // }
             
             addIfReady(dep_inst);
             
@@ -1517,7 +1521,7 @@ InstructionQueue::addToDependents(const DynInstPtr &new_inst)
          src_reg_idx++)
     {
         // Only add it to the dependency graph if it's not ready.
-        if (!new_inst->readySrcIdx(src_reg_idx)) {
+        if (!new_inst->readySrcIdx(src_reg_idx) || new_inst->getPushToWIB()) {
             PhysRegIdPtr src_reg = new_inst->renamedSrcIdx(src_reg_idx);
 
             // Check the IQ's scoreboard to make sure the register

@@ -154,6 +154,8 @@ class DynInst : public ExecContext, public RefCounted
     void setReqLoadPtr() { reqLoadPtr = true; }
     bool getReqLoadPtr() { return reqLoadPtr; }
 
+    uint8_t realReadyRegs = 0;
+
   protected:
     enum Status
     {
@@ -740,6 +742,19 @@ class DynInst : public ExecContext, public RefCounted
 
     /** Marks a specific register as ready. */
     void markSrcRegReady(RegIndex src_idx);
+
+    
+    void setSrcRegReady(uint8_t value){
+        readyRegs = value;
+    }
+
+    void markRealSrcRegReady(){
+        ++realReadyRegs;
+    }
+
+    uint8_t getRealSrcRegReady(){
+        return realReadyRegs;
+    }
 
     /** Sets this instruction as completed. */
     void setCompleted() { status.set(Completed); }
