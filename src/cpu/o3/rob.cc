@@ -173,7 +173,12 @@ ROB::wibPop(ThreadID tid, int loadPtr, DynInstPtr instr){
 
 void 
 ROB::readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs){
-    unsigned banksChecked[2*MaxWidth] = {0};
+    unsigned banksChecked[2*MaxWidth];
+
+    for(int i=0; i<2*MaxWidth; i++){
+        banksChecked[i] = 0;
+    }
+
 
     // Currently doing oldest-first checking within even/odd banks
     auto it = WIB[tid].begin();
@@ -181,12 +186,12 @@ ROB::readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs){
         WIBEntry* wibEntry = *it;
         int bank = wibEntry->instr->bankNum;
 
-        DPRINTF(ROB, "[tid:%d] WIB Reading instruction in bank %d. Waiting Status:%d [sn:%llu]\n", tid, bank, instrWaiting(wibEntry),wibEntry->instr->seqNum);
+        DPRINTF(ROB, "[tid:%d] WIB Reading instruction in bank %d, Read: %d. Waiting Status:%d [sn:%llu]\n", tid, bank, banksChecked[bank], instrWaiting(wibEntry),wibEntry->instr->seqNum);
         
-        if((!banksChecked[bank]) && (bank % 2 == !even)){
-            banksChecked[bank] = 1;
+        if((!banksChecked[bank]) && (bank % 2 == (even ? 0 : 1))){
 
             if(!instrWaiting(wibEntry)){
+                banksChecked[bank] = 1;
                 DPRINTF(ROB, "[tid:%d] Instruction is ready to re-issue from WIB. [sn:%llu]\n", tid, wibEntry->instr->seqNum);
                 
                 readyInstrs.push_back(wibEntry->instr);

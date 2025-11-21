@@ -842,11 +842,12 @@ InstructionQueue::scheduleReadyInsts()
 
         for (int i = 0; i < issuing_inst->numSrcRegs(); i++) {
             if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex())) {
-                DPRINTF(IQ, "Thread %i: Found source register (%i) waiting for PC %s "
-                    "[sn:%llu] with \n",
-                    tid, issuing_inst->pcState(),
-                    issuing_inst->seqNum,
-                    issuing_inst->renamedSrcIdx(i)->index());
+                DPRINTF(IQ, "Thread %i: Found source register (%i) waiting for loadPtr %d "
+                    "[sn:%llu]\n",
+                    tid,
+                    issuing_inst->renamedSrcIdx(i)->index(),
+                    getIndex(issuing_inst->renamedSrcIdx(i)->flatIndex()),
+                    issuing_inst->seqNum);
                 pretend_ready = true;
                 wib_index = getIndex(issuing_inst->renamedDestIdx(i)->flatIndex());
                 wait_reg = issuing_inst->renamedSrcIdx(i);
@@ -881,9 +882,8 @@ InstructionQueue::scheduleReadyInsts()
             // Set wait bit and wake up the wait dependent instructions
             for (int i = 0; i < issuing_inst->numDestRegs(); i++) {
                 DPRINTF(IQ,"Setting Destination Register wait bit for"
-                        "wait dependent instructions %i (%s)\n",
-                        issuing_inst->renamedDestIdx(i)->index(),
-                        issuing_inst->renamedDestIdx(i)->className());
+                        " wait dependent instructions (%i) \n",
+                        issuing_inst->renamedDestIdx(i)->index());
             
                 dest_reg = issuing_inst->renamedDestIdx(i)->flatIndex();
                 setWait(dest_reg, wib_index);
@@ -1576,7 +1576,8 @@ InstructionQueue::addToProducers(const DynInstPtr &new_inst)
         if (!dependGraph.empty(dest_reg->flatIndex())) {
             if (new_inst == dependGraph.getInst(dest_reg->flatIndex())) {
                 DPRINTF(IQ, "Instruction [sn:%llu] PC %s reinserinted from WIB. "
-                            "Not re-adding as a producer\n");
+                            "Not re-adding as a producer\n",new_inst->seqNum,
+                            new_inst->pcState());
                 continue;
             }
             dependGraph.dump();
