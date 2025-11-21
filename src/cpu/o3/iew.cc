@@ -892,9 +892,7 @@ IEW::dispatchInsts(ThreadID tid)
     // Loop through the WIB instructions, putting them in the instruction
     // queue.
     std::list<DynInstPtr> readyInstrs;
-    DPRINTF(IEW, "[tid:%i] Getting list of reinsertion ready instructions from WIB\n", tid);
-    rob->readCycle(tid, readyInstrs);
-    DPRINTF(IEW, "[tid:%i] There are %d reinsertion ready instructions from WIB\n", tid, readyInstrs.size());
+    
     
     while (dis_num_inst < dispatchWidth &&
            readyInstrs.size() != 0)
@@ -914,7 +912,10 @@ IEW::dispatchInsts(ThreadID tid)
             ++iewStats.iqFullEvents;
             break;
         }
-
+        DPRINTF(IEW, "[tid:%i] Getting list of reinsertion ready instructions from WIB\n", tid);
+        rob->readCycle(tid, readyInstrs);
+        DPRINTF(IEW, "[tid:%i] There are %d reinsertion ready instructions from WIB\n", tid, readyInstrs.size());
+        
         // Read the 1st instruction from the WIB ready instructions for reinsertion
         DynInstPtr wib_inst = readyInstrs.front();
         readyInstrs.pop_front();

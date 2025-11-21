@@ -82,6 +82,7 @@ class DynInst : public ExecContext, public RefCounted
   public:
     /** Checks if the instruction is cache miss replayed */
     //bool isCacheMissReplayed = false;
+    
 
     // The list of instructions iterator type.
     typedef typename std::list<DynInstPtr>::iterator ListIt;
@@ -144,6 +145,10 @@ class DynInst : public ExecContext, public RefCounted
     Trace::InstRecord *traceData = nullptr;
 
     unsigned bankNum = 0;
+
+    bool isPushedToWIB = false;
+    void setPushToWIB() { isPushedToWIB = true; }
+    bool getPushToWIB() { return isPushedToWIB; }
 
   protected:
     enum Status

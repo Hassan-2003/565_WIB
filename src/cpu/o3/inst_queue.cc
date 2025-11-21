@@ -613,7 +613,7 @@ InstructionQueue::insert(const DynInstPtr &new_inst)
     // register(s).
     addToProducers(new_inst);
 
-    if (new_inst->isMemRef()) {
+    if (new_inst->isMemRef() && !new_inst->getPushToWIB()) {
         memDepUnit[new_inst->threadNumber].insert(new_inst);
     } else {
         addIfReady(new_inst);
@@ -876,6 +876,7 @@ InstructionQueue::scheduleReadyInsts()
 
             DPRINTF(IQ, "[tid:%d] IQ pushed to WIB. [sn:%llu]\n", tid, issuing_inst->seqNum);
             iewStage->rob->wibPush(tid, issuing_inst, wib_indexes);
+            issuing_inst->setPushToWIB();
 
             // Set wait bit and wake up the wait dependent instructions
             for (int i = 0; i < issuing_inst->numDestRegs(); i++) {
@@ -1205,10 +1206,12 @@ InstructionQueue::wakeWaitDependents(const DynInstPtr &waiting_inst)
         //Go through the dependency chain, marking the registers as
         //ready within the waiting instructions.
         DynInstPtr dep_inst = dependGraph.pop(dest_reg->flatIndex());
+        //DPRINTF(IQ, "Popping dependent instruction PC %s [sn:%llu] of wait dependet instruction, "
+                //"dest reg (%i).\n", dep_inst->seqNum, dep_inst->pcState(), dest_reg->index());
 
         while (dep_inst) {
             DPRINTF(IQ, "Waking up a wait dependent instruction, [sn:%llu] "
-                "PC %s.\n", dep_inst->seqNum, dep_inst->pcState());
+                "PC %s, dest reg %i\n", dep_inst->seqNum, dep_inst->pcState(), dest_reg->index());
 
             // Might want to give more information to the instruction
             // so that it knows which of its source registers is
@@ -1223,12 +1226,14 @@ InstructionQueue::wakeWaitDependents(const DynInstPtr &waiting_inst)
             addIfReady(dep_inst);
             
             dep_inst = dependGraph.pop(dest_reg->flatIndex());
+            // DPRINTF(IQ, "Popping dependent instruction PC %s [sn:%llu] of wait dependet instruction, "
+            //     "dest reg (%i).\n", dep_inst->seqNum, dep_inst->pcState(), dest_reg->index());
         }
 
         // Reset the head node now that all of its dependents have
         // been woken up.
         assert(dependGraph.empty(dest_reg->flatIndex()));
-        dependGraph.clearInst(dest_reg->flatIndex());
+        //dependGraph.clearInst(dest_reg->flatIndex());
     }
 }
 
@@ -1538,6 +1543,7 @@ InstructionQueue::addToDependents(const DynInstPtr &new_inst)
                         new_inst->pcState(), src_reg->index(),
                         src_reg->className());
                 // Mark a register ready within the instruction.
+                //if (new_inst->numSrcRegs() != new_inst.readyRegs)
                 new_inst->markSrcRegReady(src_reg_idx);
             }
         }
@@ -1568,6 +1574,11 @@ InstructionQueue::addToProducers(const DynInstPtr &new_inst)
         }
 
         if (!dependGraph.empty(dest_reg->flatIndex())) {
+            if (new_inst == dependGraph.getInst(dest_reg->flatIndex())) {
+                DPRINTF(IQ, "Instruction [sn:%llu] PC %s reinserinted from WIB. "
+                            "Not re-adding as a producer\n");
+                continue;
+            }
             dependGraph.dump();
             panic("Dependency graph %i (%s) (flat: %i) not empty!",
                   dest_reg->index(), dest_reg->className(),
@@ -1575,6 +1586,12 @@ InstructionQueue::addToProducers(const DynInstPtr &new_inst)
         }
 
         dependGraph.setInst(dest_reg->flatIndex(), new_inst);
+        DPRINTF(IQ, "Instruction PC %s has dest reg %i (%s) that "
+                        "is being added as the producer "
+                        "to the dependency chain.\n",
+                        new_inst->pcState(), dest_reg->index(),
+                        dest_reg->className());
+
 
         // Mark the scoreboard to say it's not yet ready.
         regScoreboard[dest_reg->flatIndex()].ready = false;
