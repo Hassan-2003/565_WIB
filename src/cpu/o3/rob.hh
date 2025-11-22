@@ -305,6 +305,9 @@ class ROB
     
     bool instrWaiting(WIBEntry *entry);
 
+    void findOldestReadyInstrs(ThreadID tid, 
+            std::vector<std::list<WIBEntry*>::iterator> &banksChecked);
+
     void readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs);
                 
 

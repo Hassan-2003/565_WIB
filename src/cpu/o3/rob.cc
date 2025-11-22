@@ -173,45 +173,84 @@ ROB::wibPop(ThreadID tid, int loadPtr, DynInstPtr instr){
 
 void 
 ROB::readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs){
-    unsigned banksChecked[2*MaxWidth];
-
-    for(int i=0; i<2*MaxWidth; i++){
-        banksChecked[i] = 0;
-    }
+    // unsigned banksChecked[2*MaxWidth];
 
 
+    // for(int i=0; i<2*MaxWidth; i++){
+    //     banksChecked[i] = 0;
+    // }
+    using wibIT = std::list<WIBEntry*>::iterator;
+    std::vector<wibIT> banksChecked(2 * MaxWidth, WIB[tid].end());
+
+    findOldestReadyInstrs(tid, banksChecked);
+    DPRINTF(ROB, "[tid:%d] WIB Read Cycle - even:%d\n", tid, even);
     // Currently doing oldest-first checking within even/odd banks
     auto it = WIB[tid].begin();
-    while(it != WIB[tid].end()){
-        WIBEntry* wibEntry = *it;
-        int bank = wibEntry->instr->bankNum;
 
-        DPRINTF(ROB, "[tid:%d] WIB Reading instruction in bank %d, Read: %d. Waiting Status:%d [sn:%llu]\n", tid, bank, banksChecked[bank], instrWaiting(wibEntry),wibEntry->instr->seqNum);
-        
-        if((!banksChecked[bank]) && (bank % 2 == (even ? 0 : 1))){
+    // To do in case just turning off assert doesnt work.
+    // Sorting across banks from oldest to youngest. (Not necessary in hardware since its parallel issue but for simulator, it needs dispatch order insertions for squashes)
+
+    // Oldest Priority across half of banks (even or odd)
+    for(int bank=!even; bank<2*MaxWidth; bank+=2){
+        if((banksChecked[bank] != WIB[tid].end())){
+            WIBEntry* wibEntry = *(banksChecked[bank]);
+            // DPRINTF(ROB, "[tid:%d] Instruction is ready to re-issue from
+            // WIBEntry* wibEntry = *it;
+            // int bank = wibEntry->instr->bankNum;
+
+            // DPRINTF(ROB, "[tid:%d] WIB Reading instruction in bank %d, Read: %d. Waiting Status:%d [sn:%llu]\n", tid, bank, banksChecked[bank], instrWaiting(wibEntry),wibEntry->instr->seqNum);
             
-            if(!instrWaiting(wibEntry)){
-                banksChecked[bank] = 1;
-                DPRINTF(ROB, "[tid:%d] Instruction is ready to re-issue from WIB. [sn:%llu]\n", tid, wibEntry->instr->seqNum);
-                
-                readyInstrs.push_back(wibEntry->instr);
-                
-                //Remove from WIB
-                it = WIB[tid].erase(it);
-                delete[] wibEntry->loadPtrs;
-                delete wibEntry;
+            DPRINTF(ROB, "[tid:%d] Instruction is ready to re-issue from WIB. [sn:%llu]\n", tid, wibEntry->instr->seqNum);
+            
+            readyInstrs.push_back(wibEntry->instr);
+            
+            //Remove from WIB
+            it = WIB[tid].erase(banksChecked[bank]);
+            delete[] wibEntry->loadPtrs;
+            delete wibEntry;
 
-                // //Break to avoid iterator invalidation
-                // break;
-                continue;
-            }
+            // //Break to avoid iterator invalidation
+            // break;
         }
+
         ++it;
     }
 
     // Alternate between checking even or odd banks each cycle
     even = !even;
-    
+}
+
+void
+ROB::findOldestReadyInstrs(ThreadID tid, 
+        std::vector<std::list<WIBEntry*>::iterator> &banksChecked){
+    auto it = WIB[tid].begin();
+    DPRINTF(ROB, "[tid:%d] Finding oldest ready instructions in WIB.\n", tid);
+    assert(banksChecked[0] == WIB[tid].end());
+    // Find Oldest Instruction per bank
+    while(it != WIB[tid].end()){
+        WIBEntry* wibEntry = *it;
+        DPRINTF(ROB, "[tid:%d] Checking instruction in WIB. [sn:%llu]\n", tid, wibEntry->instr->seqNum);
+        int bank = wibEntry->instr->bankNum;
+        assert(bank >= 0 && bank < (int)banksChecked.size());
+
+        // DPRINTF(ROB, "[tid:%d] Checking instruction in bank %d. Waiting Status:%d [sn:%llu]\n", tid, bank, instrWaiting(wibEntry),wibEntry->instr->seqNum);
+        if(!instrWaiting(wibEntry)){
+            if(!(banksChecked[bank] == WIB[tid].end())){
+                DPRINTF(ROB, "[tid:%d] Checking instruction for youngest in bank %d. [sn:%llu]\n", tid, bank, wibEntry->instr->seqNum);
+                if(wibEntry->instr->seqNum < (*banksChecked[bank])->instr->seqNum){
+                    DPRINTF(ROB, "[tid:%d] Setting instruction as youngest in bank %d. [sn:%llu]\n", tid, bank, wibEntry->instr->seqNum);
+                    banksChecked[bank] = it;
+                    // DPRINTF(ROB, "[tid:%d] Found oldest ready instruction in bank %d. [sn:%llu]\n", tid, bank, wibEntry->instr->seqNum);
+                }
+            }
+            else{
+                DPRINTF(ROB, "[tid:%d] Setting instruction as youngest in bank %d. [sn:%llu]\n", tid, bank, wibEntry->instr->seqNum);
+                banksChecked[bank] = it;
+            }
+        }
+
+        ++it;
+    }
 }
 
 void 

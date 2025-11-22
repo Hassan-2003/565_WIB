@@ -205,6 +205,8 @@ InstructionQueue::IQStats::IQStats(CPU *cpu, const unsigned &total_width)
              "Number of non-speculative instructions added to the IQ"),
     ADD_STAT(instsIssued, statistics::units::Count::get(),
              "Number of instructions issued"),
+    ADD_STAT(totalWIBPushes, statistics::units::Count::get(),
+    "Number of instructions pushed to the WIB"),
     ADD_STAT(intInstsIssued, statistics::units::Count::get(),
              "Number of integer instructions issued"),
     ADD_STAT(floatInstsIssued, statistics::units::Count::get(),
@@ -265,6 +267,9 @@ InstructionQueue::IQStats::IQStats(CPU *cpu, const unsigned &total_width)
 
     squashedInstsIssued
         .prereq(squashedInstsIssued);
+
+    totalWIBPushes
+        .prereq(totalWIBPushes);
 
     squashedInstsExamined
         .prereq(squashedInstsExamined);
@@ -877,11 +882,12 @@ InstructionQueue::scheduleReadyInsts()
 
             
             DPRINTF(IQ, "[tid:%d] IQ pushed to WIB. [sn:%llu]\n", tid, issuing_inst->seqNum);
+            ++iqStats.totalWIBPushes;
             iewStage->rob->wibPush(tid, issuing_inst, wib_indexes);
             issuing_inst->setPushToWIB();
             issuing_inst->clearCanIssue();
             issuing_inst->clearIssued();
-            issuing_inst->setSrcRegReady(issuing_inst->getRealSrcRegReady());
+            issuing_inst->setSrcRegReady(0);
 
             // Set wait bit and wake up the wait dependent instructions
             for (int i = 0; i < issuing_inst->numDestRegs(); i++) {
@@ -1066,6 +1072,8 @@ InstructionQueue::commit(const InstSeqNum &inst, ThreadID tid)
     while (iq_it != instList[tid].end() &&
            (*iq_it)->seqNum <= inst) {
         ++iq_it;
+        DPRINTF(IQ, "[tid:%i] Removing instruction [sn:%llu] from IQ\n",
+                tid, (instList[tid].front())->seqNum);
         instList[tid].pop_front();
     }
 
@@ -1372,9 +1380,13 @@ InstructionQueue::doSquash(ThreadID tid)
 
     // Squash any instructions younger than the squashed sequence number
     // given.
+    if(squash_it != instList[tid].end()){
+        DPRINTF(IQ, "[tid:%i] Starting IQ squash from [sn:%llu]\n",
+                tid, (*squash_it)->seqNum);
+    }
     while (squash_it != instList[tid].end() &&
            (*squash_it)->seqNum > squashedSeqNum[tid]) {
-
+        
         DynInstPtr squashed_inst = (*squash_it);
         if (squashed_inst->isFloating()) {
             iqIOStats.fpInstQueueWrites++;
@@ -1389,6 +1401,10 @@ InstructionQueue::doSquash(ThreadID tid)
         if (squashed_inst->threadNumber != tid ||
             squashed_inst->isSquashedInIQ()) {
             --squash_it;
+            if(squash_it != instList[tid].end()){
+                DPRINTF(IQ, "[tid:%i] Was already squashed, now squashing from [sn:%llu]\n",
+                tid, (*squash_it)->seqNum);
+            }
             continue;
         }
 
@@ -1396,8 +1412,8 @@ InstructionQueue::doSquash(ThreadID tid)
             (squashed_inst->isMemRef() &&
              !squashed_inst->memOpDone())) {
 
-            DPRINTF(IQ, "[tid:%i] Instruction [sn:%llu] PC %s squashed.\n",
-                    tid, squashed_inst->seqNum, squashed_inst->pcState());
+            DPRINTF(IQ, "[tid:%i] Instruction [sn:%llu] PC %s squashed. Was in WIB: %d\n",
+                    tid, squashed_inst->seqNum, squashed_inst->pcState(),squashed_inst->getPushToWIB());
 
             bool is_acq_rel = squashed_inst->isFullMemBarrier() &&
                          (squashed_inst->isLoad() ||
@@ -1405,7 +1421,7 @@ InstructionQueue::doSquash(ThreadID tid)
                              !squashed_inst->isStoreConditional()));
 
             // Remove the instruction from the dependency list.
-            if (is_acq_rel ||
+            if (is_acq_rel || squashed_inst->getPushToWIB() ||
                 (!squashed_inst->isNonSpeculative() &&
                  !squashed_inst->isStoreConditional() &&
                  !squashed_inst->isAtomic() &&
@@ -1428,8 +1444,24 @@ InstructionQueue::doSquash(ThreadID tid)
                     // overwritten.  The only downside to this is it
                     // leaves more room for error.
 
-                    if (!squashed_inst->readySrcIdx(src_reg_idx) &&
+                    if ((!squashed_inst->readySrcIdx(src_reg_idx) || !regScoreboard[src_reg->flatIndex()].ready) &&
                         !src_reg->isFixedMapping()) {
+                        DPRINTF(IQ, "Removing squashed instruction "
+                                "[sn:%llu] PC %s from dependency "
+                                "graph on src reg %i.\n",
+                                squashed_inst->seqNum,
+                                squashed_inst->pcState(),
+                                src_reg->index());
+                        dependGraph.remove(src_reg->flatIndex(),
+                                           squashed_inst);
+                    }
+                    else{
+                        DPRINTF(IQ, "Not removing squashed instruction "
+                                "[sn:%llu] PC %s from dependency "
+                                "graph on src reg %i. It is already ready so it should of been popped\n",
+                                squashed_inst->seqNum,
+                                squashed_inst->pcState(),
+                                src_reg->index());
                         dependGraph.remove(src_reg->flatIndex(),
                                            squashed_inst);
                     }
@@ -1497,11 +1529,15 @@ InstructionQueue::doSquash(ThreadID tid)
             if (dest_reg->isFixedMapping()){
                 continue;
             }
-            assert(dependGraph.empty(dest_reg->flatIndex()));
+            // assert(dependGraph.empty(dest_reg->flatIndex()));
             dependGraph.clearInst(dest_reg->flatIndex());
         }
         instList[tid].erase(squash_it--);
-        ++iqStats.squashedInstsExamined;
+        if(squash_it != instList[tid].end()){
+            DPRINTF(IQ, "[tid:%i]  Squashing from [sn:%llu]\n",
+            tid, (*squash_it)->seqNum);
+        }
+            ++iqStats.squashedInstsExamined;
     }
 }
 
@@ -1537,7 +1573,7 @@ InstructionQueue::addToDependents(const DynInstPtr &new_inst)
             } 
             else if(!new_inst->getPushToWIB() && regScoreboard[src_reg->flatIndex()].wait_bit) {
                 DPRINTF(IQ, "New Instruction PC %s has src reg %i that "
-                        "is waiting on a load in the WIB.\n",
+                        "is waiting on a load.\n",
                         new_inst->pcState(), src_reg->index());
 
                 new_inst->markSrcRegReady(src_reg_idx);

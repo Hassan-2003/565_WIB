@@ -530,6 +530,9 @@ class InstructionQueue
         statistics::Scalar squashedNonSpecRemoved;
         // Also include number of instructions rescheduled and replayed.
 
+        
+        statistics::Scalar totalWIBPushes;
+
         /** Distribution of number of instructions in the queue.
          * @todo: Need to create struct to track the entry time for each
          * instruction. */
