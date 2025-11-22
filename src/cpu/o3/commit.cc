@@ -1004,6 +1004,11 @@ Commit::commitInsts()
             DPRINTF(Commit, "Retiring squashed instruction from "
                     "ROB.\n");
 
+            if(head_inst->getReqLoadPtr()){
+                DPRINTF(Commit, "Clearing Load vector for squashed load. [sn:%llu]\n", head_inst->seqNum);
+                rob->clearLoadWaiting(tid, head_inst->getLoadVectorIndex());
+            }
+
             rob->retireHead(commit_thread);
 
             ++stats.commitSquashedInsts;

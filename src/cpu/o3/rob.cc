@@ -446,7 +446,7 @@ ROB::isHeadReady(ThreadID tid)
         // InstIt head_it = instList[tid].begin();
         // DynInstPtr head_inst = std::move(*head_it);
 
-        DPRINTF(ROB, "[tid:%u] Checking if head is ready. ROB size=%d\n. HEAD SN=%llu",
+        DPRINTF(ROB, "[tid:%u] Checking if head is ready. ROB size=%d. [sn:%llu]\n",
         tid, instList[tid].size(), instList[tid].front()->seqNum);
 
         assert(!instList[tid].empty());
