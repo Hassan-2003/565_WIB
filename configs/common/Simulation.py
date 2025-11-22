@@ -488,6 +488,10 @@ def run(options, root, testsys, cpu_class):
                     options.indirect_bp_type)
                 switch_cpus[i].branchPred.indirectBranchPred = \
                     IndirectBPClass()
+                    
+            # Apply custom CPU configuration if callback is provided
+            if hasattr(options, 'custom_cpu_config_callback'):
+                options.custom_cpu_config_callback(switch_cpus[i], i)
             switch_cpus[i].createThreads()
 
         # If elastic tracing is enabled attach the elastic trace probe
