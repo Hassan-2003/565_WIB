@@ -36,7 +36,6 @@ namespace o3
 
 static constexpr int MaxWidth = 12;
 static constexpr int MaxThreads = 4;
-static constexpr int MaxLoadVectors = 524288;
 
 } // namespace o3
 } // namespace gem5

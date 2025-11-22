@@ -877,14 +877,12 @@ IEW::dispatch(ThreadID tid)
 void
 IEW::dispatchInsts(ThreadID tid)
 {
-
     DynInstPtr inst;
     bool add_to_iq = false;
     int dis_num_inst = 0;
 
     // Loop through the WIB instructions, putting them in the instruction
     // queue.
-    // std::list<DynInstPtr> readyInstrs;
 
     DPRINTF(IEW, "[tid:%i] Getting list of reinsertion ready instructions from WIB\n", tid);
     rob->readCycle(tid, wibBuffer);
@@ -918,12 +916,6 @@ IEW::dispatchInsts(ThreadID tid)
         DPRINTF(IEW, "[tid:%i] Issue: Adding PC %s [sn:%lli] [tid:%i] from WIB to "
                 "IQ.\n",
                 tid, wib_inst->pcState(), wib_inst->seqNum, wib_inst->threadNumber);
-
-        // if (wib_inst->isSquashed()) {
-        //     DPRINTF(IEW, "[tid:%i] Issue: Squashed instruction encountered in WIB, "
-        //             "not adding to IQ.\n", tid);
-        //     continue;
-        // }
         
         // Insert the WIB instruction in to the IQ
         instQueue.insert(wib_inst);
@@ -1516,6 +1508,8 @@ IEW::tick()
         executeInsts();
 
         writebackInsts();
+
+        instQueue.popIssueToReadyBuf();
 
         // Have the instruction queue try to schedule any ready instructions.
         // (In actuality, this scheduling is for instructions that will

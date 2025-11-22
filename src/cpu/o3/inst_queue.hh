@@ -104,6 +104,8 @@ class InstructionQueue
     /** Array of WIB indexes */
     std::vector<int> wib_indexes;
 
+    std::list<DynInstPtr> issueToReadyBuf;
+
     /** FU completion event class. */
     class FUCompletion : public Event
     {
@@ -189,8 +191,6 @@ class InstructionQueue
 
     bool removeFromIQ(ThreadID tid, const DynInstPtr &wibInstr);
 
-    void clearWait(int reg_index);
-
     /** Inserts a new, non-speculative instruction into the IQ. */
     void insertNonSpec(const DynInstPtr &new_inst);
 
@@ -198,6 +198,9 @@ class InstructionQueue
      *  loads and stores are ordered properly.
      */
     void insertBarrier(const DynInstPtr &barr_inst);
+
+    /** Moves an instruction awakekened during issue from buffer to readyList. */
+    void popIssueToReadyBuf();
 
     /** Returns the oldest scheduled instruction, and removes it from
      * the list of instructions waiting to execute.
@@ -481,6 +484,9 @@ class InstructionQueue
 
     /** Moves an instruction to the ready queue if it is ready. */
     void addIfReady(const DynInstPtr &inst);
+
+    /** Moves an instruction awakekened during issue from buffer to readyList. */
+    void addIfWaitReady(const DynInstPtr &inst);
 
     /** Debugging function to count how many entries are in the IQ.  It does
      *  a linear walk through the instructions, so do not call this function
