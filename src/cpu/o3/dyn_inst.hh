@@ -152,7 +152,12 @@ class DynInst : public ExecContext, public RefCounted
 
     /** Checks if the instruction is a load miss */
     bool missDetected = false;
+    
+    /** Sets the instruction as a load miss */
     void setMissDetect() { missDetected = true; }
+    
+    /** Returns if the instruction is a load miss */
+    bool isMissed() {return missDetected; }
 
     uint8_t realReadyRegs = 0;
 
