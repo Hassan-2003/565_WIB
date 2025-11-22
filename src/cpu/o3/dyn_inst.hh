@@ -80,10 +80,6 @@ class DynInst : public ExecContext, public RefCounted
             InstSeqNum seq_num, CPU *cpu);
 
   public:
-    /** Checks if the instruction is cache miss replayed */
-    //bool isCacheMissReplayed = false;
-    
-
     // The list of instructions iterator type.
     typedef typename std::list<DynInstPtr>::iterator ListIt;
 
@@ -153,6 +149,10 @@ class DynInst : public ExecContext, public RefCounted
     bool reqLoadPtr = false;
     void setReqLoadPtr() { reqLoadPtr = true; }
     bool getReqLoadPtr() { return reqLoadPtr; }
+
+    /** Checks if the instruction is a load miss */
+    bool missDetected = false;
+    void setMissDetect() { missDetected = true; }
 
     uint8_t realReadyRegs = 0;
 

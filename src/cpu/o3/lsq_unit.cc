@@ -89,6 +89,23 @@ LSQUnit::WritebackEvent::description() const
     return "Store writeback";
 }
 
+LSQUnit::MissDetectEvent::MissDetectEvent(const DynInstPtr &_inst,
+        LSQUnit *lsq_ptr)
+    : Event(Default_Pri, AutoDelete),
+      inst(_inst), lsqPtr(lsq_ptr) {}
+
+void
+LSQUnit::MissDetectEvent::process()
+{
+    lsqPtr->detectLoadMiss(inst);
+}
+
+const char *
+LSQUnit::MissDetectEvent::description() const
+{
+    return "Load miss detected";
+}
+
 bool
 LSQUnit::recvTimingResp(PacketPtr pkt)
 {
@@ -1608,8 +1625,13 @@ LSQUnit::read(LSQRequest *request, ssize_t load_idx)
 
     if (request->isSent()) {
         // Save the time the load was sent to cache
-        // DPRINTF(LSQUnit,"Saving time load was sent\n");
-        // load_entry.loadSentTick = curTick();
+        DPRINTF(LSQUnit,"Saving time load was sent\n");
+        load_entry.loadSentTick = curTick();
+
+        // Schedule the load miss detection event
+        Tick timeToMiss = curTick() + cpu->cyclesToTicks(Cycles(23));
+        MissDetectEvent *missDetect = new MissDetectEvent(load_inst, this);
+        cpu->schedule(missDetect, timeToMiss);
 
         DPRINTF(LSQUnit,"Package sent successfully\n");
         // get the bit vector index for the miss
@@ -1695,28 +1717,37 @@ LSQUnit::getStoreHeadSeqNum()
         return 0;
 }
 
-// void
-// LSQUnit::detectLoadMiss()
-// {
-//     for (auto& load_entry :loadQueue) {
+void
+LSQUnit::detectLoadMiss(const DynInstPtr &inst)
+{
+    // for (auto& load_entry : loadQueue) {
         
-//         // Skip if
-//         if (!load_entry.valid() ||                  // not valid
-//             load_entry.request()->isComplete() ||   // already completed
-//             load_entry.missDetected) {              // already detected miss
-//             continue;
-//         }
+    //     // Skip if
+    //     if (!load_entry.valid() ||                  // not valid
+    //         !load_entry.hasRequest() ||             // does not have a request
+    //         load_entry.loadSentTick == 0 ||
+    //         load_entry.request()->isComplete() ||   // already completed
+    //         load_entry.missDetected) {              // already detected miss
+    //         continue;
+    //     }
 
-//         Tick hitLatency = cpu->cyclesToTicks(Cycles(22));
-//         Tick timeSinceSent = curTick() - load_entry.loadSentTick;
+    //     Tick hitLatency = cpu->cyclesToTicks(Cycles(22));
+    //     Tick timeSinceSent = curTick() - load_entry.loadSentTick;
 
-//         if (timeSinceSent > hitLatency) {
-//             load_entry.missDetected = true;
-//             DPRINTF(LSQUnit, "Load [sn:%llu] took more than L1+L2 hit latency\n",
-//                     load_entry.instruction()->seqNum);
-//         }
-//     }
-// }
+    //     if (timeSinceSent > hitLatency) {
+    //         load_entry.missDetected = true;
+    //         DPRINTF(LSQUnit, "Load [sn:%llu] took more than "
+    //                 "L1+L2 hit latency [%llu]. Setting as a miss\n",
+    //                 load_entry.instruction()->seqNum, 
+    //                 timeSinceSent);
+    //     }
+    // }
+
+    DPRINTF(LSQUnit, "Miss detected for instruction [sn:%llu]\n",
+                    inst->seqNum);
+    
+    inst->setMissDetect();
+}
 
 } // namespace o3
 } // namespace gem5

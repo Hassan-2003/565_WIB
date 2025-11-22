@@ -183,7 +183,7 @@ ROB::readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs){
     std::vector<wibIT> banksChecked(2 * MaxWidth, WIB[tid].end());
 
     findOldestReadyInstrs(tid, banksChecked);
-    DPRINTF(ROB, "[tid:%d] WIB Read Cycle - even:%d\n", tid, even);
+    DPRINTF(ROB, "[tid:%d] WIB Read Cycle - Is even: %d \n", tid, even);
     // Currently doing oldest-first checking within even/odd banks
     auto it = WIB[tid].begin();
 
@@ -229,7 +229,7 @@ ROB::findOldestReadyInstrs(ThreadID tid,
     // Find Oldest Instruction per bank
     while(it != WIB[tid].end()){
         WIBEntry* wibEntry = *it;
-        DPRINTF(ROB, "[tid:%d] Checking instruction in WIB. [sn:%llu]\n", tid, wibEntry->instr->seqNum);
+        DPRINTF(ROB, "[tid:%d] Checking instruction in WIB in bank %d. [sn:%llu]\n", tid, wibEntry->instr->bankNum, wibEntry->instr->seqNum);
         int bank = wibEntry->instr->bankNum;
         assert(bank >= 0 && bank < (int)banksChecked.size());
 
