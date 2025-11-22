@@ -846,7 +846,7 @@ InstructionQueue::scheduleReadyInsts()
         PhysRegIdPtr wait_reg;
 
         for (int i = 0; i < issuing_inst->numSrcRegs(); i++) {
-            if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex())) {
+            if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex()) && !(issuing_inst->renamedSrcIdx(i)->isFixedMapping())) {
                 DPRINTF(IQ, "Thread %i: Found source register (%i) waiting for loadPtr %d "
                     "[sn:%llu]\n",
                     tid,
@@ -1569,6 +1569,12 @@ InstructionQueue::addToDependents(const DynInstPtr &new_inst)
             // between stages.  Only if it really isn't ready should
             // it be added to the dependency graph.
             if (src_reg->isFixedMapping()) {
+                DPRINTF(IQ, "New Instruction PC %s has src reg %i that "
+                        "is a fixed register.\n",
+                        new_inst->pcState(), src_reg->index());
+                if(new_inst->getPushToWIB()){
+                    new_inst->markSrcRegReady(src_reg_idx);
+                }
                 continue;
             } 
             else if(!new_inst->getPushToWIB() && regScoreboard[src_reg->flatIndex()].wait_bit) {
