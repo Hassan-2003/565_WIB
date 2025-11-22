@@ -891,24 +891,37 @@ InstructionQueue::scheduleReadyInsts()
         PhysRegIdPtr wait_reg;
         
         for (int i = 0; i < issuing_inst->numSrcRegs(); i++) {
-            wib_index = getIndex(issuing_inst->renamedDestIdx(i)->flatIndex());
-            if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex()) && !(issuing_inst->renamedSrcIdx(i)->isFixedMapping())) {
+            if(getWait(issuing_inst->renamedSrcIdx(i)->flatIndex()) && !(issuing_inst->renamedSrcIdx(i)->isFixedMapping())){
+                pretend_ready = true;
+                wib_index = getIndex(issuing_inst->renamedSrcIdx(i)->flatIndex());
+
                 DPRINTF(IQ, "Thread %i: Found source register (%i) waiting for loadPtr %d "
+                "[sn:%llu]\n",
+                tid,
+                issuing_inst->renamedSrcIdx(i)->index(),
+                getIndex(issuing_inst->renamedSrcIdx(i)->flatIndex()),
+                issuing_inst->seqNum);
+
+                if(!iewStage->rob->isLoadPtrFree(tid, wib_index)){
+                    DPRINTF(IQ, "Thread %i: LoadPtr %d is still busy. Can push to WIB "
                     "[sn:%llu]\n",
                     tid,
-                    issuing_inst->renamedSrcIdx(i)->index(),
-                    getIndex(issuing_inst->renamedSrcIdx(i)->flatIndex()),
+                    wib_index,
                     issuing_inst->seqNum);
-                pretend_ready = true;
-                // wib_index = getIndex(issuing_inst->renamedDestIdx(i)->flatIndex());
-                wait_reg = issuing_inst->renamedSrcIdx(i);
-                break;
+
+                    wib_indexes.push_back(wib_index);
+                }
             }
+
+            // else {
+            //     wib_indexes.push_back(-1);
+            // }
         }
+        
 
         // Send the pretend ready instruction to the WIB
         if (pretend_ready) {
-            if(!(iewStage->rob->isLoadPtrFree(tid, wib_index))){
+            if(wib_indexes.size() > 0){
                 int dest_reg = -1;
 
                 DPRINTF(IQ, "Thread %i: Moving instruction PC %s "
@@ -917,15 +930,16 @@ InstructionQueue::scheduleReadyInsts()
                         issuing_inst->seqNum);
                 
                 // function for adding to WIB
-                for (int i = 0; i < issuing_inst->numSrcRegs(); i++) {
-                    if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex())) {
-                        wib_index = getIndex(issuing_inst->renamedSrcIdx(i)->flatIndex());
-                        wib_indexes.push_back(wib_index);
-                    }
-                    else {
-                        wib_indexes.push_back(-1);
-                    }
-                }
+                // for (int i = 0; i < issuing_inst->numSrcRegs(); i++) {
+                //     if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex()) && !(issuing_inst->renamedSrcIdx(i)->isFixedMapping() 
+                //     && !iewStage->rob->isLoadPtrFree(tid, wib_index))) {
+                //         wib_index = getIndex(issuing_inst->renamedSrcIdx(i)->flatIndex());
+                //         wib_indexes.push_back(wib_index);
+                //     }
+                //     else {
+                //         wib_indexes.push_back(-1);
+                //     }
+                // }
 
                 
                 DPRINTF(IQ, "[tid:%d] IQ pushed to WIB. [sn:%llu]\n", tid, issuing_inst->seqNum);
@@ -945,7 +959,7 @@ InstructionQueue::scheduleReadyInsts()
                             issuing_inst->renamedDestIdx(i)->index());
                 
                     dest_reg = issuing_inst->renamedDestIdx(i)->flatIndex();
-                    setWait(dest_reg, wib_index);
+                    setWait(dest_reg, wib_indexes.front());
                 }
 
                 wakeWaitDependents(issuing_inst);
@@ -983,9 +997,8 @@ InstructionQueue::scheduleReadyInsts()
                 
                 // function for adding to WIB
                 for (int i = 0; i < issuing_inst->numSrcRegs(); i++) {
-                    if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex())) {
+                    if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex()) && !(issuing_inst->renamedSrcIdx(i)->isFixedMapping())) {
                         issuing_inst->decrSrcRegReady();
-
                     }
                 }
 

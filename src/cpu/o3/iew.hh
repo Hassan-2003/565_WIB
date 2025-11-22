@@ -369,6 +369,8 @@ class IEW
     /** Instruction queue. */
     InstructionQueue instQueue;
 
+    std::list<DynInstPtr> wibBuffer;
+
     /** Load / store queue. */
     LSQ ldstQueue;
 

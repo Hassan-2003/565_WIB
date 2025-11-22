@@ -133,6 +133,7 @@ void ROB::wibPush(ThreadID tid, DynInstPtr instr, std::vector<int> &loadPtrs){
 
         if(i >= 0){
             if(wibEntry->loadPtrs[i] == 0){
+                assert(freeLoadVectors[tid][i]);
                 DPRINTF(ROB, "WIB: [tid:%d] loadPtr %d set for instruction. [sn:%llu]\n", tid, i, wibEntry->instr->seqNum);
                 wibEntry->loadPtrs[i] = 1;
                 assert(wibEntry->loadPtrs[i]);
@@ -288,7 +289,7 @@ ROB::getLoadVectorPtr(ThreadID tid, int &loadPtr){
 
 bool 
 ROB::isLoadPtrFree(ThreadID tid, int &loadPtr){
-    return !freeLoadVectors[tid][loadPtr];
+    return freeLoadVectors[tid][loadPtr] == 0;
 }
 
 void
