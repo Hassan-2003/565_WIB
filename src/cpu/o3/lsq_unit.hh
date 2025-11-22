@@ -91,9 +91,6 @@ class LSQUnit
   public:
     static constexpr auto MaxDataBytes = MaxVecRegLenInBytes;
 
-    /** Detects load miss happened if the cache response is not received within L1+L2 hit times */
-    //void detectLoadMiss();
-
     using LSQRequest = LSQ::LSQRequest;
   private:
     class LSQEntry
@@ -150,9 +147,10 @@ class LSQUnit
         /** @} */
 
         /** Track the time the load was sent */
-        //Tick loadSentTick;
+        Tick loadSentTick = 0;
+
         /** Check if a load has already been detected */
-        //bool missDetected = false;
+        bool missDetected = false;
     };
 
     class SQEntry : public LSQEntry
@@ -371,6 +369,10 @@ class LSQUnit
     void recvRetry();
 
     unsigned int cacheLineSize();
+
+    /** Detects load miss happened if the cache response is not received within L1+L2 hit times */
+    void detectLoadMiss(const DynInstPtr &inst);
+
   private:
     /** Reset the LSQ state */
     void resetState();
@@ -439,6 +441,27 @@ class LSQUnit
 
         /** The pointer to the LSQ unit that issued the store. */
         LSQUnit *lsqPtr;
+    };
+
+    /** Miss detect event */
+    class MissDetectEvent : public Event
+    {
+      private:
+        /** Instruction whose load miss is being detected. */
+        DynInstPtr inst;
+
+        /** The pointer to the LSQ unit that issued the load. */
+        LSQUnit *lsqPtr;
+
+      public:
+        /** Constructs a miss detect event. */
+        MissDetectEvent(const DynInstPtr &_inst, LSQUnit *lsq_ptr);
+
+        /** Processes the miss detect event. */
+        void process();
+
+        /** Returns the description of this event. */
+        const char *description() const;      
     };
 
   public:

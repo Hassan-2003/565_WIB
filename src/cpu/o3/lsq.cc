@@ -186,8 +186,10 @@ LSQ::tick()
     // std::list<ThreadID>::iterator end = activeThreads->end();
 
     // while (threads != end) {
+        
     //     ThreadID tid = *threads++;
-    //     thread[tid].detectLoadMiss();
+    //     DPRINTF(LSQ, "Checking if a load missed\n");
+    //     thread[tid].detectLoadMiss();    
     // }
 }
 
