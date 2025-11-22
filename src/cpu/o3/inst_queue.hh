@@ -187,6 +187,8 @@ class InstructionQueue
     /** Inserts a new instruction into the IQ. */
     void insert(const DynInstPtr &new_inst);
 
+    bool removeFromIQ(ThreadID tid, const DynInstPtr &wibInstr);
+
     /** Inserts a new, non-speculative instruction into the IQ. */
     void insertNonSpec(const DynInstPtr &new_inst);
 

@@ -110,6 +110,8 @@ class DependencyGraph
     /** Removes an instruction from a single linked list. */
     void remove(RegIndex idx, const DynInstPtr &inst_to_remove);
 
+    bool search(RegIndex idx, const DynInstPtr &inst_to_remove);
+
     /** Removes and returns the newest dependent of a specific register. */
     DynInstPtr pop(RegIndex idx);
 
@@ -206,6 +208,32 @@ DependencyGraph<DynInstPtr>::insert(RegIndex idx, const DynInstPtr &new_inst)
     ++memAllocCounter;
 }
 
+template <class DynInstPtr>
+bool
+DependencyGraph<DynInstPtr>::search(RegIndex idx,
+                                    const DynInstPtr &inst_to_search)
+{
+    DepEntry *curr = dependGraph[idx].next;
+
+    // Make sure curr isn't NULL.  Because this instruction is being
+    // removed from a dependency list, it must have been placed there at
+    // an earlier time.  The dependency chain should not be empty,
+    // unless the instruction dependent upon it is already ready.
+    if (curr == NULL) {
+        return false;
+    }
+
+    nodesRemoved++;
+
+    // Find the instruction within the dependency linked list.
+    while (curr->inst != inst_to_search) {
+        curr = curr->next;
+        if(curr == NULL){
+            return false;
+        }
+    }
+    return true;
+}
 
 template <class DynInstPtr>
 void

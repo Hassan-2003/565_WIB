@@ -161,6 +161,18 @@ InstructionQueue::InstructionQueue(CPU *cpu_ptr, IEW *iew_ptr,
     }
 }
 
+bool
+InstructionQueue::removeFromIQ(ThreadID tid, const DynInstPtr &wibInstr)
+{
+    for(auto it = instList[tid].begin(); it != instList[tid].end(); it++){
+        if((*it) == wibInstr){
+            instList[tid].erase(it);
+            return true;
+        }
+    }
+
+    return false;
+}
 
 bool
 InstructionQueue::getWait(int reg_index) const
@@ -910,10 +922,12 @@ InstructionQueue::scheduleReadyInsts()
             DPRINTF(IQ, "[tid:%d] IQ pushed to WIB. [sn:%llu]\n", tid, issuing_inst->seqNum);
             ++iqStats.totalWIBPushes;
             iewStage->rob->wibPush(tid, issuing_inst, wib_indexes);
-            issuing_inst->setPushToWIB();
-            issuing_inst->clearCanIssue();
-            issuing_inst->clearIssued();
-            issuing_inst->setSrcRegReady(0);
+            issuing_inst->setPushToWIB(); // mark instruction as pushed to WIB for future guards 
+            issuing_inst->clearCanIssue(); // prevent re-adding to ready queue immediately after WIB pop
+            issuing_inst->clearIssued(); // To fix state where instruction is marked as issued but sitting in IQ after WIB pop
+            issuing_inst->setSrcRegReady(0); // prevent wakeup logic from premature wake up after WIB pop
+
+            assert(removeFromIQ(tid, issuing_inst));
 
             // Set wait bit and wake up the wait dependent instructions
             for (int i = 0; i < issuing_inst->numDestRegs(); i++) {
@@ -1237,8 +1251,8 @@ InstructionQueue::wakeWaitDependents(const DynInstPtr &waiting_inst)
         // Special case of uniq or control registers.  They are not
         // handled by the IQ and thus have no dependency graph entry.
         if (dest_reg->isFixedMapping()) {
-            DPRINTF(IQ, "Reg %d [%s] is part of a fix mapping, skipping\n",
-                    dest_reg->index(), dest_reg->className());
+            DPRINTF(IQ, "Reg %d is part of a fix mapping, skipping\n",
+                    dest_reg->index());
             continue;
         }
     
@@ -1469,17 +1483,20 @@ InstructionQueue::doSquash(ThreadID tid)
                     // either at issue time, or when the register is
                     // overwritten.  The only downside to this is it
                     // leaves more room for error.
-
+                    
                     if ((!squashed_inst->readySrcIdx(src_reg_idx) || !regScoreboard[src_reg->flatIndex()].ready) &&
                         !src_reg->isFixedMapping()) {
-                        DPRINTF(IQ, "Removing squashed instruction "
+                        if(!(getWait(src_reg->flatIndex()) && dependGraph.empty(src_reg->flatIndex()))){
+                            DPRINTF(IQ, "Removing squashed instruction "
                                 "[sn:%llu] PC %s from dependency "
-                                "graph on src reg %i.\n",
+                                "graph on src reg %i. Waiting: %d.\n",
                                 squashed_inst->seqNum,
                                 squashed_inst->pcState(),
-                                src_reg->index());
-                        dependGraph.remove(src_reg->flatIndex(),
+                                src_reg->index(),
+                                getWait(src_reg->flatIndex()));
+                            dependGraph.remove(src_reg->flatIndex(),
                                            squashed_inst);
+                        }
                     }
                     else{
                         DPRINTF(IQ, "Not removing squashed instruction "
@@ -1488,8 +1505,6 @@ InstructionQueue::doSquash(ThreadID tid)
                                 squashed_inst->seqNum,
                                 squashed_inst->pcState(),
                                 src_reg->index());
-                        dependGraph.remove(src_reg->flatIndex(),
-                                           squashed_inst);
                     }
 
                     ++iqStats.squashedOperandsExamined;
@@ -1574,6 +1589,12 @@ InstructionQueue::PqCompare::operator()(
     return lhs->seqNum > rhs->seqNum;
 }
 
+// bool
+// InstructionQueue::IQDependCompare::operator()(
+//         const DynInstPtr &lhs, const DynInstPtr &rhs) const
+// {
+//     return lhs->seqNum > rhs->seqNum;
+// }
 bool
 InstructionQueue::addToDependents(const DynInstPtr &new_inst)
 {
@@ -1617,6 +1638,7 @@ InstructionQueue::addToDependents(const DynInstPtr &new_inst)
                         new_inst->pcState(), src_reg->index());
 
                 dependGraph.insert(src_reg->flatIndex(), new_inst);
+                assert(dependGraph.search(src_reg->flatIndex(), new_inst));
                 return_val = true;
             }
             else if (!regScoreboard[src_reg->flatIndex()].ready) {
@@ -1692,7 +1714,12 @@ InstructionQueue::addToProducers(const DynInstPtr &new_inst)
 
         // Mark the scoreboard to say it's not yet ready.
         regScoreboard[dest_reg->flatIndex()].ready = false;
-        regScoreboard[dest_reg->flatIndex()].wait_bit = false;
+        if(new_inst->getPushToWIB()){
+            regScoreboard[dest_reg->flatIndex()].wait_bit = true;
+        }
+        else{
+            regScoreboard[dest_reg->flatIndex()].wait_bit = false;
+        }
         regScoreboard[dest_reg->flatIndex()].wib_index = -1;
     }
 }

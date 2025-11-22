@@ -148,7 +148,7 @@ bool
 ROB::instrWaiting(WIBEntry *wibEntry){
     for(int i=0; i<numLoadVectors; i++){
         if(wibEntry->loadPtrs[i] == 1){
-            DPRINTF(ROB, "WIB: Instruction waiting on loadPtr %d. [sn:%llu]\n",i, wibEntry->instr->seqNum);
+            DPRINTF(ROB, "WIB: Instruction waiting on loadPtr %d in bank %d. [sn:%llu]\n",i, wibEntry->instr->bankNum, wibEntry->instr->seqNum);
             return true;
         }
     }
@@ -224,27 +224,27 @@ void
 ROB::findOldestReadyInstrs(ThreadID tid, 
         std::vector<std::list<WIBEntry*>::iterator> &banksChecked){
     auto it = WIB[tid].begin();
-    DPRINTF(ROB, "[tid:%d] Finding oldest ready instructions in WIB.\n", tid);
+    // DPRINTF(ROB, "[tid:%d] Finding oldest ready instructions in WIB.\n", tid);
     assert(banksChecked[0] == WIB[tid].end());
     // Find Oldest Instruction per bank
     while(it != WIB[tid].end()){
         WIBEntry* wibEntry = *it;
-        DPRINTF(ROB, "[tid:%d] Checking instruction in WIB in bank %d. [sn:%llu]\n", tid, wibEntry->instr->bankNum, wibEntry->instr->seqNum);
+        // DPRINTF(ROB, "[tid:%d] Checking instruction in WIB in bank %d. [sn:%llu]\n", tid, wibEntry->instr->bankNum, wibEntry->instr->seqNum);
         int bank = wibEntry->instr->bankNum;
         assert(bank >= 0 && bank < (int)banksChecked.size());
 
         // DPRINTF(ROB, "[tid:%d] Checking instruction in bank %d. Waiting Status:%d [sn:%llu]\n", tid, bank, instrWaiting(wibEntry),wibEntry->instr->seqNum);
         if(!instrWaiting(wibEntry)){
             if(!(banksChecked[bank] == WIB[tid].end())){
-                DPRINTF(ROB, "[tid:%d] Checking instruction for youngest in bank %d. [sn:%llu]\n", tid, bank, wibEntry->instr->seqNum);
+                // DPRINTF(ROB, "[tid:%d] Checking instruction for youngest in bank %d. [sn:%llu]\n", tid, bank, wibEntry->instr->seqNum);
                 if(wibEntry->instr->seqNum < (*banksChecked[bank])->instr->seqNum){
-                    DPRINTF(ROB, "[tid:%d] Setting instruction as youngest in bank %d. [sn:%llu]\n", tid, bank, wibEntry->instr->seqNum);
+                    // DPRINTF(ROB, "[tid:%d] Setting instruction as youngest in bank %d. [sn:%llu]\n", tid, bank, wibEntry->instr->seqNum);
                     banksChecked[bank] = it;
                     // DPRINTF(ROB, "[tid:%d] Found oldest ready instruction in bank %d. [sn:%llu]\n", tid, bank, wibEntry->instr->seqNum);
                 }
             }
             else{
-                DPRINTF(ROB, "[tid:%d] Setting instruction as youngest in bank %d. [sn:%llu]\n", tid, bank, wibEntry->instr->seqNum);
+                // DPRINTF(ROB, "[tid:%d] Setting instruction as youngest in bank %d. [sn:%llu]\n", tid, bank, wibEntry->instr->seqNum);
                 banksChecked[bank] = it;
             }
         }
@@ -258,10 +258,13 @@ ROB::clearLoadWaiting(ThreadID tid, int loadPtr){
     freeLoadVectors[tid].push_front(loadPtr);
     DPRINTF(ROB, "[tid:%d] Freed WIB Load Vector Pointer: %d\n", tid, loadPtr);
     for(auto it = WIB[tid].begin(); it != WIB[tid].end(); it++){
+        if((*it)->loadPtrs[loadPtr] != 0){
+            DPRINTF(ROB, "[tid:%d] Cleared load vector pointer %d for instruction in WIB. [sn:%llu]\n", tid, loadPtr, (*it)->instr->seqNum);
+            (*it)->loadPtrs[loadPtr] = 0;
+            assert(!((*it)->loadPtrs[loadPtr]));
+            continue;
+        }
         // WIBEntry* wibEntry = *it;
-        (*it)->loadPtrs[loadPtr] = 0;
-        assert(!((*it)->loadPtrs[loadPtr]));
-        DPRINTF(ROB, "[tid:%d] Cleared load vector pointer %d for instruction in WIB. [sn:%llu]\n", tid, loadPtr, (*it)->instr->seqNum);
     }
     
 }
