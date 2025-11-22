@@ -892,7 +892,7 @@ InstructionQueue::scheduleReadyInsts()
         
         for (int i = 0; i < issuing_inst->numSrcRegs(); i++) {
             wib_index = getIndex(issuing_inst->renamedDestIdx(i)->flatIndex());
-            if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex()) && !(issuing_inst->renamedSrcIdx(i)->isFixedMapping()) && !(iewStage->rob->isLoadPtrFree(tid, wib_index))) {
+            if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex()) && !(issuing_inst->renamedSrcIdx(i)->isFixedMapping())) {
                 DPRINTF(IQ, "Thread %i: Found source register (%i) waiting for loadPtr %d "
                     "[sn:%llu]\n",
                     tid,
@@ -908,70 +908,108 @@ InstructionQueue::scheduleReadyInsts()
 
         // Send the pretend ready instruction to the WIB
         if (pretend_ready) {
-            int dest_reg = -1;
+            if(!(iewStage->rob->isLoadPtrFree(tid, wib_index))){
+                int dest_reg = -1;
 
-            DPRINTF(IQ, "Thread %i: Moving instruction PC %s "
-                    "[sn:%llu] to WIB (wait)\n",
-                    tid, issuing_inst->pcState(),
-                    issuing_inst->seqNum);
-            
-            // function for adding to WIB
-            for (int i = 0; i < issuing_inst->numSrcRegs(); i++) {
-                if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex())) {
-                    wib_index = getIndex(issuing_inst->renamedSrcIdx(i)->flatIndex());
-                    wib_indexes.push_back(wib_index);
+                DPRINTF(IQ, "Thread %i: Moving instruction PC %s "
+                        "[sn:%llu] to WIB (wait)\n",
+                        tid, issuing_inst->pcState(),
+                        issuing_inst->seqNum);
+                
+                // function for adding to WIB
+                for (int i = 0; i < issuing_inst->numSrcRegs(); i++) {
+                    if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex())) {
+                        wib_index = getIndex(issuing_inst->renamedSrcIdx(i)->flatIndex());
+                        wib_indexes.push_back(wib_index);
+                    }
+                    else {
+                        wib_indexes.push_back(-1);
+                    }
                 }
-                else {
-                    wib_indexes.push_back(-1);
+
+                
+                DPRINTF(IQ, "[tid:%d] IQ pushed to WIB. [sn:%llu]\n", tid, issuing_inst->seqNum);
+                ++iqStats.totalWIBPushes;
+                iewStage->rob->wibPush(tid, issuing_inst, wib_indexes);
+                issuing_inst->setPushToWIB(); // mark instruction as pushed to WIB for future guards 
+                issuing_inst->clearCanIssue(); // prevent re-adding to ready queue immediately after WIB pop
+                issuing_inst->clearIssued(); // To fix state where instruction is marked as issued but sitting in IQ after WIB pop
+                issuing_inst->setSrcRegReady(0); // prevent wakeup logic from premature wake up after WIB pop
+
+                assert(removeFromIQ(tid, issuing_inst));
+
+                // Set wait bit and wake up the wait dependent instructions
+                for (int i = 0; i < issuing_inst->numDestRegs(); i++) {
+                    DPRINTF(IQ,"Setting Destination Register wait bit for"
+                            " wait dependent instructions (%i) \n",
+                            issuing_inst->renamedDestIdx(i)->index());
+                
+                    dest_reg = issuing_inst->renamedDestIdx(i)->flatIndex();
+                    setWait(dest_reg, wib_index);
                 }
+
+                wakeWaitDependents(issuing_inst);
+
+                // remove the instruction from the readyInsts queue
+                readyInsts[op_class].pop();
+                
+                if (!readyInsts[op_class].empty()) {
+                    moveToYoungerInst(order_it);
+                } else {
+                    readyIt[op_class] = listOrder.end();
+                    queueOnList[op_class] = false;
+                }
+
+                // Don't know the implications of setIssued
+                // issuing_inst->setIssued();
+                ++total_issued;
+                
+                // Checks if this is the first issue of the instruction
+                if (issuing_inst->firstIssue == -1)
+                    issuing_inst->firstIssue = curTick();
+                
+                // remove the instruction from the IQ
+                ++freeEntries;
+                count[tid]--;
+                issuing_inst->clearInIQ();
+                listOrder.erase(order_it++);
             }
 
-            
-            DPRINTF(IQ, "[tid:%d] IQ pushed to WIB. [sn:%llu]\n", tid, issuing_inst->seqNum);
-            ++iqStats.totalWIBPushes;
-            iewStage->rob->wibPush(tid, issuing_inst, wib_indexes);
-            issuing_inst->setPushToWIB(); // mark instruction as pushed to WIB for future guards 
-            issuing_inst->clearCanIssue(); // prevent re-adding to ready queue immediately after WIB pop
-            issuing_inst->clearIssued(); // To fix state where instruction is marked as issued but sitting in IQ after WIB pop
-            issuing_inst->setSrcRegReady(0); // prevent wakeup logic from premature wake up after WIB pop
+            else{
+                DPRINTF(IQ, "Thread %i: Waiting instruction PC %s "
+                        "got its load back in the same issue cycle [sn:%llu].\n",
+                        tid, issuing_inst->pcState(),
+                        issuing_inst->seqNum);
+                
+                // function for adding to WIB
+                for (int i = 0; i < issuing_inst->numSrcRegs(); i++) {
+                    if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex())) {
+                        issuing_inst->decrSrcRegReady();
 
-            assert(removeFromIQ(tid, issuing_inst));
+                    }
+                }
 
-            // Set wait bit and wake up the wait dependent instructions
-            for (int i = 0; i < issuing_inst->numDestRegs(); i++) {
-                DPRINTF(IQ,"Setting Destination Register wait bit for"
-                        " wait dependent instructions (%i) \n",
-                        issuing_inst->renamedDestIdx(i)->index());
-            
-                dest_reg = issuing_inst->renamedDestIdx(i)->flatIndex();
-                setWait(dest_reg, wib_index);
+                // remove the instruction from the readyInsts queue
+                readyInsts[op_class].pop();
+                
+                if (!readyInsts[op_class].empty()) {
+                    moveToYoungerInst(order_it);
+                } else {
+                    readyIt[op_class] = listOrder.end();
+                    queueOnList[op_class] = false;
+                }
+
+                // Don't know the implications of setIssued
+                // issuing_inst->setIssued();
+                ++total_issued;
+                
+                // Checks if this is the first issue of the instruction
+                if (issuing_inst->firstIssue == -1)
+                    issuing_inst->firstIssue = curTick();
+
+                issuing_inst->clearCanIssue(); // To fix state where instruction is marked as issued but sitting in IQ after failed WIB push
+                listOrder.erase(order_it++);
             }
-
-            wakeWaitDependents(issuing_inst);
-
-             // remove the instruction from the readyInsts queue
-            readyInsts[op_class].pop();
-            
-            if (!readyInsts[op_class].empty()) {
-                moveToYoungerInst(order_it);
-            } else {
-                readyIt[op_class] = listOrder.end();
-                queueOnList[op_class] = false;
-            }
-
-            // Don't know the implications of setIssued
-            // issuing_inst->setIssued();
-            ++total_issued;
-            
-            // Checks if this is the first issue of the instruction
-            if (issuing_inst->firstIssue == -1)
-                issuing_inst->firstIssue = curTick();
-            
-            // remove the instruction from the IQ
-            ++freeEntries;
-            count[tid]--;
-            issuing_inst->clearInIQ();
-            listOrder.erase(order_it++);
         }
 
         else {

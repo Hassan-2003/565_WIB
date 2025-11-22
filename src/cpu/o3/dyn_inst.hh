@@ -753,9 +753,14 @@ class DynInst : public ExecContext, public RefCounted
         readyRegs = value;
     }
 
+    void decrSrcRegReady(){
+        --readyRegs;
+    }
+
     void markRealSrcRegReady(){
         ++realReadyRegs;
     }
+    
 
     uint8_t getRealSrcRegReady(){
         return realReadyRegs;
