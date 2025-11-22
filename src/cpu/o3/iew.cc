@@ -877,13 +877,6 @@ IEW::dispatch(ThreadID tid)
 void
 IEW::dispatchInsts(ThreadID tid)
 {
-    // Obtain instructions from skid buffer if unblocking, or queue from rename
-    // otherwise.
-    std::queue<DynInstPtr> &insts_to_dispatch =
-        dispatchStatus[tid] == Unblocking ?
-        skidBuffer[tid] : insts[tid];
-
-    int insts_to_add = insts_to_dispatch.size();
 
     DynInstPtr inst;
     bool add_to_iq = false;
@@ -941,8 +934,17 @@ IEW::dispatchInsts(ThreadID tid)
     
     // Loop through the instructions, putting them in the instruction
     // queue.
+
+    // Obtain instructions from skid buffer if unblocking, or queue from rename
+    // otherwise.
+    std::queue<DynInstPtr> &insts_to_dispatch =
+        dispatchStatus[tid] == Unblocking ?
+        skidBuffer[tid] : insts[tid];
+
+    int insts_to_add = insts_to_dispatch.size();
+
     int dis_num_new_inst = 0;
-    for ( ; dis_num_new_inst < insts_to_add &&
+    for ( ; (dis_num_new_inst < insts_to_add) &&
               dis_num_inst < dispatchWidth;
           ++dis_num_new_inst)
     {

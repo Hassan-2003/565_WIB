@@ -995,12 +995,16 @@ InstructionQueue::scheduleReadyInsts()
                         tid, issuing_inst->pcState(),
                         issuing_inst->seqNum);
                 
-                // function for adding to WIB
+                // Need to decrement the ready source count for the instruction
                 for (int i = 0; i < issuing_inst->numSrcRegs(); i++) {
                     if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex()) && !(issuing_inst->renamedSrcIdx(i)->isFixedMapping())) {
                         issuing_inst->decrSrcRegReady();
                     }
                 }
+
+                
+                // Need to add it back to dependets list to be properly woken up later
+                addToDependents(issuing_inst);
 
                 // remove the instruction from the readyInsts queue
                 readyInsts[op_class].pop();
@@ -1684,7 +1688,8 @@ InstructionQueue::addToDependents(const DynInstPtr &new_inst)
                 }
                 continue;
             } 
-            else if(!new_inst->getPushToWIB() && regScoreboard[src_reg->flatIndex()].wait_bit) {
+            else if(!new_inst->getPushToWIB() && regScoreboard[src_reg->flatIndex()].wait_bit
+                && !iewStage->rob->isLoadPtrFree(new_inst->threadNumber, regScoreboard[src_reg->flatIndex()].wib_index)) {
                 DPRINTF(IQ, "New Instruction PC %s has src reg %i that "
                         "is waiting on a load.\n",
                         new_inst->pcState(), src_reg->index());
