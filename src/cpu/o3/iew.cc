@@ -892,46 +892,40 @@ IEW::dispatchInsts(ThreadID tid)
     // Loop through the WIB instructions, putting them in the instruction
     // queue.
     std::list<DynInstPtr> readyInstrs;
-
-    // Check for full conditions.
-    if (instQueue.isFull(tid)) {
-        DPRINTF(IEW, "[tid:%i] Issue: IQ has become full. Cannot do WIB reinsertion\n", tid);
-
-        // Call function to start blocking.
-        block(tid);
-
-        // Set unblock to false. Special case where we are using
-        // skidbuffer (unblocking) instructions but then we still
-        // get full in the IQ.
-        toRename->iewUnblock[tid] = false;
-
-        ++iewStats.iqFullEvents;
-    }
     
-    else{
-        DPRINTF(IEW, "[tid:%i] Getting list of reinsertion ready instructions from WIB\n", tid);
-        rob->readCycle(tid, readyInstrs);
-        DPRINTF(IEW, "[tid:%i] There are %d reinsertion ready instructions from WIB\n", tid, readyInstrs.size());
-        
-        while (dis_num_inst < dispatchWidth &&
-            readyInstrs.size() != 0)
-        {
-            
-            // Read the 1st instruction from the WIB ready instructions for reinsertion
-            DynInstPtr wib_inst = readyInstrs.front();
-            readyInstrs.pop_front();
+    DPRINTF(IEW, "[tid:%i] Getting list of reinsertion ready instructions from WIB\n", tid);
+    rob->readCycle(tid, readyInstrs);
+    DPRINTF(IEW, "[tid:%i] There are %d reinsertion ready instructions from WIB\n", tid, readyInstrs.size());
 
-            DPRINTF(IEW, "[tid:%i] Issue: Adding PC %s [sn:%lli] [tid:%i] from WIB to "
-                    "IQ.\n",
-                    tid, wib_inst->pcState(), wib_inst->seqNum, wib_inst->threadNumber);
-            
-            
-            // Insert the WIB instruction in to the IQ
-            instQueue.insert(wib_inst);
-
-            // Increment dispatched instructions counter
-            dis_num_inst++;
+    while (dis_num_inst < dispatchWidth &&
+        readyInstrs.size() != 0)
+    {
+        // Check for full conditions.
+        if (instQueue.isFull(tid)) {
+            DPRINTF(IEW, "[tid:%i] Issue: IQ has become full. Cannot do WIB reinsertion\n", tid);
+    
+            // Call function to start blocking.
+            block(tid);
+            // Set unblock to false. Special case where we are using
+            // skidbuffer (unblocking) instructions but then we still
+            // get full in the IQ.
+            toRename->iewUnblock[tid] = false;
+            ++iewStats.iqFullEvents;
+            break;
         }
+        
+        // Read the 1st instruction from the WIB ready instructions for reinsertion
+        DynInstPtr wib_inst = readyInstrs.front();
+        readyInstrs.pop_front();
+        DPRINTF(IEW, "[tid:%i] Issue: Adding PC %s [sn:%lli] [tid:%i] from WIB to "
+                "IQ.\n",
+                tid, wib_inst->pcState(), wib_inst->seqNum, wib_inst->threadNumber);
+        
+        // Insert the WIB instruction in to the IQ
+        instQueue.insert(wib_inst);
+
+        // Increment dispatched instructions counter
+        dis_num_inst++;
     }
     
     // Loop through the instructions, putting them in the instruction
