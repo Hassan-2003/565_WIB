@@ -604,7 +604,33 @@ InstructionQueue::insert(const DynInstPtr &new_inst)
 
     assert(freeEntries != 0);
 
-    instList[new_inst->threadNumber].push_back(new_inst);
+    auto &orderList = instList[new_inst->threadNumber];
+    
+    // Do normal push back if the new_inst is the youngest
+    if (orderList.empty() || (new_inst->seqNum > orderList.back()->seqNum)) {
+        orderList.push_back(new_inst);
+    }
+
+    else {
+        // Start at the end of the list
+        ListIt inst_it = orderList.end();
+        bool inserted = false;
+
+        while ((inst_it != orderList.begin()) && !inserted) {
+            --inst_it;
+
+            // Look for an older instruction and insert
+            if (new_inst->seqNum > (*inst_it)->seqNum ) {
+                orderList.insert(std::next(inst_it), new_inst);
+                inserted = true;
+            }
+        }
+
+        // new_inst is the oldest instruction
+        if (!inserted) {
+            orderList.push_front(new_inst);
+        }
+    }
 
     --freeEntries;
 
@@ -1529,7 +1555,7 @@ InstructionQueue::doSquash(ThreadID tid)
             if (dest_reg->isFixedMapping()){
                 continue;
             }
-            // assert(dependGraph.empty(dest_reg->flatIndex()));
+            assert(dependGraph.empty(dest_reg->flatIndex()));
             dependGraph.clearInst(dest_reg->flatIndex());
         }
         instList[tid].erase(squash_it--);
