@@ -148,6 +148,7 @@ class DynInst : public ExecContext, public RefCounted
 
     bool reqLoadPtr = false;
     void setReqLoadPtr() { reqLoadPtr = true; }
+    void clearReqLoadPtr() { reqLoadPtr = false; }
     bool getReqLoadPtr() { return reqLoadPtr; }
 
     /** Checks if the instruction is a load miss */

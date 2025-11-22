@@ -194,6 +194,13 @@ InstructionQueue::setWait(int reg_index, int wib_index)
     regScoreboard[reg_index].wib_index = wib_index;
 }
 
+void
+InstructionQueue::clearWait(int reg_index)
+{
+    regScoreboard[reg_index].wait_bit = false;
+    regScoreboard[reg_index].wib_index = -1;
+}
+
 InstructionQueue::~InstructionQueue()
 {
     dependGraph.reset();
@@ -882,9 +889,10 @@ InstructionQueue::scheduleReadyInsts()
         bool pretend_ready = false;
         int wib_index = 0;
         PhysRegIdPtr wait_reg;
-
+        
         for (int i = 0; i < issuing_inst->numSrcRegs(); i++) {
-            if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex()) && !(issuing_inst->renamedSrcIdx(i)->isFixedMapping())) {
+            wib_index = getIndex(issuing_inst->renamedDestIdx(i)->flatIndex());
+            if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex()) && !(issuing_inst->renamedSrcIdx(i)->isFixedMapping()) && !(iewStage->rob->isLoadPtrFree(tid, wib_index))) {
                 DPRINTF(IQ, "Thread %i: Found source register (%i) waiting for loadPtr %d "
                     "[sn:%llu]\n",
                     tid,
@@ -892,7 +900,7 @@ InstructionQueue::scheduleReadyInsts()
                     getIndex(issuing_inst->renamedSrcIdx(i)->flatIndex()),
                     issuing_inst->seqNum);
                 pretend_ready = true;
-                wib_index = getIndex(issuing_inst->renamedDestIdx(i)->flatIndex());
+                // wib_index = getIndex(issuing_inst->renamedDestIdx(i)->flatIndex());
                 wait_reg = issuing_inst->renamedSrcIdx(i);
                 break;
             }
@@ -1167,6 +1175,7 @@ InstructionQueue::wakeDependents(const DynInstPtr &completed_inst)
                     wib_index);
         
         iewStage->rob->clearLoadWaiting(tid, wib_index);
+        completed_inst->clearReqLoadPtr();
     }
 
     for (int dest_reg_idx = 0;
@@ -1212,9 +1221,9 @@ InstructionQueue::wakeDependents(const DynInstPtr &completed_inst)
             // ready.  However that would mean that the dependency
             // graph entries would need to hold the src_reg_idx.
             dep_inst->markSrcRegReady();
-            if(!completed_inst->getReqLoadPtr()){
-                dep_inst->markRealSrcRegReady();
-            }
+            // if(!completed_inst->getReqLoadPtr()){
+            //     dep_inst->markRealSrcRegReady();
+            // }
 
             addIfReady(dep_inst);
 
@@ -1714,12 +1723,12 @@ InstructionQueue::addToProducers(const DynInstPtr &new_inst)
 
         // Mark the scoreboard to say it's not yet ready.
         regScoreboard[dest_reg->flatIndex()].ready = false;
-        if(new_inst->getPushToWIB()){
-            regScoreboard[dest_reg->flatIndex()].wait_bit = true;
-        }
-        else{
-            regScoreboard[dest_reg->flatIndex()].wait_bit = false;
-        }
+        // if(new_inst->getPushToWIB()){
+        //     regScoreboard[dest_reg->flatIndex()].wait_bit = true;
+        // }
+        // else{
+        regScoreboard[dest_reg->flatIndex()].wait_bit = false;
+        // }
         regScoreboard[dest_reg->flatIndex()].wib_index = -1;
     }
 }

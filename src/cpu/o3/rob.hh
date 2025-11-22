@@ -292,6 +292,8 @@ class ROB
     // Request any available load vector pointer
     bool getLoadVectorPtr(ThreadID tid, int &loadPtr);
 
+    bool isLoadPtrFree(ThreadID tid, int &loadPtr);
+
     // Given an instruction, get its ROB bank number
     // void get_bank(ThreadID tid, DynInstPtr instr, unsigned &bank_num);
 
@@ -346,7 +348,7 @@ class ROB
     int even;
     
     // Stack to track free load vector pointers
-    std::list<int> freeLoadVectors[MaxThreads];
+    std::vector<int> freeLoadVectors[MaxThreads];
 
   public:
     /** Iterator pointing to the instruction which is the last instruction

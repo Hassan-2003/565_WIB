@@ -104,7 +104,7 @@ ROB::ROB(CPU *_cpu, const BaseO3CPUParams &params)
         tailptr[tid] = 0;
 
         for(int loadVector = 0; loadVector < numLoadVectors; loadVector++) {
-            freeLoadVectors[tid].push_back(loadVector);
+            freeLoadVectors[tid].push_back(0);
         }
     }
 
@@ -255,7 +255,11 @@ ROB::findOldestReadyInstrs(ThreadID tid,
 
 void 
 ROB::clearLoadWaiting(ThreadID tid, int loadPtr){
-    freeLoadVectors[tid].push_front(loadPtr);
+    if(!freeLoadVectors[tid][loadPtr]){
+        panic("WIB Load Vector Pointer %d for tid %d is already freed!\n", loadPtr, tid);
+    }
+
+    freeLoadVectors[tid][loadPtr] = 0;
     DPRINTF(ROB, "[tid:%d] Freed WIB Load Vector Pointer: %d\n", tid, loadPtr);
     for(auto it = WIB[tid].begin(); it != WIB[tid].end(); it++){
         if((*it)->loadPtrs[loadPtr] != 0){
@@ -271,14 +275,20 @@ ROB::clearLoadWaiting(ThreadID tid, int loadPtr){
 
 bool 
 ROB::getLoadVectorPtr(ThreadID tid, int &loadPtr){
-    if(!freeLoadVectors[tid].empty()){
-        loadPtr = freeLoadVectors[tid].front();
-        freeLoadVectors[tid].pop_front();
-        DPRINTF(ROB, "[tid:%d] Assigned WIB Load Vector Pointer: %d\n", tid, loadPtr);
-        return true;
+    for(int i=0; i<numLoadVectors; i++){
+        if(!freeLoadVectors[tid][i]){
+            loadPtr = i;
+            freeLoadVectors[tid][i] = 1;
+            DPRINTF(ROB, "[tid:%d] Assigned WIB Load Vector Pointer: %d\n", tid, loadPtr);
+            return true;
+        }
     }
-
     return false;
+}
+
+bool 
+ROB::isLoadPtrFree(ThreadID tid, int &loadPtr){
+    return !freeLoadVectors[tid][loadPtr];
 }
 
 void

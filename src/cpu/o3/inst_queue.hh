@@ -189,6 +189,8 @@ class InstructionQueue
 
     bool removeFromIQ(ThreadID tid, const DynInstPtr &wibInstr);
 
+    void clearWait(int reg_index);
+
     /** Inserts a new, non-speculative instruction into the IQ. */
     void insertNonSpec(const DynInstPtr &new_inst);
 
