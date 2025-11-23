@@ -216,6 +216,13 @@ parser.add_argument("--enable-fast-forward", action='store_true',
 parser.add_argument("--measure-ff-time", action='store_true',
                     help="Measure and report fast-forward execution time")
 
+parser.add_argument(
+    "--num-load-vectors",
+    type=int,
+    default=0,
+    help="Number of load vectors available to be assigned to missing loads",
+)
+
 args = parser.parse_args()
 
 # Handle fast-forward configuration
@@ -320,6 +327,8 @@ def configure_table1_cpu(cpu, cpu_index):
         cpu.dispatchWidth = args.dispatch_width
     if hasattr(cpu, 'wbWidth'):
         cpu.wbWidth = args.writeback_width
+    if hasattr(cpu, 'numLoadVectors'):
+        cpu.numLoadVectors = args.num_load_vectors
     
     # Queue Size Parameters
     if hasattr(cpu, 'numROBEntries'):
@@ -450,6 +459,7 @@ for i in range(np):
         system.cpu[i].wbWidth = args.writeback_width
         system.cpu[i].numROBEntries = args.rob_size
         system.cpu[i].numIQEntries = args.iq_size
+        system.cpu[i].numLoadVectors = args.num_load_vectors
         system.cpu[i].LQEntries = args.lsq_size
         system.cpu[i].SQEntries = args.lsq_size
         system.cpu[i].fetchQueueSize = args.fetch_queue_size
