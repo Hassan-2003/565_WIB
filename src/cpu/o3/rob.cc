@@ -116,6 +116,16 @@ ROB::ROB(CPU *_cpu, const BaseO3CPUParams &params)
     resetState();
 }
 
+bool ROB::isLoadPtrInUse(int loadPtr){
+		for(int i=0; i<instQueue->regScoreboard.size(); i++){
+			if(instQueue->regScoreboard[i].wib_index == loadPtr &&
+				 instQueue->regScoreboard[i].wait_bit == true){
+				return true;
+			}
+		}
+		return false;
+}
+
 void ROB::inOrderPush(WIBEntry* entry, std::list<WIBEntry*> &orderList){
     // Do normal push back if the new_inst is the youngest
     DynInstPtr instr = entry->instr;
@@ -377,7 +387,7 @@ ROB::clearLoadWaiting(ThreadID tid, int loadPtr){
 bool 
 ROB::getLoadVectorPtr(ThreadID tid, int &loadPtr){
     for(int i=0; i<numLoadVectors; i++){
-        if(!freeLoadVectors[tid][i]){
+        if(!freeLoadVectors[tid][i] && !isLoadPtrInUse(i)){
             loadPtr = i;
             freeLoadVectors[tid][i] = 1;
             DPRINTF(ROB, "[tid:%d] Assigned WIB Load Vector Pointer: %d\n", tid, loadPtr);

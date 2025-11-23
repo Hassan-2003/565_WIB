@@ -52,6 +52,7 @@
 #include "config/the_isa.hh"
 #include "cpu/inst_seq.hh"
 #include "cpu/o3/dyn_inst_ptr.hh"
+#include "cpu/o3/inst_queue.hh"
 #include "cpu/o3/limits.hh"
 #include "cpu/reg_class.hh"
 #include "enums/SMTQueuePolicy.hh"
@@ -111,7 +112,7 @@ class ROB
      *  @param _cpu   The cpu object pointer.
      *  @param params The cpu params including several ROB-specific parameters.
      */
-    ROB(CPU *_cpu, const BaseO3CPUParams &params);
+    ROB(CPU *_cpu, const BaseO3CPUParams &param);
 
     std::string name() const;
 
@@ -229,6 +230,8 @@ class ROB
     /** Updates the tail instruction with the new youngest instruction. */
     void updateTail();
 
+    void setInstQueuePtr(InstructionQueue *iq_ptr)
+    { instQueue = iq_ptr; }
     /** Reads the PC of the oldest head instruction. */
 //    uint64_t readHeadPC();
 
@@ -318,6 +321,8 @@ class ROB
             std::vector<std::list<WIBEntry*>::iterator> &banksChecked);
 
     void readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs);
+
+    bool isLoadPtrInUse(int loadPtr);
                 
 
   private:
@@ -411,6 +416,8 @@ class ROB
 
     /** Number of active threads. */
     ThreadID numThreads;
+
+    InstructionQueue *instQueue;
 
 
     struct ROBStats : public statistics::Group

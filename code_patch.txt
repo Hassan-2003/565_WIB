@@ -1,0 +1,2270 @@
+diff --git a/src/cpu/o3/BaseO3CPU.py b/src/cpu/o3/BaseO3CPU.py
+index c58f9fee3..8b8531eea 100644
+--- a/src/cpu/o3/BaseO3CPU.py
++++ b/src/cpu/o3/BaseO3CPU.py
+@@ -138,7 +138,7 @@ class BaseO3CPU(BaseCPU):
+     LFSTSize = Param.Unsigned(1024, "Last fetched store table size")
+     SSITSize = Param.Unsigned(1024, "Store set ID table size")
+ 
+-    numRobs = Param.Unsigned(1, "Number of Reorder Buffers");
++    numRobs = Param.Unsigned(1, "Number of Reorder Buffers")
+ 
+     numPhysIntRegs = Param.Unsigned(256,
+             "Number of physical integer registers")
+@@ -151,7 +151,8 @@ class BaseO3CPU(BaseCPU):
+     # most ISAs don't use condition-code regs, so default is 0
+     numPhysCCRegs = Param.Unsigned(0, "Number of physical cc registers")
+     numIQEntries = Param.Unsigned(64, "Number of instruction queue entries")
+-    numROBEntries = Param.Unsigned(192, "Number of reorder buffer entries")
++    numROBEntries = Param.Unsigned(2048, "Number of reorder buffer entries")
++    numLoadVectors = Param.Unsigned(64, "Number of load vector entries")
+ 
+     smtNumFetchingThreads = Param.Unsigned(1, "SMT Number of Fetching Threads")
+     smtFetchPolicy = Param.SMTFetchPolicy('RoundRobin', "SMT Fetch policy")
+diff --git a/src/cpu/o3/commit.cc b/src/cpu/o3/commit.cc
+index 97def7e59..c3d0f80ea 100644
+--- a/src/cpu/o3/commit.cc
++++ b/src/cpu/o3/commit.cc
+@@ -1004,6 +1004,11 @@ Commit::commitInsts()
+             DPRINTF(Commit, "Retiring squashed instruction from "
+                     "ROB.\n");
+ 
++            if(head_inst->getReqLoadPtr()){
++                DPRINTF(Commit, "Clearing Load vector for squashed load. [sn:%llu]\n", head_inst->seqNum);
++                rob->clearLoadWaiting(tid, head_inst->getLoadVectorIndex());
++            }
++
+             rob->retireHead(commit_thread);
+ 
+             ++stats.commitSquashedInsts;
+diff --git a/src/cpu/o3/cpu.cc b/src/cpu/o3/cpu.cc
+index 301733c1b..d1ba35471 100644
+--- a/src/cpu/o3/cpu.cc
++++ b/src/cpu/o3/cpu.cc
+@@ -244,6 +244,7 @@ CPU::CPU(const BaseO3CPUParams &params)
+ 
+     // Setup the ROB for whichever stages need it.
+     commit.setROB(&rob);
++    iew.setROB(&rob);
+ 
+     lastActivatedCycle = 0;
+ 
+diff --git a/src/cpu/o3/cpu.hh b/src/cpu/o3/cpu.hh
+index db3474da5..79e941cf8 100644
+--- a/src/cpu/o3/cpu.hh
++++ b/src/cpu/o3/cpu.hh
+@@ -91,6 +91,8 @@ class ThreadContext;
+  * within it, as well as all of the time buffers between stages.  The
+  * tick() function for the CPU is defined here.
+  */
++
++// Can have to modify issue, dispatch, and rename table to support WIB - Hassan Alalawi
+ class CPU : public BaseCPU
+ {
+   public:
+diff --git a/src/cpu/o3/dep_graph.hh b/src/cpu/o3/dep_graph.hh
+index f5e74b75b..c3e0ea865 100644
+--- a/src/cpu/o3/dep_graph.hh
++++ b/src/cpu/o3/dep_graph.hh
+@@ -103,9 +103,15 @@ class DependencyGraph
+     void clearInst(RegIndex idx)
+     { dependGraph[idx].inst = NULL; }
+ 
++    /** Get the producing instruction. */
++    DynInstPtr getInst(RegIndex idx)
++    { return dependGraph[idx].inst; }
++
+     /** Removes an instruction from a single linked list. */
+     void remove(RegIndex idx, const DynInstPtr &inst_to_remove);
+ 
++    bool search(RegIndex idx, const DynInstPtr &inst_to_remove);
++
+     /** Removes and returns the newest dependent of a specific register. */
+     DynInstPtr pop(RegIndex idx);
+ 
+@@ -202,6 +208,32 @@ DependencyGraph<DynInstPtr>::insert(RegIndex idx, const DynInstPtr &new_inst)
+     ++memAllocCounter;
+ }
+ 
++template <class DynInstPtr>
++bool
++DependencyGraph<DynInstPtr>::search(RegIndex idx,
++                                    const DynInstPtr &inst_to_search)
++{
++    DepEntry *curr = dependGraph[idx].next;
++
++    // Make sure curr isn't NULL.  Because this instruction is being
++    // removed from a dependency list, it must have been placed there at
++    // an earlier time.  The dependency chain should not be empty,
++    // unless the instruction dependent upon it is already ready.
++    if (curr == NULL) {
++        return false;
++    }
++
++    nodesRemoved++;
++
++    // Find the instruction within the dependency linked list.
++    while (curr->inst != inst_to_search) {
++        curr = curr->next;
++        if(curr == NULL){
++            return false;
++        }
++    }
++    return true;
++}
+ 
+ template <class DynInstPtr>
+ void
+diff --git a/src/cpu/o3/dyn_inst.hh b/src/cpu/o3/dyn_inst.hh
+index c49581b40..26e4e9fe9 100644
+--- a/src/cpu/o3/dyn_inst.hh
++++ b/src/cpu/o3/dyn_inst.hh
+@@ -140,6 +140,32 @@ class DynInst : public ExecContext, public RefCounted
+     /** InstRecord that tracks this instructions. */
+     Trace::InstRecord *traceData = nullptr;
+ 
++    unsigned bankNum = 0;
++
++    bool isPushedToWIB = false;
++    void setPushToWIB() { isPushedToWIB = true; }
++    bool getPushToWIB() { return isPushedToWIB; }
++
++    bool reqLoadPtr = false;
++    void setReqLoadPtr() { reqLoadPtr = true; }
++    void clearReqLoadPtr() { reqLoadPtr = false; }
++    bool getReqLoadPtr() { return reqLoadPtr; }
++
++    /** Checks if the instruction is a load miss */
++    bool missDetected = false;
++    
++    /** Sets the instruction as a load miss */
++    void setMissDetect() { missDetected = true; }
++    
++    /** Returns if the instruction is a load miss */
++    bool isMissed() {return missDetected; }
++
++    uint8_t realReadyRegs = 0;
++
++    int loadVectorIndex = -1;
++    void setLoadVectorIndex(int index) { loadVectorIndex = index; }
++    int getLoadVectorIndex() { return loadVectorIndex; }
++
+   protected:
+     enum Status
+     {
+@@ -727,6 +753,24 @@ class DynInst : public ExecContext, public RefCounted
+     /** Marks a specific register as ready. */
+     void markSrcRegReady(RegIndex src_idx);
+ 
++    
++    void setSrcRegReady(uint8_t value){
++        readyRegs = value;
++    }
++
++    void decrSrcRegReady(){
++        --readyRegs;
++    }
++
++    void markRealSrcRegReady(){
++        ++realReadyRegs;
++    }
++    
++
++    uint8_t getRealSrcRegReady(){
++        return realReadyRegs;
++    }
++
+     /** Sets this instruction as completed. */
+     void setCompleted() { status.set(Completed); }
+ 
+diff --git a/src/cpu/o3/iew.cc b/src/cpu/o3/iew.cc
+index 5c507f01a..502d0f0da 100644
+--- a/src/cpu/o3/iew.cc
++++ b/src/cpu/o3/iew.cc
+@@ -877,6 +877,56 @@ IEW::dispatch(ThreadID tid)
+ void
+ IEW::dispatchInsts(ThreadID tid)
+ {
++    DynInstPtr inst;
++    bool add_to_iq = false;
++    int dis_num_inst = 0;
++
++    // Loop through the WIB instructions, putting them in the instruction
++    // queue.
++
++    DPRINTF(IEW, "[tid:%i] Getting list of reinsertion ready instructions from WIB\n", tid);
++    rob->readCycle(tid, wibBuffer);
++    DPRINTF(IEW, "[tid:%i] There are %d reinsertion ready instructions from WIB\n", tid, wibBuffer.size());
++
++    while ((dis_num_inst < dispatchWidth) && !wibBuffer.empty())
++    {   
++        // Read the 1st instruction from the WIB ready instructions for reinsertion
++        DynInstPtr wib_inst = wibBuffer.front();
++        if (wib_inst->isSquashed()) {
++            DPRINTF(IEW, "[tid:%i] Issue: Squashed instruction encountered in WIB, "
++                    "not adding to IQ.\n", tid);
++            wibBuffer.pop_front();
++            continue;
++        }
++        // Check for full conditions.
++        if (instQueue.isFull(tid)) {
++            DPRINTF(IEW, "[tid:%i] Issue: IQ has become full. Cannot do WIB reinsertion\n", tid);
++    
++            // Call function to start blocking.
++            block(tid);
++            // Set unblock to false. Special case where we are using
++            // skidbuffer (unblocking) instructions but then we still
++            // get full in the IQ.
++            toRename->iewUnblock[tid] = false;
++            ++iewStats.iqFullEvents;
++            break;
++        }
++        
++        wibBuffer.pop_front();
++        DPRINTF(IEW, "[tid:%i] Issue: Adding PC %s [sn:%lli] [tid:%i] from WIB to "
++                "IQ.\n",
++                tid, wib_inst->pcState(), wib_inst->seqNum, wib_inst->threadNumber);
++        
++        // Insert the WIB instruction in to the IQ
++        instQueue.insert(wib_inst);
++
++        // Increment dispatched instructions counter
++        dis_num_inst++;
++    }
++    
++    // Loop through the instructions, putting them in the instruction
++    // queue.
++
+     // Obtain instructions from skid buffer if unblocking, or queue from rename
+     // otherwise.
+     std::queue<DynInstPtr> &insts_to_dispatch =
+@@ -885,15 +935,10 @@ IEW::dispatchInsts(ThreadID tid)
+ 
+     int insts_to_add = insts_to_dispatch.size();
+ 
+-    DynInstPtr inst;
+-    bool add_to_iq = false;
+-    int dis_num_inst = 0;
+-
+-    // Loop through the instructions, putting them in the instruction
+-    // queue.
+-    for ( ; dis_num_inst < insts_to_add &&
++    int dis_num_new_inst = 0;
++    for ( ; (dis_num_new_inst < insts_to_add) &&
+               dis_num_inst < dispatchWidth;
+-          ++dis_num_inst)
++          ++dis_num_new_inst)
+     {
+         inst = insts_to_dispatch.front();
+ 
+@@ -1089,6 +1134,8 @@ IEW::dispatchInsts(ThreadID tid)
+ 
+         ++iewStats.dispatchedInsts;
+ 
++        dis_num_inst++;
++
+ #if TRACING_ON
+         inst->dispatchTick = curTick() - inst->fetchTick;
+ #endif
+@@ -1167,7 +1214,7 @@ IEW::executeInsts()
+         // executing
+         ppExecute->notify(inst);
+ 
+-        // Check if the instruction is squashed; if so then skip it
++        // Check if the instruction is squashed; if so then skip it (Note that it doesnt just stall and squash issueQ during squash event)
+         if (inst->isSquashed()) {
+             DPRINTF(IEW, "Execute: Instruction was squashed. PC: %s, [tid:%i]"
+                          " [sn:%llu]\n", inst->pcState(), inst->threadNumber,
+@@ -1462,6 +1509,8 @@ IEW::tick()
+ 
+         writebackInsts();
+ 
++        instQueue.popIssueToReadyBuf();
++
+         // Have the instruction queue try to schedule any ready instructions.
+         // (In actuality, this scheduling is for instructions that will
+         // be executed next cycle.)
+diff --git a/src/cpu/o3/iew.hh b/src/cpu/o3/iew.hh
+index 80fed295d..06dfbbeb3 100644
+--- a/src/cpu/o3/iew.hh
++++ b/src/cpu/o3/iew.hh
+@@ -51,6 +51,7 @@
+ #include "cpu/o3/limits.hh"
+ #include "cpu/o3/lsq.hh"
+ #include "cpu/o3/scoreboard.hh"
++#include "cpu/o3/rob.hh"
+ #include "cpu/timebuf.hh"
+ #include "debug/IEW.hh"
+ #include "sim/probe/probe.hh"
+@@ -107,7 +108,15 @@ class IEW
+         Unblocking
+     };
+ 
++    /** List of WIB ready instrcutions. */
++    std::list<DynInstPtr> readyInstrs;
++
++    /** Sets pointer to the ROB. */
++    ROB* rob;
++    void setROB(ROB *rob_ptr) { rob = rob_ptr; }
++
+   private:
++
+     /** Overall stage status. */
+     Status _status;
+     /** Dispatch status. */
+@@ -338,6 +347,12 @@ class IEW
+     /** Scoreboard pointer. */
+     Scoreboard* scoreboard;
+ 
++  // public:
++  //   // return the scoreboard pointer
++  //   Scoreboard* getScoreboardPtr() { 
++  //     return scoreboard; 
++  //   }
++
+   private:
+     /** CPU pointer. */
+     CPU *cpu;
+@@ -354,6 +369,8 @@ class IEW
+     /** Instruction queue. */
+     InstructionQueue instQueue;
+ 
++    std::list<DynInstPtr> wibBuffer;
++
+     /** Load / store queue. */
+     LSQ ldstQueue;
+ 
+diff --git a/src/cpu/o3/inst_queue.cc b/src/cpu/o3/inst_queue.cc
+index 96669261f..4dd2d95a7 100644
+--- a/src/cpu/o3/inst_queue.cc
++++ b/src/cpu/o3/inst_queue.cc
+@@ -161,6 +161,39 @@ InstructionQueue::InstructionQueue(CPU *cpu_ptr, IEW *iew_ptr,
+     }
+ }
+ 
++bool
++InstructionQueue::removeFromIQ(ThreadID tid, const DynInstPtr &wibInstr)
++{
++    for(auto it = instList[tid].begin(); it != instList[tid].end(); it++){
++        if((*it) == wibInstr){
++            instList[tid].erase(it);
++            return true;
++        }
++    }
++
++    return false;
++}
++
++bool
++InstructionQueue::getWait(int reg_index) const
++{
++    return regScoreboard[reg_index].wait_bit;
++}
++
++int
++InstructionQueue::getIndex(int reg_index) const
++{
++    return regScoreboard[reg_index].wib_index;
++}
++
++void
++InstructionQueue::setWait(int reg_index, int wib_index)
++{
++    regScoreboard[reg_index].wait_bit = true;
++    regScoreboard[reg_index].ready = false;
++    regScoreboard[reg_index].wib_index = wib_index;
++}
++
+ InstructionQueue::~InstructionQueue()
+ {
+     dependGraph.reset();
+@@ -184,6 +217,8 @@ InstructionQueue::IQStats::IQStats(CPU *cpu, const unsigned &total_width)
+              "Number of non-speculative instructions added to the IQ"),
+     ADD_STAT(instsIssued, statistics::units::Count::get(),
+              "Number of instructions issued"),
++    ADD_STAT(totalWIBPushes, statistics::units::Count::get(),
++    "Number of instructions pushed to the WIB"),
+     ADD_STAT(intInstsIssued, statistics::units::Count::get(),
+              "Number of integer instructions issued"),
+     ADD_STAT(floatInstsIssued, statistics::units::Count::get(),
+@@ -245,6 +280,9 @@ InstructionQueue::IQStats::IQStats(CPU *cpu, const unsigned &total_width)
+     squashedInstsIssued
+         .prereq(squashedInstsIssued);
+ 
++    totalWIBPushes
++        .prereq(totalWIBPushes);
++
+     squashedInstsExamined
+         .prereq(squashedInstsExamined);
+ 
+@@ -407,7 +445,9 @@ InstructionQueue::resetState()
+     // registers are ready in rename.  Thus it can all be initialized as
+     // unready.
+     for (int i = 0; i < numPhysRegs; ++i) {
+-        regScoreboard[i] = false;
++        regScoreboard[i].ready = false;
++        regScoreboard[i].wait_bit = false;
++        regScoreboard[i].wib_index = -1;
+     }
+ 
+     for (ThreadID tid = 0; tid < MaxThreads; ++tid) {
+@@ -576,7 +616,33 @@ InstructionQueue::insert(const DynInstPtr &new_inst)
+ 
+     assert(freeEntries != 0);
+ 
+-    instList[new_inst->threadNumber].push_back(new_inst);
++    auto &orderList = instList[new_inst->threadNumber];
++    
++    // Do normal push back if the new_inst is the youngest
++    if (orderList.empty() || (new_inst->seqNum > orderList.back()->seqNum)) {
++        orderList.push_back(new_inst);
++    }
++
++    else {
++        // Start at the end of the list
++        ListIt inst_it = orderList.end();
++        bool inserted = false;
++
++        while ((inst_it != orderList.begin()) && !inserted) {
++            --inst_it;
++
++            // Look for an older instruction and insert
++            if (new_inst->seqNum > (*inst_it)->seqNum ) {
++                orderList.insert(std::next(inst_it), new_inst);
++                inserted = true;
++            }
++        }
++
++        // new_inst is the oldest instruction
++        if (!inserted) {
++            orderList.push_front(new_inst);
++        }
++    }
+ 
+     --freeEntries;
+ 
+@@ -590,7 +656,7 @@ InstructionQueue::insert(const DynInstPtr &new_inst)
+     // register(s).
+     addToProducers(new_inst);
+ 
+-    if (new_inst->isMemRef()) {
++    if (new_inst->isMemRef() && !new_inst->getPushToWIB()) {
+         memDepUnit[new_inst->threadNumber].insert(new_inst);
+     } else {
+         addIfReady(new_inst);
+@@ -783,6 +849,7 @@ InstructionQueue::scheduleReadyInsts()
+         assert(!readyInsts[op_class].empty());
+ 
+         DynInstPtr issuing_inst = readyInsts[op_class].top();
++        ThreadID tid = issuing_inst->threadNumber;
+ 
+         if (issuing_inst->isFloating()) {
+             iqIOStats.fpInstQueueReads++;
+@@ -811,95 +878,224 @@ InstructionQueue::scheduleReadyInsts()
+             continue;
+         }
+ 
+-        int idx = FUPool::NoCapableFU;
+-        Cycles op_latency = Cycles(1);
+-        ThreadID tid = issuing_inst->threadNumber;
++        // Look for at least 1 pretend ready source
++        bool pretend_ready = false;
++        int wib_index = 0;
++        PhysRegIdPtr wait_reg;
++        
++        for (int i = 0; i < issuing_inst->numSrcRegs(); i++) {
++            if(getWait(issuing_inst->renamedSrcIdx(i)->flatIndex()) && !(issuing_inst->renamedSrcIdx(i)->isFixedMapping())){
++                pretend_ready = true;
++                wib_index = getIndex(issuing_inst->renamedSrcIdx(i)->flatIndex());
++
++                DPRINTF(IQ, "Thread %i: Found source register (%i) waiting for loadPtr %d "
++                "[sn:%llu]\n",
++                tid,
++                issuing_inst->renamedSrcIdx(i)->index(),
++                getIndex(issuing_inst->renamedSrcIdx(i)->flatIndex()),
++                issuing_inst->seqNum);
++
++                if(!iewStage->rob->isLoadPtrFree(tid, wib_index)){
++                    DPRINTF(IQ, "Thread %i: LoadPtr %d is still busy. Can push to WIB "
++                    "[sn:%llu]\n",
++                    tid,
++                    wib_index,
++                    issuing_inst->seqNum);
+ 
+-        if (op_class != No_OpClass) {
+-            idx = fuPool->getUnit(op_class);
+-            if (issuing_inst->isFloating()) {
+-                iqIOStats.fpAluAccesses++;
+-            } else if (issuing_inst->isVector()) {
+-                iqIOStats.vecAluAccesses++;
+-            } else {
+-                iqIOStats.intAluAccesses++;
+-            }
+-            if (idx > FUPool::NoFreeFU) {
+-                op_latency = fuPool->getOpLatency(op_class);
++                    wib_indexes.push_back(wib_index);
++                }
+             }
+         }
++        
++
++        // Send the pretend ready instruction to the WIB
++        if (pretend_ready) {
++            if(wib_indexes.size() > 0){
++                int dest_reg = -1;
++
++                DPRINTF(IQ, "Thread %i: Moving instruction PC %s "
++                        "[sn:%llu] to WIB (wait)\n",
++                        tid, issuing_inst->pcState(),
++                        issuing_inst->seqNum);
++                
++                DPRINTF(IQ, "[tid:%d] IQ pushed to WIB. [sn:%llu]\n", tid, issuing_inst->seqNum);
++                ++iqStats.totalWIBPushes;
++                iewStage->rob->wibPush(tid, issuing_inst, wib_indexes);
++                issuing_inst->setPushToWIB(); // mark instruction as pushed to WIB for future guards 
++                issuing_inst->clearCanIssue(); // prevent re-adding to ready queue immediately after WIB pop
++                issuing_inst->clearIssued(); // To fix state where instruction is marked as issued but sitting in IQ after WIB pop
++                issuing_inst->setSrcRegReady(0); // prevent wakeup logic from premature wake up after WIB pop
++
++                assert(removeFromIQ(tid, issuing_inst));
++
++                // Set wait bit and wake up the wait dependent instructions
++                for (int i = 0; i < issuing_inst->numDestRegs(); i++) {
++                    DPRINTF(IQ,"Setting Destination Register wait bit for"
++                            " wait dependent instructions (%i) \n",
++                            issuing_inst->renamedDestIdx(i)->index());
++                
++                    dest_reg = issuing_inst->renamedDestIdx(i)->flatIndex();
++                    setWait(dest_reg, wib_indexes.front());
++                }
+ 
+-        // If we have an instruction that doesn't require a FU, or a
+-        // valid FU, then schedule for execution.
+-        if (idx != FUPool::NoFreeFU) {
+-            if (op_latency == Cycles(1)) {
+-                i2e_info->size++;
+-                instsToExecute.push_back(issuing_inst);
+-
+-                // Add the FU onto the list of FU's to be freed next
+-                // cycle if we used one.
+-                if (idx >= 0)
+-                    fuPool->freeUnitNextCycle(idx);
+-            } else {
+-                bool pipelined = fuPool->isPipelined(op_class);
+-                // Generate completion event for the FU
+-                ++wbOutstanding;
+-                FUCompletion *execution = new FUCompletion(issuing_inst,
+-                                                           idx, this);
+-
+-                cpu->schedule(execution,
+-                              cpu->clockEdge(Cycles(op_latency - 1)));
+-
+-                if (!pipelined) {
+-                    // If FU isn't pipelined, then it must be freed
+-                    // upon the execution completing.
+-                    execution->setFreeFU();
++                wakeWaitDependents(issuing_inst);
++
++                // remove the instruction from the readyInsts queue
++                readyInsts[op_class].pop();
++                
++                if (!readyInsts[op_class].empty()) {
++                    moveToYoungerInst(order_it);
+                 } else {
+-                    // Add the FU onto the list of FU's to be freed next cycle.
+-                    fuPool->freeUnitNextCycle(idx);
++                    readyIt[op_class] = listOrder.end();
++                    queueOnList[op_class] = false;
+                 }
++
++                // Don't know the implications of setIssued
++                // issuing_inst->setIssued();
++                ++total_issued;
++                
++                // Checks if this is the first issue of the instruction
++                if (issuing_inst->firstIssue == -1)
++                    issuing_inst->firstIssue = curTick();
++                
++                // remove the instruction from the IQ
++                ++freeEntries;
++                count[tid]--;
++                issuing_inst->clearInIQ();
++                listOrder.erase(order_it++);
+             }
+ 
+-            DPRINTF(IQ, "Thread %i: Issuing instruction PC %s "
+-                    "[sn:%llu]\n",
+-                    tid, issuing_inst->pcState(),
+-                    issuing_inst->seqNum);
++            else{
++                DPRINTF(IQ, "Thread %i: Waiting instruction PC %s "
++                        "got its load back in the same issue cycle [sn:%llu].\n",
++                        tid, issuing_inst->pcState(),
++                        issuing_inst->seqNum);
++                
++                // Need to decrement the ready source count for the instruction
++                for (int i = 0; i < issuing_inst->numSrcRegs(); i++) {
++                    if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex()) && !(issuing_inst->renamedSrcIdx(i)->isFixedMapping())) {
++                        issuing_inst->decrSrcRegReady();
++                    }
++                }
+ 
+-            readyInsts[op_class].pop();
++                
++                // Need to add it back to dependets list to be properly woken up later
++                addToDependents(issuing_inst);
+ 
+-            if (!readyInsts[op_class].empty()) {
+-                moveToYoungerInst(order_it);
+-            } else {
+-                readyIt[op_class] = listOrder.end();
+-                queueOnList[op_class] = false;
++                // remove the instruction from the readyInsts queue
++                readyInsts[op_class].pop();
++                
++                if (!readyInsts[op_class].empty()) {
++                    moveToYoungerInst(order_it);
++                } else {
++                    readyIt[op_class] = listOrder.end();
++                    queueOnList[op_class] = false;
++                }
++
++                // Don't know the implications of setIssued
++                // issuing_inst->setIssued();
++                ++total_issued;
++                
++                // Checks if this is the first issue of the instruction
++                if (issuing_inst->firstIssue == -1)
++                    issuing_inst->firstIssue = curTick();
++
++                issuing_inst->clearCanIssue(); // To fix state where instruction is marked as issued but sitting in IQ after failed WIB push
++                listOrder.erase(order_it++);
+             }
++        }
+ 
+-            issuing_inst->setIssued();
+-            ++total_issued;
++        else {
++            int idx = FUPool::NoCapableFU;
++            Cycles op_latency = Cycles(1);
++            ThreadID tid = issuing_inst->threadNumber;
++
++            if (op_class != No_OpClass) {
++                idx = fuPool->getUnit(op_class);
++                if (issuing_inst->isFloating()) {
++                    iqIOStats.fpAluAccesses++;
++                } else if (issuing_inst->isVector()) {
++                    iqIOStats.vecAluAccesses++;
++                } else {
++                    iqIOStats.intAluAccesses++;
++                }
++                if (idx > FUPool::NoFreeFU) {
++                    op_latency = fuPool->getOpLatency(op_class);
++                }
++            }
+ 
+-#if TRACING_ON
+-            issuing_inst->issueTick = curTick() - issuing_inst->fetchTick;
+-#endif
++            // If we have an instruction that doesn't require a FU, or a
++            // valid FU, then schedule for execution.
++            if (idx != FUPool::NoFreeFU) {
++                if (op_latency == Cycles(1)) {
++                    i2e_info->size++;
++                    instsToExecute.push_back(issuing_inst);
++
++                    // Add the FU onto the list of FU's to be freed next
++                    // cycle if we used one.
++                    if (idx >= 0)
++                        fuPool->freeUnitNextCycle(idx);
++                } else {
++                    bool pipelined = fuPool->isPipelined(op_class);
++                    // Generate completion event for the FU
++                    ++wbOutstanding;
++                    FUCompletion *execution = new FUCompletion(issuing_inst,
++                                                            idx, this);
++
++                    cpu->schedule(execution,
++                                cpu->clockEdge(Cycles(op_latency - 1)));
++
++                    if (!pipelined) {
++                        // If FU isn't pipelined, then it must be freed
++                        // upon the execution completing.
++                        execution->setFreeFU();
++                    } else {
++                        // Add the FU onto the list of FU's to be freed next cycle.
++                        fuPool->freeUnitNextCycle(idx);
++                    }
++                }
+ 
+-            if (issuing_inst->firstIssue == -1)
+-                issuing_inst->firstIssue = curTick();
++                DPRINTF(IQ, "Thread %i: Issuing instruction PC %s "
++                        "[sn:%llu]\n",
++                        tid, issuing_inst->pcState(),
++                        issuing_inst->seqNum);
+ 
+-            if (!issuing_inst->isMemRef()) {
+-                // Memory instructions can not be freed from the IQ until they
+-                // complete.
+-                ++freeEntries;
+-                count[tid]--;
+-                issuing_inst->clearInIQ();
++                readyInsts[op_class].pop();
++
++                if (!readyInsts[op_class].empty()) {
++                    moveToYoungerInst(order_it);
++                } else {
++                    readyIt[op_class] = listOrder.end();
++                    queueOnList[op_class] = false;
++                }
++
++                issuing_inst->setIssued();
++                ++total_issued;
++
++    #if TRACING_ON
++                issuing_inst->issueTick = curTick() - issuing_inst->fetchTick;
++    #endif
++
++                if (issuing_inst->firstIssue == -1)
++                    issuing_inst->firstIssue = curTick();
++
++                if (!issuing_inst->isMemRef()) {
++                    // Memory instructions can not be freed from the IQ until they
++                    // complete.
++                    ++freeEntries;
++                    count[tid]--;
++                    issuing_inst->clearInIQ();
++                } else {
++                    memDepUnit[tid].issue(issuing_inst);
++                }
++
++                listOrder.erase(order_it++);
++                iqStats.statIssuedInstType[tid][op_class]++;
+             } else {
+-                memDepUnit[tid].issue(issuing_inst);
++                iqStats.statFuBusy[op_class]++;
++                iqStats.fuBusy[tid]++;
++                ++order_it;
+             }
+-
+-            listOrder.erase(order_it++);
+-            iqStats.statIssuedInstType[tid][op_class]++;
+-        } else {
+-            iqStats.statFuBusy[op_class]++;
+-            iqStats.fuBusy[tid]++;
+-            ++order_it;
+         }
+     }
+ 
+@@ -955,6 +1151,8 @@ InstructionQueue::commit(const InstSeqNum &inst, ThreadID tid)
+     while (iq_it != instList[tid].end() &&
+            (*iq_it)->seqNum <= inst) {
+         ++iq_it;
++        DPRINTF(IQ, "[tid:%i] Removing instruction [sn:%llu] from IQ\n",
++                tid, (instList[tid].front())->seqNum);
+         instList[tid].pop_front();
+     }
+ 
+@@ -1000,6 +1198,19 @@ InstructionQueue::wakeDependents(const DynInstPtr &completed_inst)
+         memDepUnit[tid].completeInst(completed_inst);
+     }
+ 
++    int wib_index = completed_inst->getLoadVectorIndex();
++    // Clear the WIB entry of the waiting load upon completion of the instruction
++    if (completed_inst->getReqLoadPtr()) {
++        DPRINTF(IQ, "Clearing WIB entry of the waiting load "
++                    "with WIB Index (%d)\n",
++                    wib_index);
++        
++        iewStage->rob->clearLoadWaiting(tid, wib_index);
++
++        // So that we don't try to clear it again
++        completed_inst->clearReqLoadPtr();
++    }
++
+     for (int dest_reg_idx = 0;
+          dest_reg_idx < completed_inst->numDestRegs();
+          dest_reg_idx++)
+@@ -1055,13 +1266,62 @@ InstructionQueue::wakeDependents(const DynInstPtr &completed_inst)
+         // been woken up.
+         assert(dependGraph.empty(dest_reg->flatIndex()));
+         dependGraph.clearInst(dest_reg->flatIndex());
+-
++        
+         // Mark the scoreboard as having that register ready.
+-        regScoreboard[dest_reg->flatIndex()] = true;
++        regScoreboard[dest_reg->flatIndex()].ready = true;
++        regScoreboard[dest_reg->flatIndex()].wait_bit = false;
++        regScoreboard[dest_reg->flatIndex()].wib_index = -1;
+     }
+     return dependents;
+ }
+ 
++void
++InstructionQueue::wakeWaitDependents(const DynInstPtr &waiting_inst)
++{
++    assert(!waiting_inst->isSquashed());
++
++    for (int dest_reg_idx = 0;
++         dest_reg_idx < waiting_inst->numDestRegs();
++         dest_reg_idx++)
++    {
++        PhysRegIdPtr dest_reg =
++            waiting_inst->renamedDestIdx(dest_reg_idx);
++
++        // Special case of uniq or control registers.  They are not
++        // handled by the IQ and thus have no dependency graph entry.
++        if (dest_reg->isFixedMapping()) {
++            DPRINTF(IQ, "Reg %d is part of a fix mapping, skipping\n",
++                    dest_reg->index());
++            continue;
++        }
++    
++        //Go through the dependency chain, marking the registers as
++        //ready within the waiting instructions.
++        DynInstPtr dep_inst = dependGraph.pop(dest_reg->flatIndex());
++
++        while (dep_inst) {
++            DPRINTF(IQ, "Waking up a wait dependent instruction, [sn:%llu] "
++                "PC %s, dest reg %i\n", dep_inst->seqNum, dep_inst->pcState(), dest_reg->index());
++
++            // Might want to give more information to the instruction
++            // so that it knows which of its source registers is
++            // ready.  However that would mean that the dependency
++            // graph entries would need to hold the src_reg_idx.
++            dep_inst->markSrcRegReady();
++            
++            // Only adds to ready list for issue on the next cycle since we would 
++            // run the risk of pushing it to the ready list and issuig it in the same cycle
++            // (single cycle wake up and issue)
++            addIfWaitReady(dep_inst);
++            
++            dep_inst = dependGraph.pop(dest_reg->flatIndex());
++        }
++
++        // Dont reset head node in case of re-insertion from WIB
++        assert(dependGraph.empty(dest_reg->flatIndex()));
++    }
++}
++
+ void
+ InstructionQueue::addReadyMemInst(const DynInstPtr &ready_inst)
+ {
+@@ -1192,9 +1452,13 @@ InstructionQueue::doSquash(ThreadID tid)
+ 
+     // Squash any instructions younger than the squashed sequence number
+     // given.
++    if(squash_it != instList[tid].end()){
++        DPRINTF(IQ, "[tid:%i] Starting IQ squash from [sn:%llu]\n",
++                tid, (*squash_it)->seqNum);
++    }
+     while (squash_it != instList[tid].end() &&
+            (*squash_it)->seqNum > squashedSeqNum[tid]) {
+-
++        
+         DynInstPtr squashed_inst = (*squash_it);
+         if (squashed_inst->isFloating()) {
+             iqIOStats.fpInstQueueWrites++;
+@@ -1209,6 +1473,10 @@ InstructionQueue::doSquash(ThreadID tid)
+         if (squashed_inst->threadNumber != tid ||
+             squashed_inst->isSquashedInIQ()) {
+             --squash_it;
++            if(squash_it != instList[tid].end()){
++                DPRINTF(IQ, "[tid:%i] Was already squashed, now squashing from [sn:%llu]\n",
++                tid, (*squash_it)->seqNum);
++            }
+             continue;
+         }
+ 
+@@ -1216,8 +1484,8 @@ InstructionQueue::doSquash(ThreadID tid)
+             (squashed_inst->isMemRef() &&
+              !squashed_inst->memOpDone())) {
+ 
+-            DPRINTF(IQ, "[tid:%i] Instruction [sn:%llu] PC %s squashed.\n",
+-                    tid, squashed_inst->seqNum, squashed_inst->pcState());
++            DPRINTF(IQ, "[tid:%i] Instruction [sn:%llu] PC %s squashed. Was in WIB: %d\n",
++                    tid, squashed_inst->seqNum, squashed_inst->pcState(),squashed_inst->getPushToWIB());
+ 
+             bool is_acq_rel = squashed_inst->isFullMemBarrier() &&
+                          (squashed_inst->isLoad() ||
+@@ -1225,7 +1493,7 @@ InstructionQueue::doSquash(ThreadID tid)
+                              !squashed_inst->isStoreConditional()));
+ 
+             // Remove the instruction from the dependency list.
+-            if (is_acq_rel ||
++            if (is_acq_rel || squashed_inst->getPushToWIB() ||
+                 (!squashed_inst->isNonSpeculative() &&
+                  !squashed_inst->isStoreConditional() &&
+                  !squashed_inst->isAtomic() &&
+@@ -1247,11 +1515,28 @@ InstructionQueue::doSquash(ThreadID tid)
+                     // either at issue time, or when the register is
+                     // overwritten.  The only downside to this is it
+                     // leaves more room for error.
+-
+-                    if (!squashed_inst->readySrcIdx(src_reg_idx) &&
++                    
++                    if ((!squashed_inst->readySrcIdx(src_reg_idx) || !regScoreboard[src_reg->flatIndex()].ready) &&
+                         !src_reg->isFixedMapping()) {
+-                        dependGraph.remove(src_reg->flatIndex(),
++                        if(!(getWait(src_reg->flatIndex()) && dependGraph.empty(src_reg->flatIndex()))){
++                            DPRINTF(IQ, "Removing squashed instruction "
++                                "[sn:%llu] PC %s from dependency "
++                                "graph on src reg %i. Waiting: %d.\n",
++                                squashed_inst->seqNum,
++                                squashed_inst->pcState(),
++                                src_reg->index(),
++                                getWait(src_reg->flatIndex()));
++                            dependGraph.remove(src_reg->flatIndex(),
+                                            squashed_inst);
++                        }
++                    }
++                    else{
++                        DPRINTF(IQ, "Not removing squashed instruction "
++                                "[sn:%llu] PC %s from dependency "
++                                "graph on src reg %i. It is already ready so it should of been popped\n",
++                                squashed_inst->seqNum,
++                                squashed_inst->pcState(),
++                                src_reg->index());
+                     }
+ 
+                     ++iqStats.squashedOperandsExamined;
+@@ -1305,6 +1590,9 @@ InstructionQueue::doSquash(ThreadID tid)
+         // prevents freeing the squashed instruction's DynInst.
+         // Thus, we need to manually clear out the squashed instructions'
+         // heads of dependency graph.
++        DPRINTF(IQ, "Clearing out dependency graph heads for "
++                "squashed instruction PC %s [sn:%llu].\n",
++                squashed_inst->pcState(), squashed_inst->seqNum);
+         for (int dest_reg_idx = 0;
+              dest_reg_idx < squashed_inst->numDestRegs();
+              dest_reg_idx++)
+@@ -1318,7 +1606,11 @@ InstructionQueue::doSquash(ThreadID tid)
+             dependGraph.clearInst(dest_reg->flatIndex());
+         }
+         instList[tid].erase(squash_it--);
+-        ++iqStats.squashedInstsExamined;
++        if(squash_it != instList[tid].end()){
++            DPRINTF(IQ, "[tid:%i]  Squashing from [sn:%llu]\n",
++            tid, (*squash_it)->seqNum);
++        }
++            ++iqStats.squashedInstsExamined;
+     }
+ }
+ 
+@@ -1329,6 +1621,12 @@ InstructionQueue::PqCompare::operator()(
+     return lhs->seqNum > rhs->seqNum;
+ }
+ 
++// bool
++// InstructionQueue::IQDependCompare::operator()(
++//         const DynInstPtr &lhs, const DynInstPtr &rhs) const
++// {
++//     return lhs->seqNum > rhs->seqNum;
++// }
+ bool
+ InstructionQueue::addToDependents(const DynInstPtr &new_inst)
+ {
+@@ -1342,7 +1640,7 @@ InstructionQueue::addToDependents(const DynInstPtr &new_inst)
+          src_reg_idx++)
+     {
+         // Only add it to the dependency graph if it's not ready.
+-        if (!new_inst->readySrcIdx(src_reg_idx)) {
++        if (!new_inst->readySrcIdx(src_reg_idx) || new_inst->getPushToWIB()) {
+             PhysRegIdPtr src_reg = new_inst->renamedSrcIdx(src_reg_idx);
+ 
+             // Check the IQ's scoreboard to make sure the register
+@@ -1350,8 +1648,33 @@ InstructionQueue::addToDependents(const DynInstPtr &new_inst)
+             // between stages.  Only if it really isn't ready should
+             // it be added to the dependency graph.
+             if (src_reg->isFixedMapping()) {
++                DPRINTF(IQ, "New Instruction PC %s has src reg %i that "
++                        "is a fixed register.\n",
++                        new_inst->pcState(), src_reg->index());
++                if(new_inst->getPushToWIB()){
++                    new_inst->markSrcRegReady(src_reg_idx);
++                }
+                 continue;
+-            } else if (!regScoreboard[src_reg->flatIndex()]) {
++            } 
++            else if(!new_inst->getPushToWIB() && regScoreboard[src_reg->flatIndex()].wait_bit
++                && !iewStage->rob->isLoadPtrFree(new_inst->threadNumber, regScoreboard[src_reg->flatIndex()].wib_index)) {
++                DPRINTF(IQ, "New Instruction PC %s has src reg %i that "
++                        "is waiting on a load.\n",
++                        new_inst->pcState(), src_reg->index());
++
++                new_inst->markSrcRegReady(src_reg_idx);
++            }
++
++            else if(new_inst->getPushToWIB() && regScoreboard[src_reg->flatIndex()].wait_bit) {
++                DPRINTF(IQ, "Indirect waiting Instruction PC %s has src reg %i that "
++                        "is waiting on a load-dependent instruction in the WIB.\n",
++                        new_inst->pcState(), src_reg->index());
++
++                dependGraph.insert(src_reg->flatIndex(), new_inst);
++                assert(dependGraph.search(src_reg->flatIndex(), new_inst));
++                return_val = true;
++            }
++            else if (!regScoreboard[src_reg->flatIndex()].ready) {
+                 DPRINTF(IQ, "Instruction PC %s has src reg %i (%s) that "
+                         "is being added to the dependency chain.\n",
+                         new_inst->pcState(), src_reg->index(),
+@@ -1368,7 +1691,11 @@ InstructionQueue::addToDependents(const DynInstPtr &new_inst)
+                         new_inst->pcState(), src_reg->index(),
+                         src_reg->className());
+                 // Mark a register ready within the instruction.
++                //if (new_inst->numSrcRegs() != new_inst.readyRegs)
+                 new_inst->markSrcRegReady(src_reg_idx);
++                if(!new_inst->getPushToWIB()){
++                    new_inst->markRealSrcRegReady();
++                }
+             }
+         }
+     }
+@@ -1398,6 +1725,12 @@ InstructionQueue::addToProducers(const DynInstPtr &new_inst)
+         }
+ 
+         if (!dependGraph.empty(dest_reg->flatIndex())) {
++            if (new_inst == dependGraph.getInst(dest_reg->flatIndex())) {
++                DPRINTF(IQ, "Instruction [sn:%llu] PC %s reinserinted from WIB. "
++                            "Not re-adding as a producer\n",new_inst->seqNum,
++                            new_inst->pcState());
++                continue;
++            }
+             dependGraph.dump();
+             panic("Dependency graph %i (%s) (flat: %i) not empty!",
+                   dest_reg->index(), dest_reg->className(),
+@@ -1405,9 +1738,17 @@ InstructionQueue::addToProducers(const DynInstPtr &new_inst)
+         }
+ 
+         dependGraph.setInst(dest_reg->flatIndex(), new_inst);
++        DPRINTF(IQ, "Instruction PC %s has dest reg %i (%s) that "
++                        "is being added as the producer "
++                        "to the dependency chain.\n",
++                        new_inst->pcState(), dest_reg->index(),
++                        dest_reg->className());
++
+ 
+         // Mark the scoreboard to say it's not yet ready.
+-        regScoreboard[dest_reg->flatIndex()] = false;
++        regScoreboard[dest_reg->flatIndex()].ready = false;
++        regScoreboard[dest_reg->flatIndex()].wait_bit = false;
++        regScoreboard[dest_reg->flatIndex()].wib_index = -1;
+     }
+ }
+ 
+@@ -1450,6 +1791,29 @@ InstructionQueue::addIfReady(const DynInstPtr &inst)
+     }
+ }
+ 
++
++void
++InstructionQueue::addIfWaitReady(const DynInstPtr &inst)
++{
++    // If the instruction now has all of its source registers
++    // available, then add it to the list of ready instructions.
++    if (inst->readyToIssue()) {
++        issueToReadyBuf.push_back(inst);
++    }
++}
++
++void
++InstructionQueue::popIssueToReadyBuf()
++{
++    // If the instruction now has all of its source registers
++    // available, then add it to the list of ready instructions.
++    
++    while(!issueToReadyBuf.empty()){
++        addIfReady(issueToReadyBuf.front());
++        issueToReadyBuf.pop_front();
++    }
++}
++
+ int
+ InstructionQueue::countInsts()
+ {
+diff --git a/src/cpu/o3/inst_queue.hh b/src/cpu/o3/inst_queue.hh
+index 57928e747..294915cf7 100644
+--- a/src/cpu/o3/inst_queue.hh
++++ b/src/cpu/o3/inst_queue.hh
+@@ -101,6 +101,11 @@ class InstructionQueue
+     // Typedef of iterator through the list of instructions.
+     typedef typename std::list<DynInstPtr>::iterator ListIt;
+ 
++    /** Array of WIB indexes */
++    std::vector<int> wib_indexes;
++
++    std::list<DynInstPtr> issueToReadyBuf;
++
+     /** FU completion event class. */
+     class FUCompletion : public Event
+     {
+@@ -184,6 +189,8 @@ class InstructionQueue
+     /** Inserts a new instruction into the IQ. */
+     void insert(const DynInstPtr &new_inst);
+ 
++    bool removeFromIQ(ThreadID tid, const DynInstPtr &wibInstr);
++
+     /** Inserts a new, non-speculative instruction into the IQ. */
+     void insertNonSpec(const DynInstPtr &new_inst);
+ 
+@@ -192,6 +199,9 @@ class InstructionQueue
+      */
+     void insertBarrier(const DynInstPtr &barr_inst);
+ 
++    /** Moves an instruction awakekened during issue from buffer to readyList. */
++    void popIssueToReadyBuf();
++
+     /** Returns the oldest scheduled instruction, and removes it from
+      * the list of instructions waiting to execute.
+      */
+@@ -238,6 +248,9 @@ class InstructionQueue
+     /** Wakes all dependents of a completed instruction. */
+     int wakeDependents(const DynInstPtr &completed_inst);
+ 
++    /** Wakes all dependents of a waiting instruction. */
++    void wakeWaitDependents(const DynInstPtr &waiting_inst);
++
+     /** Adds a ready memory instruction to the ready list. */
+     void addReadyMemInst(const DynInstPtr &ready_inst);
+ 
+@@ -336,6 +349,9 @@ class InstructionQueue
+      */
+     std::list<DynInstPtr> retryMemInsts;
+ 
++    /** List of ready instructions from the WIB */
++    std::list<DynInstPtr> readyWIBInsts;
++
+     /**
+      * Struct for comparing entries to be added to the priority queue.
+      * This gives reverse ordering to the instructions in terms of
+@@ -452,7 +468,13 @@ class InstructionQueue
+      *  is basically a secondary scoreboard, and should pretty much mirror
+      *  the scoreboard that exists in the rename map.
+      */
+-    std::vector<bool> regScoreboard;
++      struct regstate
++      {
++          bool ready = true;
++          bool wait_bit = false;
++          int wib_index = -1;
++      };
++     std::vector<regstate> regScoreboard;
+ 
+     /** Adds an instruction to the dependency graph, as a consumer. */
+     bool addToDependents(const DynInstPtr &new_inst);
+@@ -463,6 +485,9 @@ class InstructionQueue
+     /** Moves an instruction to the ready queue if it is ready. */
+     void addIfReady(const DynInstPtr &inst);
+ 
++    /** Moves an instruction awakekened during issue from buffer to readyList. */
++    void addIfWaitReady(const DynInstPtr &inst);
++
+     /** Debugging function to count how many entries are in the IQ.  It does
+      *  a linear walk through the instructions, so do not call this function
+      *  during normal execution.
+@@ -515,6 +540,9 @@ class InstructionQueue
+         statistics::Scalar squashedNonSpecRemoved;
+         // Also include number of instructions rescheduled and replayed.
+ 
++        
++        statistics::Scalar totalWIBPushes;
++
+         /** Distribution of number of instructions in the queue.
+          * @todo: Need to create struct to track the entry time for each
+          * instruction. */
+@@ -561,6 +589,15 @@ class InstructionQueue
+         statistics::Scalar fpAluAccesses;
+         statistics::Scalar vecAluAccesses;
+     } iqIOStats;
++
++    /** Checks if the register is waiting. */
++    bool getWait(int reg_index) const;
++    
++    /** Return the WIB Index. */
++    int getIndex(int reg_index) const;
++
++    /** Sets the register as waiting. */
++    void setWait(int reg_index, int wib_index);
+ };
+ 
+ } // namespace o3
+diff --git a/src/cpu/o3/lsq.cc b/src/cpu/o3/lsq.cc
+index 654fd67d4..4e612b1dd 100644
+--- a/src/cpu/o3/lsq.cc
++++ b/src/cpu/o3/lsq.cc
+@@ -180,6 +180,17 @@ LSQ::tick()
+ 
+     usedLoadPorts = 0;
+     usedStorePorts = 0;
++
++    // Check if any load missed in any thread
++    // std::list<ThreadID>::iterator threads = activeThreads->begin();
++    // std::list<ThreadID>::iterator end = activeThreads->end();
++
++    // while (threads != end) {
++        
++    //     ThreadID tid = *threads++;
++    //     DPRINTF(LSQ, "Checking if a load missed\n");
++    //     thread[tid].detectLoadMiss();    
++    // }
+ }
+ 
+ bool
+diff --git a/src/cpu/o3/lsq_unit.cc b/src/cpu/o3/lsq_unit.cc
+index 52cf8cb81..503f32e16 100644
+--- a/src/cpu/o3/lsq_unit.cc
++++ b/src/cpu/o3/lsq_unit.cc
+@@ -89,6 +89,23 @@ LSQUnit::WritebackEvent::description() const
+     return "Store writeback";
+ }
+ 
++LSQUnit::MissDetectEvent::MissDetectEvent(const DynInstPtr &_inst,
++        LSQUnit *lsq_ptr)
++    : Event(Default_Pri, AutoDelete),
++      inst(_inst), lsqPtr(lsq_ptr) {}
++
++void
++LSQUnit::MissDetectEvent::process()
++{
++    lsqPtr->detectLoadMiss(inst);
++}
++
++const char *
++LSQUnit::MissDetectEvent::description() const
++{
++    return "Load miss detected";
++}
++
+ bool
+ LSQUnit::recvTimingResp(PacketPtr pkt)
+ {
+@@ -407,11 +424,22 @@ LSQUnit::getMemDepViolator()
+     return temp;
+ }
+ 
++void
++LSQUnit::displayLSQ(){
++    DPRINTF(LSQUnit, "Load Queue:\n");
++    for (auto it = loadQueue.begin(); it != loadQueue.end(); ++it) {
++        DPRINTF(LSQUnit, "[sn:%llu] requesting data of size: %u\n",
++                it->instruction()->seqNum,
++                it->size());
++    }
++}
++
+ unsigned
+ LSQUnit::numFreeLoadEntries()
+ {
+         DPRINTF(LSQUnit, "LQ size: %d, #loads occupied: %d\n",
+                 loadQueue.capacity(), loadQueue.size());
++        displayLSQ();
+         return loadQueue.capacity() - loadQueue.size();
+ }
+ 
+@@ -1593,8 +1621,51 @@ LSQUnit::read(LSQRequest *request, ssize_t load_idx)
+     // if we the cache is not blocked, do cache access
+     request->buildPackets();
+     request->sendPacketToCache();
+-    if (!request->isSent())
++    DPRINTF(LSQUnit,"Package sent to cache\n");
++
++    if (request->isSent()) {
++        // Save the time the load was sent to cache
++        DPRINTF(LSQUnit,"Saving time load was sent\n");
++        load_entry.loadSentTick = curTick();
++
++        // Schedule the load miss detection event
++        Tick timeToMiss = curTick() + cpu->cyclesToTicks(Cycles(23));
++        MissDetectEvent *missDetect = new MissDetectEvent(load_inst, this);
++        cpu->schedule(missDetect, timeToMiss);
++
++        DPRINTF(LSQUnit,"Package sent successfully\n");
++        // // get the bit vector index for the miss
++        // int wib_index = -1;
++        // ThreadID tid = load_inst->threadNumber;
++        // if(!load_inst->getReqLoadPtr()){
++        //     if (iewStage->rob->getLoadVectorPtr(tid, wib_index)) {
++        //         load_inst->setReqLoadPtr();
++        //         load_inst->setLoadVectorIndex(wib_index);
++        //         DPRINTF(LSQUnit,"Got load vector index from WIB\n");
++        //         // Setting wait bit for every blocked load
++        //         // Should also check if the WIB can issue a new b-vector index?
++        //         for (int i = 0; i < load_inst->numDestRegs(); i++) {
++        //             // Mark register as waiting ( do we need to check if not pinned?)
++        //             // if (inst->renamedDestIdx(i)->
++        //             //         getNumPinnedWritesToComplete() == 0) {
++        //             DPRINTF(LSQUnit,"Setting Destination Register wait bit %i (%s) "
++        //                     "with WIB Index (%d)\n",
++        //                     load_inst->renamedDestIdx(i)->index(),
++        //                     load_inst->renamedDestIdx(i)->className(),
++        //                     wib_index);
++        //             PhysRegIdPtr dest_reg = load_inst->renamedDestIdx(i);
++        //             iewStage->instQueue.setWait(dest_reg->flatIndex(), wib_index);
++
++        //             DPRINTF(LSQUnit, "Waking dependents of the missed load instruction\n");
++        //             iewStage->instQueue.wakeWaitDependents(load_inst);
++        //         }
++        //     }
++        // }
++    }
++
++    else {
+         iewStage->blockMemInst(load_inst);
++    }
+ 
+     return NoFault;
+ }
+@@ -1646,5 +1717,69 @@ LSQUnit::getStoreHeadSeqNum()
+         return 0;
+ }
+ 
++void
++LSQUnit::detectLoadMiss(const DynInstPtr &inst)
++{
++    // for (auto& load_entry : loadQueue) {
++        
++    //     // Skip if
++    //     if (!load_entry.valid() ||                  // not valid
++    //         !load_entry.hasRequest() ||             // does not have a request
++    //         load_entry.loadSentTick == 0 ||
++    //         load_entry.request()->isComplete() ||   // already completed
++    //         load_entry.missDetected) {              // already detected miss
++    //         continue;
++    //     }
++
++    //     Tick hitLatency = cpu->cyclesToTicks(Cycles(22));
++    //     Tick timeSinceSent = curTick() - load_entry.loadSentTick;
++
++    //     if (timeSinceSent > hitLatency) {
++    //         load_entry.missDetected = true;
++    //         DPRINTF(LSQUnit, "Load [sn:%llu] took more than "
++    //                 "L1+L2 hit latency [%llu]. Setting as a miss\n",
++    //                 load_entry.instruction()->seqNum, 
++    //                 timeSinceSent);
++    //     }
++    // }
++
++    if (inst->isSquashed() || inst->isExecuted() || inst->isMissed()) {
++        return;
++    }
++    
++    DPRINTF(LSQUnit, "Miss detected for instruction [sn:%llu]\n",
++                    inst->seqNum);
++    
++    inst->setMissDetect();
++    iewStage->wakeCPU();
++
++    // get the bit vector index for the miss
++    int wib_index = -1;
++    ThreadID tid = inst->threadNumber;
++    if(!inst->getReqLoadPtr()){
++        if (iewStage->rob->getLoadVectorPtr(tid, wib_index)) {
++            inst->setReqLoadPtr();
++            inst->setLoadVectorIndex(wib_index);
++            DPRINTF(LSQUnit,"Got load vector index from WIB\n");
++            // Setting wait bit for every blocked load
++            // Should also check if the WIB can issue a new b-vector index?
++            for (int i = 0; i < inst->numDestRegs(); i++) {
++                // Mark register as waiting ( do we need to check if not pinned?)
++                // if (inst->renamedDestIdx(i)->
++                //         getNumPinnedWritesToComplete() == 0) {
++                DPRINTF(LSQUnit,"Setting Destination Register wait bit %i (%s) "
++                        "with WIB Index (%d)\n",
++                        inst->renamedDestIdx(i)->index(),
++                        inst->renamedDestIdx(i)->className(),
++                        wib_index);
++                PhysRegIdPtr dest_reg = inst->renamedDestIdx(i);
++                iewStage->instQueue.setWait(dest_reg->flatIndex(), wib_index);
++                DPRINTF(LSQUnit, "Waking dependents of the missed load instruction\n");
++                iewStage->instQueue.wakeWaitDependents(inst);
++            }
++        }
++    }
++}
++
+ } // namespace o3
+ } // namespace gem5
+diff --git a/src/cpu/o3/lsq_unit.hh b/src/cpu/o3/lsq_unit.hh
+index c0899baa6..7a9945133 100644
+--- a/src/cpu/o3/lsq_unit.hh
++++ b/src/cpu/o3/lsq_unit.hh
+@@ -145,6 +145,12 @@ class LSQUnit
+         const uint32_t& size() const { return _size; }
+         const DynInstPtr& instruction() const { return _inst; }
+         /** @} */
++
++        /** Track the time the load was sent */
++        Tick loadSentTick = 0;
++
++        /** Check if a load has already been detected */
++        bool missDetected = false;
+     };
+ 
+     class SQEntry : public LSQEntry
+@@ -293,6 +299,8 @@ class LSQUnit
+     /** Returns the memory ordering violator. */
+     DynInstPtr getMemDepViolator();
+ 
++    void displayLSQ();
++
+     /** Returns the number of free LQ entries. */
+     unsigned numFreeLoadEntries();
+ 
+@@ -363,6 +371,10 @@ class LSQUnit
+     void recvRetry();
+ 
+     unsigned int cacheLineSize();
++
++    /** Detects load miss happened if the cache response is not received within L1+L2 hit times */
++    void detectLoadMiss(const DynInstPtr &inst);
++
+   private:
+     /** Reset the LSQ state */
+     void resetState();
+@@ -433,6 +445,27 @@ class LSQUnit
+         LSQUnit *lsqPtr;
+     };
+ 
++    /** Miss detect event */
++    class MissDetectEvent : public Event
++    {
++      private:
++        /** Instruction whose load miss is being detected. */
++        DynInstPtr inst;
++
++        /** The pointer to the LSQ unit that issued the load. */
++        LSQUnit *lsqPtr;
++
++      public:
++        /** Constructs a miss detect event. */
++        MissDetectEvent(const DynInstPtr &_inst, LSQUnit *lsq_ptr);
++
++        /** Processes the miss detect event. */
++        void process();
++
++        /** Returns the description of this event. */
++        const char *description() const;      
++    };
++
+   public:
+     /**
+      * Handles writing back and completing the load or store that has
+diff --git a/src/cpu/o3/rename.cc b/src/cpu/o3/rename.cc
+index 89d4542db..2c3848f85 100644
+--- a/src/cpu/o3/rename.cc
++++ b/src/cpu/o3/rename.cc
+@@ -1058,6 +1058,7 @@ Rename::renameSrcRegs(const DynInstPtr &inst, ThreadID tid)
+                     renamed_reg->className());
+ 
+             inst->markSrcRegReady(src_idx);
++            inst->markRealSrcRegReady();
+         } else {
+             DPRINTF(Rename,
+                     "[tid:%i] "
+diff --git a/src/cpu/o3/rob.cc b/src/cpu/o3/rob.cc
+index 5d0fac9a6..20b3ebcd5 100644
+--- a/src/cpu/o3/rob.cc
++++ b/src/cpu/o3/rob.cc
+@@ -48,6 +48,7 @@
+ #include "debug/Fetch.hh"
+ #include "debug/ROB.hh"
+ #include "params/BaseO3CPU.hh"
++// #include "base/types.hh"
+ 
+ namespace gem5
+ {
+@@ -64,6 +65,8 @@ ROB::ROB(CPU *_cpu, const BaseO3CPUParams &params)
+       numThreads(params.numThreads),
+       stats(_cpu)
+ {
++    DPRINTF(ROB, "Created ROB\n");
++    issueWidth = params.issueWidth;
+     //Figure out rob policy
+     if (robPolicy == SMTQueuePolicy::Dynamic) {
+         //Set Max Entries to Total ROB Capacity
+@@ -93,19 +96,213 @@ ROB::ROB(CPU *_cpu, const BaseO3CPUParams &params)
+         }
+     }
+ 
++    numLoadVectors = params.numLoadVectors;
++
++    for(ThreadID tid = 0; tid < numThreads; tid++) {
++        threadEntries[tid] = 0;
++        headptr[tid] = 0;
++        tailptr[tid] = 0;
++
++        for(int loadVector = 0; loadVector < numLoadVectors; loadVector++) {
++            freeLoadVectors[tid].push_back(0);
++        }
++    }
++
+     for (ThreadID tid = numThreads; tid < MaxThreads; tid++) {
+         maxEntries[tid] = 0;
+     }
+ 
++    even = 1;
+     resetState();
+ }
+ 
++void ROB::wibPush(ThreadID tid, DynInstPtr instr, std::vector<int> &loadPtrs){
++
++    WIBEntry* wibEntry = new WIBEntry();
++
++    wibEntry->loadPtrs = new int[numLoadVectors];
++    wibEntry->instr = instr;
++
++    for(int i=0; i<numLoadVectors; i++){
++        wibEntry->loadPtrs[i] = 0;
++    }
++
++    while(!loadPtrs.empty()){
++        int i = loadPtrs.back();
++        loadPtrs.pop_back();
++
++        if(i >= 0){
++            if(wibEntry->loadPtrs[i] == 0){
++                assert(freeLoadVectors[tid][i]);
++                DPRINTF(ROB, "WIB: [tid:%d] loadPtr %d set for instruction. [sn:%llu]\n", tid, i, wibEntry->instr->seqNum);
++                wibEntry->loadPtrs[i] = 1;
++                assert(wibEntry->loadPtrs[i]);
++            }
++        }
++    }
++
++    WIB[tid].push_back(wibEntry);
++    // DPRINTF(ROB, "[tid:%d] Instruction has been pushed to WIB. [sn:%llu]\n", tid, wibEntry->instr->seqNum);
++}
++
++bool 
++ROB::instrWaiting(WIBEntry *wibEntry){
++    for(int i=0; i<numLoadVectors; i++){
++        if(wibEntry->loadPtrs[i] == 1){
++            DPRINTF(ROB, "WIB: Instruction waiting on loadPtr %d in bank %d. [sn:%llu]\n",i, wibEntry->instr->bankNum, wibEntry->instr->seqNum);
++            return true;
++        }
++    }
++    return false;
++}
++
++bool
++ROB::wibPop(ThreadID tid, int loadPtr, DynInstPtr instr){
++    for(auto it = WIB[tid].begin(); it != WIB[tid].end(); it++){
++        WIBEntry* wibEntry = *it;
++        if(wibEntry->instr == instr){
++            WIB[tid].erase(it);
++            delete[] wibEntry->loadPtrs;
++            delete wibEntry;
++
++            // DPRINTF(ROB, "[tid:%d] Cleared load vector pointer %d for instruction in WIB. [sn:%llu]\n", tid, loadPtr, wibEntry->instr->seqNum);
++            return true;
++        }
++    }
++    return false;
++}
++
++void 
++ROB::readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs){
++    // unsigned banksChecked[2*MaxWidth];
++
++
++    // for(int i=0; i<2*MaxWidth; i++){
++    //     banksChecked[i] = 0;
++    // }
++    using wibIT = std::list<WIBEntry*>::iterator;
++    std::vector<wibIT> banksChecked(2 * MaxWidth, WIB[tid].end());
++
++    findOldestReadyInstrs(tid, banksChecked);
++    DPRINTF(ROB, "[tid:%d] WIB Read Cycle - Is even: %d \n", tid, even);
++    // Currently doing oldest-first checking within even/odd banks
++    auto it = WIB[tid].begin();
++
++    // To do in case just turning off assert doesnt work.
++    // Sorting across banks from oldest to youngest. (Not necessary in hardware since its parallel issue but for simulator, it needs dispatch order insertions for squashes)
++
++    // Oldest Priority across half of banks (even or odd)
++    for(int bank=!even; bank<2*MaxWidth; bank+=2){
++        if((banksChecked[bank] != WIB[tid].end())){
++            WIBEntry* wibEntry = *(banksChecked[bank]);
++            // DPRINTF(ROB, "[tid:%d] Instruction is ready to re-issue from
++            // WIBEntry* wibEntry = *it;
++            // int bank = wibEntry->instr->bankNum;
++
++            // DPRINTF(ROB, "[tid:%d] WIB Reading instruction in bank %d, Read: %d. Waiting Status:%d [sn:%llu]\n", tid, bank, banksChecked[bank], instrWaiting(wibEntry),wibEntry->instr->seqNum);
++            
++            DPRINTF(ROB, "[tid:%d] Instruction is ready to re-issue from WIB. [sn:%llu]\n", tid, wibEntry->instr->seqNum);
++            
++            readyInstrs.push_back(wibEntry->instr);
++            
++            //Remove from WIB
++            it = WIB[tid].erase(banksChecked[bank]);
++            delete[] wibEntry->loadPtrs;
++            delete wibEntry;
++
++            // //Break to avoid iterator invalidation
++            // break;
++        }
++
++        ++it;
++    }
++
++    // Alternate between checking even or odd banks each cycle
++    even = !even;
++}
++
++void
++ROB::findOldestReadyInstrs(ThreadID tid, 
++        std::vector<std::list<WIBEntry*>::iterator> &banksChecked){
++    auto it = WIB[tid].begin();
++    // DPRINTF(ROB, "[tid:%d] Finding oldest ready instructions in WIB.\n", tid);
++    assert(banksChecked[0] == WIB[tid].end());
++    // Find Oldest Instruction per bank
++    while(it != WIB[tid].end()){
++        WIBEntry* wibEntry = *it;
++        // DPRINTF(ROB, "[tid:%d] Checking instruction in WIB in bank %d. [sn:%llu]\n", tid, wibEntry->instr->bankNum, wibEntry->instr->seqNum);
++        int bank = wibEntry->instr->bankNum;
++        assert(bank >= 0 && bank < (int)banksChecked.size());
++
++        // DPRINTF(ROB, "[tid:%d] Checking instruction in bank %d. Waiting Status:%d [sn:%llu]\n", tid, bank, instrWaiting(wibEntry),wibEntry->instr->seqNum);
++        if(!instrWaiting(wibEntry)){
++            if(!(banksChecked[bank] == WIB[tid].end())){
++                // DPRINTF(ROB, "[tid:%d] Checking instruction for youngest in bank %d. [sn:%llu]\n", tid, bank, wibEntry->instr->seqNum);
++                if(wibEntry->instr->seqNum < (*banksChecked[bank])->instr->seqNum){
++                    // DPRINTF(ROB, "[tid:%d] Setting instruction as youngest in bank %d. [sn:%llu]\n", tid, bank, wibEntry->instr->seqNum);
++                    banksChecked[bank] = it;
++                    // DPRINTF(ROB, "[tid:%d] Found oldest ready instruction in bank %d. [sn:%llu]\n", tid, bank, wibEntry->instr->seqNum);
++                }
++            }
++            else{
++                // DPRINTF(ROB, "[tid:%d] Setting instruction as youngest in bank %d. [sn:%llu]\n", tid, bank, wibEntry->instr->seqNum);
++                banksChecked[bank] = it;
++            }
++        }
++
++        ++it;
++    }
++}
++
++void 
++ROB::clearLoadWaiting(ThreadID tid, int loadPtr){
++    if(!freeLoadVectors[tid][loadPtr]){
++        panic("WIB Load Vector Pointer %d for tid %d is already freed!\n", loadPtr, tid);
++    }
++
++    freeLoadVectors[tid][loadPtr] = 0;
++    DPRINTF(ROB, "[tid:%d] Freed WIB Load Vector Pointer: %d\n", tid, loadPtr);
++    for(auto it = WIB[tid].begin(); it != WIB[tid].end(); it++){
++        if((*it)->loadPtrs[loadPtr] != 0){
++            DPRINTF(ROB, "[tid:%d] Cleared load vector pointer %d for instruction in WIB. [sn:%llu]\n", tid, loadPtr, (*it)->instr->seqNum);
++            (*it)->loadPtrs[loadPtr] = 0;
++            assert(!((*it)->loadPtrs[loadPtr]));
++            continue;
++        }
++        // WIBEntry* wibEntry = *it;
++    }
++    
++}
++
++bool 
++ROB::getLoadVectorPtr(ThreadID tid, int &loadPtr){
++    for(int i=0; i<numLoadVectors; i++){
++        if(!freeLoadVectors[tid][i]){
++            loadPtr = i;
++            freeLoadVectors[tid][i] = 1;
++            DPRINTF(ROB, "[tid:%d] Assigned WIB Load Vector Pointer: %d\n", tid, loadPtr);
++            return true;
++        }
++    }
++    return false;
++}
++
++bool 
++ROB::isLoadPtrFree(ThreadID tid, int &loadPtr){
++    return freeLoadVectors[tid][loadPtr] == 0;
++}
++
+ void
+ ROB::resetState()
+ {
++    DPRINTF(ROB, "Reseting state.\n");
+     for (ThreadID tid = 0; tid  < MaxThreads; tid++) {
+         threadEntries[tid] = 0;
++        headptr[tid] = -1;
++        tailptr[tid] = -1;
++
+         squashIt[tid] = instList[tid].end();
++
+         squashedSeqNum[tid] = 0;
+         doneSquashing[tid] = true;
+     }
+@@ -133,6 +330,7 @@ ROB::setActiveThreads(std::list<ThreadID> *at_ptr)
+ void
+ ROB::drainSanityCheck() const
+ {
++    DPRINTF(ROB, "Performing drain sanity check.\n");
+     for (ThreadID tid = 0; tid  < numThreads; tid++)
+         assert(instList[tid].empty());
+     assert(isEmpty());
+@@ -179,6 +377,7 @@ ROB::entryAmount(ThreadID num_threads)
+ int
+ ROB::countInsts()
+ {
++    DPRINTF(ROB, "Counting Instructions.\n");
+     int total = 0;
+ 
+     for (ThreadID tid = 0; tid < numThreads; tid++)
+@@ -205,8 +404,18 @@ ROB::insertInst(const DynInstPtr &inst)
+     assert(numInstsInROB != numEntries);
+ 
+     ThreadID tid = inst->threadNumber;
++    assert(threadEntries[tid] < maxEntries[tid]);
++
++    //Set Up headptr if this is the 1st instruction for this thread in ROB
++    if (threadEntries[tid] == 0) {
++        headptr[tid] = 0;
++    }
+ 
+-    instList[tid].push_back(inst);
++    tailptr[tid] = (tailptr[tid] + 1) % maxEntries[tid];
++
++    inst->bankNum = tailptr[tid] % (2*issueWidth);
++
++    instList[tid].push_back(inst); // Insert into next bank to model contigous bank access
+ 
+     //Set Up head iterator if this is the 1st instruction in the ROB
+     if (numInstsInROB == 0) {
+@@ -223,6 +432,7 @@ ROB::insertInst(const DynInstPtr &inst)
+ 
+     ++numInstsInROB;
+     ++threadEntries[tid];
++    // tailptr[tid] = (tailptr[tid] + 1) % maxEntries[tid]; //rollover tail ptr at max ROB per thread size
+ 
+     assert((*tail) == inst);
+ 
+@@ -237,12 +447,19 @@ ROB::retireHead(ThreadID tid)
+ 
+     assert(numInstsInROB > 0);
+ 
++    // unsigned int bank_num;
++    // get_head_bank(tid, bank_num);
++
+     // Get the head ROB instruction by copying it and remove it from the list
+     InstIt head_it = instList[tid].begin();
+ 
+     DynInstPtr head_inst = std::move(*head_it);
+     instList[tid].erase(head_it);
+ 
++    // if(!instList[tid][bank_num].empty()) {
++    //     assert(!(head_inst == instList[tid][bank_num].front()));
++    // }
++
+     assert(head_inst->readyToCommit());
+ 
+     DPRINTF(ROB, "[tid:%i] Retiring head instruction, "
+@@ -252,6 +469,14 @@ ROB::retireHead(ThreadID tid)
+     --numInstsInROB;
+     --threadEntries[tid];
+ 
++    if(threadEntries[tid]==0) {
++        //ROB is now empty for this thread
++        headptr[tid] = -1;
++        tailptr[tid] = -1;
++    } else
++    {   headptr[tid] = (headptr[tid] + 1) % maxEntries[tid]; //rollover head ptr at max ROB per thread size
++    }
++
+     head_inst->clearInROB();
+     head_inst->setCommitted();
+ 
+@@ -269,6 +494,18 @@ ROB::isHeadReady(ThreadID tid)
+ {
+     stats.reads++;
+     if (threadEntries[tid] != 0) {
++        // unsigned int bank_num;
++        // get_head_bank(tid, bank_num);
++        // InstIt head_it = instList[tid].begin();
++        // DynInstPtr head_inst = std::move(*head_it);
++
++        DPRINTF(ROB, "[tid:%u] Checking if head is ready. ROB size=%d. [sn:%llu]\n",
++        tid, instList[tid].size(), instList[tid].front()->seqNum);
++
++        assert(!instList[tid].empty());
++        // if(instList[tid][bank_num].empty()) {
++        //     return false;
++        // }
+         return instList[tid].front()->readyToCommit();
+     }
+ 
+@@ -281,7 +518,7 @@ ROB::canCommit()
+     //@todo: set ActiveThreads through ROB or CPU
+     std::list<ThreadID>::iterator threads = activeThreads->begin();
+     std::list<ThreadID>::iterator end = activeThreads->end();
+-
++    DPRINTF(ROB, "Checking if ROB can commit from any thread.\n");
+     while (threads != end) {
+         ThreadID tid = *threads++;
+ 
+@@ -311,7 +548,9 @@ ROB::doSquash(ThreadID tid)
+     stats.writes++;
+     DPRINTF(ROB, "[tid:%i] Squashing instructions until [sn:%llu].\n",
+             tid, squashedSeqNum[tid]);
+-
++    
++    // unsigned int head_bank_num, tail_bank_num;
++    // get_tail_bank(tid, tail_bank_num);
+     assert(squashIt[tid] != instList[tid].end());
+ 
+     if ((*squashIt[tid])->seqNum < squashedSeqNum[tid]) {
+@@ -326,6 +565,7 @@ ROB::doSquash(ThreadID tid)
+ 
+     bool robTailUpdate = false;
+ 
++    // unsigned int numInstsToSquash = std::min(squashWidth,2*issueWidth);
+     unsigned int numInstsToSquash = squashWidth;
+ 
+     // If the CPU is exiting, squash all of the instructions
+@@ -336,6 +576,9 @@ ROB::doSquash(ThreadID tid)
+         numInstsToSquash = numEntries;
+     }
+ 
++    // get_head_bank(tid, head_bank_num);
++    // get_tail_bank(tid, tail_bank_num);
++
+     for (int numSquashed = 0;
+          numSquashed < numInstsToSquash &&
+          squashIt[tid] != instList[tid].end() &&
+@@ -353,7 +596,12 @@ ROB::doSquash(ThreadID tid)
+ 
+         (*squashIt[tid])->setCanCommit();
+ 
+-
++        // Clear any WIB entries for this instruction
++        wibPop(tid, 0, (*squashIt[tid]));
++        
++        // This is used only for full flush mode (squash at 0 events 
++        // for all threads). Normal squashes wont trigger this condition 
++        // due to the > in the loop.
+         if (squashIt[tid] == instList[tid].begin()) {
+             DPRINTF(ROB, "Reached head of instruction list while "
+                     "squashing.\n");
+@@ -365,18 +613,21 @@ ROB::doSquash(ThreadID tid)
+             return;
+         }
+ 
+-        InstIt tail_thread = instList[tid].end();
+-        tail_thread--;
++        if(countInsts(tid) > 0) {
++            InstIt tail_thread = instList[tid].end();
++            tail_thread--;
+ 
+-        if ((*squashIt[tid]) == (*tail_thread))
++            if ((*squashIt[tid]) == (*tail_thread))
+             robTailUpdate = true;
++        }
+ 
+         squashIt[tid]--;
+     }
+ 
+ 
+     // Check if ROB is done squashing.
+-    if ((*squashIt[tid])->seqNum <= squashedSeqNum[tid]) {
++    if( squashIt[tid] != instList[tid].end() )
++    {if ((*squashIt[tid])->seqNum <= squashedSeqNum[tid]) {
+         DPRINTF(ROB, "[tid:%i] Done squashing instructions.\n",
+                 tid);
+ 
+@@ -384,6 +635,7 @@ ROB::doSquash(ThreadID tid)
+ 
+         doneSquashing[tid] = true;
+     }
++    }
+ 
+     if (robTailUpdate) {
+         updateTail();
+@@ -394,6 +646,8 @@ ROB::doSquash(ThreadID tid)
+ void
+ ROB::updateHead()
+ {
++
++    DPRINTF(ROB, "Updating global head ptr.\n");
+     InstSeqNum lowest_num = 0;
+     bool first_valid = true;
+ 
+@@ -403,6 +657,9 @@ ROB::updateHead()
+ 
+     while (threads != end) {
+         ThreadID tid = *threads++;
++        // unsigned int bank_num, tail_bank_num;
++        // get_head_bank(tid, bank_num);
++        // get_tail_bank(tid, tail_bank_num);
+ 
+         if (instList[tid].empty())
+             continue;
+@@ -434,7 +691,13 @@ ROB::updateHead()
+ 
+ void
+ ROB::updateTail()
+-{
++{   
++    DPRINTF(ROB, "Updating global tail ptr.\n");
++
++    // unsigned int bank_num, tail_bank_num;
++    // get_head_bank(0, bank_num);
++    // get_tail_bank(0, tail_bank_num);
++
+     tail = instList[0].end();
+     bool first_valid = true;
+ 
+@@ -444,6 +707,9 @@ ROB::updateTail()
+     while (threads != end) {
+         ThreadID tid = *threads++;
+ 
++        // get_head_bank(tid, bank_num);
++        // get_tail_bank(tid, tail_bank_num);
++
+         if (instList[tid].empty()) {
+             continue;
+         }
+@@ -488,12 +754,25 @@ ROB::squash(InstSeqNum squash_num, ThreadID tid)
+ 
+     squashedSeqNum[tid] = squash_num;
+ 
+-    if (!instList[tid].empty()) {
++    if (countInsts(tid) > 0) {
++        // unsigned int bank_num, tail_bank_num;
++        // get_head_bank(tid, bank_num);
++        // get_tail_bank(tid, tail_bank_num);
++
++        // // Setting the squash cursors to the tails of the ROB banks
++        // set_squashCursors(tid);
++
++        // // Setting the squash iterator to the tail entry pointer
++        // get_squashCursor(tid, tail_bank_num, squashIt[tid]);
++
++        // Setting the bank iterator to the tail bank number
++        // set_squashBankIt(tid, tail_bank_num);
++
+         InstIt tail_thread = instList[tid].end();
+         tail_thread--;
+-
++        
+         squashIt[tid] = tail_thread;
+-
++        
+         doSquash(tid);
+     }
+ }
+@@ -501,8 +780,15 @@ ROB::squash(InstSeqNum squash_num, ThreadID tid)
+ const DynInstPtr&
+ ROB::readHeadInst(ThreadID tid)
+ {
++    DPRINTF(ROB, "[tid:%i] Reading Head Instr.\n",
++                tid);
++    
+     if (threadEntries[tid] != 0) {
++        // unsigned int bank_num, tail_bank_num;
++        // get_head_bank(tid, bank_num);
++
+         InstIt head_thread = instList[tid].begin();
++        assert(!(instList[tid].empty()));
+ 
+         assert((*head_thread)->isInROB());
+ 
+@@ -514,7 +800,14 @@ ROB::readHeadInst(ThreadID tid)
+ 
+ DynInstPtr
+ ROB::readTailInst(ThreadID tid)
+-{
++{   
++    DPRINTF(ROB, "[tid:%i] Reading Tail Instr.\n",
++                tid);
++
++    // unsigned int bank_num, tail_bank_num;;
++    // get_tail_bank(tid, tail_bank_num);
++    assert(!(instList[tid].empty()));
++
+     InstIt tail_thread = instList[tid].end();
+     tail_thread--;
+ 
+@@ -533,11 +826,15 @@ ROB::ROBStats::ROBStats(statistics::Group *parent)
+ DynInstPtr
+ ROB::findInst(ThreadID tid, InstSeqNum squash_inst)
+ {
++    DPRINTF(ROB, "[tid:%i] Checking for squash instruction with seq. number: %d\n",
++                tid, squash_inst);
++
+     for (InstIt it = instList[tid].begin(); it != instList[tid].end(); it++) {
+         if ((*it)->seqNum == squash_inst) {
+             return *it;
+         }
+     }
++
+     return NULL;
+ }
+ 
+diff --git a/src/cpu/o3/rob.hh b/src/cpu/o3/rob.hh
+index d36db733e..37490d2b4 100644
+--- a/src/cpu/o3/rob.hh
++++ b/src/cpu/o3/rob.hh
+@@ -38,6 +38,8 @@
+  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
++// Going to modify this file to support the WIB - Hassan Al-alawi
++
+ #ifndef __CPU_O3_ROB_HH__
+ #define __CPU_O3_ROB_HH__
+ 
+@@ -72,8 +74,20 @@ struct DerivO3CPUParams;
+ class ROB
+ {
+   public:
++    typedef struct WIBEntry
++    {
++        int *loadPtrs;
++        DynInstPtr instr;
++    } WIBEntry;
++    
+     typedef std::pair<RegIndex, RegIndex> UnmapInfo;
+     typedef typename std::list<DynInstPtr>::iterator InstIt;
++    // typedef std::list<DynInstPtr> InstListPerThread;
++    // using bank = InstListPerThread;
++    // using BanksPerThread = std::array<bank, (2*MaxWidth)>;
++    
++    // typedef std::list<WIBEntry*> loadVectors;
++    // using WIBBanks = std::array<loadVectors, (2*MaxWidth)>;
+ 
+     /** Possible ROB statuses. */
+     enum Status
+@@ -90,6 +104,8 @@ class ROB
+     /** ROB resource sharing policy for SMT mode. */
+     SMTQueuePolicy robPolicy;
+ 
++    int numLoadVectors;
++
+   public:
+     /** ROB constructor.
+      *  @param _cpu   The cpu object pointer.
+@@ -267,6 +283,36 @@ class ROB
+      */
+     size_t countInsts(ThreadID tid);
+ 
++    /** WIB Support functions **/
++    /** Interface functions for WIB **/
++
++    // Clears all WIB entries waiting on a specific load
++    void clearLoadWaiting(ThreadID tid, int loadPtr);
++
++    // Request any available load vector pointer
++    bool getLoadVectorPtr(ThreadID tid, int &loadPtr);
++
++    bool isLoadPtrFree(ThreadID tid, int &loadPtr);
++
++    // Given an instruction, get its ROB bank number
++    // void get_bank(ThreadID tid, DynInstPtr instr, unsigned &bank_num);
++
++    // Only called assuming load vector ptr was assigned succesfully
++    void wibPush(ThreadID tid, DynInstPtr instr, 
++                std::vector<int> &loadPtrs);
++    
++    // Called only by squash but its logic is replicated in readCycle to avoid redundant looping
++    bool wibPop(ThreadID tid, int loadPtr, 
++                DynInstPtr instr);
++    
++    bool instrWaiting(WIBEntry *entry);
++
++    void findOldestReadyInstrs(ThreadID tid, 
++            std::vector<std::list<WIBEntry*>::iterator> &banksChecked);
++
++    void readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs);
++                
++
+   private:
+     /** Reset the ROB state */
+     void resetState();
+@@ -286,12 +332,24 @@ class ROB
+     /** Max Insts a Thread Can Have in the ROB */
+     unsigned maxEntries[MaxThreads];
+ 
+-    /** ROB List of Instructions */
++    /** ROB List of Instructions */ 
++    // BanksPerThread instList[MaxThreads];
+     std::list<DynInstPtr> instList[MaxThreads];
+ 
+     /** Number of instructions that can be squashed in a single cycle. */
+     unsigned squashWidth;
+ 
++    /** WIB Structures **/
++    // WIB Banks per thread
++    // WIBBanks WIB[MaxThreads];
++    std::list<WIBEntry*> WIB[MaxThreads];
++    
++    // Toggle to alternate checking even/odd banks each cycle
++    int even;
++    
++    // Stack to track free load vector pointers
++    std::vector<int> freeLoadVectors[MaxThreads];
++
+   public:
+     /** Iterator pointing to the instruction which is the last instruction
+      *  in the ROB.  This may at times be invalid (ie when the ROB is empty),
+@@ -303,6 +361,9 @@ class ROB
+      *  in the ROB*/
+     InstIt head;
+ 
++    int headptr[MaxThreads];
++    int tailptr[MaxThreads];
++
+   private:
+     /** Iterator used for walking through the list of instructions when
+      *  squashing.  Used so that there is persistent state between cycles;
+@@ -310,9 +371,20 @@ class ROB
+      *  immediately removed, meaning the tail iterator remains the same before
+      *  and after a squash.
+      *  This will always be set to cpu->instList.end() if it is invalid.
+-     */
++    //  */
+     InstIt squashIt[MaxThreads];
+ 
++    // InstIt squashCursorIt[MaxThreads][2*MaxWidth];
++    // InstIt searchCursorIt[MaxThreads][2*MaxWidth];
++
++    /** Need bank iterators for search and squash 
++    * because of multi-cycle interleaved squash
++    * and search
++    */
++
++    // unsigned searchBankIt[MaxThreads];
++    // unsigned squashBankIt[MaxThreads];
++
+   public:
+     /** Number of instructions in the ROB. */
+     int numInstsInROB;
+@@ -320,6 +392,9 @@ class ROB
+     /** Dummy instruction returned if there are no insts left. */
+     DynInstPtr dummyInst;
+ 
++    /** Issue Width for Number of Banks calculation. */
++    unsigned issueWidth;
++
+   private:
+     /** The sequence number of the squashed instruction. */
+     InstSeqNum squashedSeqNum[MaxThreads];
+@@ -345,4 +420,4 @@ class ROB
+ } // namespace o3
+ } // namespace gem5
+ 
+-#endif //__CPU_O3_ROB_HH__
++#endif //__CPU_O3_ROB_HH__
+\ No newline at end of file
+diff --git a/src/cpu/o3/scoreboard.cc b/src/cpu/o3/scoreboard.cc
+index c4c8bb24c..92a49bb8c 100644
+--- a/src/cpu/o3/scoreboard.cc
++++ b/src/cpu/o3/scoreboard.cc
+@@ -37,7 +37,7 @@ namespace o3
+ 
+ Scoreboard::Scoreboard(const std::string &_my_name,
+         unsigned _numPhysicalRegs) :
+-    _name(_my_name), regScoreBoard(_numPhysicalRegs, true),
++    _name(_my_name), regScoreBoard(_numPhysicalRegs, regstate{true, false, -1}),
+     numPhysRegs(_numPhysicalRegs)
+ {}
+ 
+diff --git a/src/cpu/o3/scoreboard.hh b/src/cpu/o3/scoreboard.hh
+index 9cb719b00..f604029f3 100644
+--- a/src/cpu/o3/scoreboard.hh
++++ b/src/cpu/o3/scoreboard.hh
+@@ -54,13 +54,20 @@ namespace o3
+ class Scoreboard
+ {
+   private:
++    struct regstate
++    {
++        bool ready = true;
++        bool wait_bit = false;
++        int wib_index = -1;
++    };
++
+     /** The object name, for DPRINTF.  We have to declare this
+      *  explicitly because Scoreboard is not a SimObject. */
+     const std::string _name;
+ 
+     /** Scoreboard of physical integer registers, saying whether or not they
+      *  are ready. */
+-    std::vector<bool> regScoreBoard;
++    std::vector<regstate> regScoreBoard;
+ 
+     /** The number of actual physical registers */
+     GEM5_CLASS_VAR_USED unsigned numPhysRegs;
+@@ -89,7 +96,7 @@ class Scoreboard
+ 
+         assert(phys_reg->flatIndex() < numPhysRegs);
+ 
+-        return regScoreBoard[phys_reg->flatIndex()];
++        return regScoreBoard[phys_reg->flatIndex()].ready;
+     }
+ 
+     /** Sets the register as ready. */
+@@ -107,7 +114,8 @@ class Scoreboard
+         DPRINTF(Scoreboard, "Setting reg %i (%s) as ready\n",
+                 phys_reg->index(), phys_reg->className());
+ 
+-        regScoreBoard[phys_reg->flatIndex()] = true;
++        regScoreBoard[phys_reg->flatIndex()].ready = true;
++        regScoreBoard[phys_reg->flatIndex()].wait_bit = false;
+     }
+ 
+     /** Sets the register as not ready. */
+@@ -122,9 +130,51 @@ class Scoreboard
+ 
+         assert(phys_reg->flatIndex() < numPhysRegs);
+ 
+-        regScoreBoard[phys_reg->flatIndex()] = false;
++        regScoreBoard[phys_reg->flatIndex()].ready = false;
++        regScoreBoard[phys_reg->flatIndex()].wait_bit = false;
++        regScoreBoard[phys_reg->flatIndex()].wib_index = -1;
+     }
+ 
++    /** Checks if the register is waiting. */
++    bool
++    getWait(PhysRegIdPtr phys_reg) const
++    {
++        if (phys_reg->isFixedMapping()) {
++            // Fixed mapping regs are always ready
++            return true;
++        }
++
++        assert(phys_reg->flatIndex() < numPhysRegs);
++
++        return regScoreBoard[phys_reg->flatIndex()].wait_bit;
++    }
++
++    /** Return the WIB Index. */
++    int
++    getIndex(PhysRegIdPtr phys_reg) const
++    {
++        assert(phys_reg->flatIndex() < numPhysRegs);
++
++        return regScoreBoard[phys_reg->flatIndex()].wib_index;
++    }
++ 
++
++    /** Sets the register as waiting. */
++    void
++    setWait(PhysRegIdPtr phys_reg, int wib_index)
++    {
++        if (phys_reg->isFixedMapping()) {
++            // Fixed mapping regs are always ready, ignore attempts to
++            // change that
++            return;
++        }
++
++        assert(phys_reg->flatIndex() < numPhysRegs);
++
++        regScoreBoard[phys_reg->flatIndex()].ready = false;
++        regScoreBoard[phys_reg->flatIndex()].wait_bit = true;
++        regScoreBoard[phys_reg->flatIndex()].wib_index = wib_index;
++    }
+ };
+ 
+ } // namespace o3

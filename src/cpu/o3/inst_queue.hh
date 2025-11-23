@@ -106,6 +106,21 @@ class InstructionQueue
 
     std::list<DynInstPtr> issueToReadyBuf;
 
+    /** A cache of the recently woken registers.  It is 1 if the register
+     *  has been woken up recently, and 0 if the register has been added
+     *  to the dependency graph and has not yet received its value.  It
+     *  is basically a secondary scoreboard, and should pretty much mirror
+     *  the scoreboard that exists in the rename map.
+     */
+      struct regstate
+      {
+          bool ready = true;
+          bool wait_bit = false;
+          int wib_index = -1;
+          bool was_waiting = false;
+      };
+     std::vector<regstate> regScoreboard;
+
     /** FU completion event class. */
     class FUCompletion : public Event
     {
@@ -463,21 +478,6 @@ class InstructionQueue
 
     /** The sequence number of the squashed instruction. */
     InstSeqNum squashedSeqNum[MaxThreads];
-
-    /** A cache of the recently woken registers.  It is 1 if the register
-     *  has been woken up recently, and 0 if the register has been added
-     *  to the dependency graph and has not yet received its value.  It
-     *  is basically a secondary scoreboard, and should pretty much mirror
-     *  the scoreboard that exists in the rename map.
-     */
-      struct regstate
-      {
-          bool ready = true;
-          bool wait_bit = false;
-          int wib_index = -1;
-          bool was_waiting = false;
-      };
-     std::vector<regstate> regScoreboard;
 
     bool prevReg2Ready = true;
 

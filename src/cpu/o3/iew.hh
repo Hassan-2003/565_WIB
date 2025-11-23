@@ -113,7 +113,10 @@ class IEW
 
     /** Sets pointer to the ROB. */
     ROB* rob;
-    void setROB(ROB *rob_ptr) { rob = rob_ptr; }
+    void setROB(ROB *rob_ptr) { 
+      rob = rob_ptr; 
+      rob->setInstQueuePtr(&instQueue);
+    }
 
   private:
 
