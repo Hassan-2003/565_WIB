@@ -1058,7 +1058,6 @@ Rename::renameSrcRegs(const DynInstPtr &inst, ThreadID tid)
                     renamed_reg->className());
 
             inst->markSrcRegReady(src_idx);
-            inst->markRealSrcRegReady();
         } else {
             DPRINTF(Rename,
                     "[tid:%i] "

@@ -887,7 +887,7 @@ IEW::dispatchInsts(ThreadID tid)
     DPRINTF(IEW, "[tid:%i] Getting list of reinsertion ready instructions from WIB\n", tid);
     rob->readCycle(tid, wibBuffer);
     DPRINTF(IEW, "[tid:%i] There are %d reinsertion ready instructions from WIB\n", tid, wibBuffer.size());
-
+    
     while ((dis_num_inst < dispatchWidth) && !wibBuffer.empty())
     {   
         // Read the 1st instruction from the WIB ready instructions for reinsertion
@@ -981,7 +981,7 @@ IEW::dispatchInsts(ThreadID tid)
         }
 
         // Check for full conditions.
-        if (instQueue.isFull(tid)) {
+        if ((instQueue.almostFull(tid)&&!wibBuffer.empty()) || (instQueue.isFull(tid)&&wibBuffer.empty())) {
             DPRINTF(IEW, "[tid:%i] Issue: IQ has become full.\n", tid);
 
             // Call function to start blocking.

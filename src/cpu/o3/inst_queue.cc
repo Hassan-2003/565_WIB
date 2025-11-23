@@ -177,7 +177,7 @@ InstructionQueue::removeFromIQ(ThreadID tid, const DynInstPtr &wibInstr)
 bool
 InstructionQueue::getWait(int reg_index) const
 {
-    return regScoreboard[reg_index].wait_bit;
+    return (regScoreboard[reg_index].wait_bit || regScoreboard[reg_index].was_waiting);
 }
 
 int
@@ -192,6 +192,7 @@ InstructionQueue::setWait(int reg_index, int wib_index)
     regScoreboard[reg_index].wait_bit = true;
     regScoreboard[reg_index].ready = false;
     regScoreboard[reg_index].wib_index = wib_index;
+    regScoreboard[reg_index].was_waiting = true;
 }
 
 InstructionQueue::~InstructionQueue()
@@ -573,6 +574,16 @@ InstructionQueue::isFull()
 }
 
 bool
+InstructionQueue::almostFull(ThreadID tid)
+{
+    if (numFreeEntries(tid) <= 1) {
+        return(true);
+    } else {
+        return(false);
+    }
+}
+
+bool
 InstructionQueue::isFull(ThreadID tid)
 {
     if (numFreeEntries(tid) == 0) {
@@ -655,10 +666,11 @@ InstructionQueue::insert(const DynInstPtr &new_inst)
     // Have this instruction set itself as the producer of its destination
     // register(s).
     addToProducers(new_inst);
-
+    
     if (new_inst->isMemRef() && !new_inst->getPushToWIB()) {
         memDepUnit[new_inst->threadNumber].insert(new_inst);
-    } else {
+    } else{
+        // DPRINTF(IQ, "Non-mem instruction added to ready list directly.\n");  
         addIfReady(new_inst);
     }
 
@@ -917,6 +929,11 @@ InstructionQueue::scheduleReadyInsts()
                         "[sn:%llu] to WIB (wait)\n",
                         tid, issuing_inst->pcState(),
                         issuing_inst->seqNum);
+
+                // for(int i =0; i<issuing_inst->numSrcRegs(); i++){
+                //     PhysRegIdPtr src_reg = new_inst->renamedSrcIdx(i);
+                //     readySrcIdx(src_reg, false);
+                // }
                 
                 DPRINTF(IQ, "[tid:%d] IQ pushed to WIB. [sn:%llu]\n", tid, issuing_inst->seqNum);
                 ++iqStats.totalWIBPushes;
@@ -1271,6 +1288,7 @@ InstructionQueue::wakeDependents(const DynInstPtr &completed_inst)
         regScoreboard[dest_reg->flatIndex()].ready = true;
         regScoreboard[dest_reg->flatIndex()].wait_bit = false;
         regScoreboard[dest_reg->flatIndex()].wib_index = -1;
+        regScoreboard[dest_reg->flatIndex()].was_waiting = false;
     }
     return dependents;
 }
@@ -1516,16 +1534,18 @@ InstructionQueue::doSquash(ThreadID tid)
                     // overwritten.  The only downside to this is it
                     // leaves more room for error.
                     
-                    if ((!squashed_inst->readySrcIdx(src_reg_idx) || !regScoreboard[src_reg->flatIndex()].ready) &&
+                    if ((!squashed_inst->readySrcIdx(src_reg_idx)) &&
                         !src_reg->isFixedMapping()) {
-                        if(!(getWait(src_reg->flatIndex()) && dependGraph.empty(src_reg->flatIndex()))){
+                        if(dependGraph.search(src_reg->flatIndex(), squashed_inst)) {
                             DPRINTF(IQ, "Removing squashed instruction "
                                 "[sn:%llu] PC %s from dependency "
-                                "graph on src reg %i. Waiting: %d.\n",
+                                "graph on src reg %i. Waiting: %d, Ready: %d.\n",
                                 squashed_inst->seqNum,
                                 squashed_inst->pcState(),
                                 src_reg->index(),
-                                getWait(src_reg->flatIndex()));
+                                getWait(src_reg->flatIndex()),
+                                regScoreboard[src_reg->flatIndex()].ready);
+
                             dependGraph.remove(src_reg->flatIndex(),
                                            squashed_inst);
                         }
@@ -1639,9 +1659,10 @@ InstructionQueue::addToDependents(const DynInstPtr &new_inst)
          src_reg_idx < total_src_regs;
          src_reg_idx++)
     {
+        PhysRegIdPtr src_reg = new_inst->renamedSrcIdx(src_reg_idx);
         // Only add it to the dependency graph if it's not ready.
         if (!new_inst->readySrcIdx(src_reg_idx) || new_inst->getPushToWIB()) {
-            PhysRegIdPtr src_reg = new_inst->renamedSrcIdx(src_reg_idx);
+            // PhysRegIdPtr src_reg = new_inst->renamedSrcIdx(src_reg_idx);
 
             // Check the IQ's scoreboard to make sure the register
             // hasn't become ready while the instruction was in flight
@@ -1674,6 +1695,14 @@ InstructionQueue::addToDependents(const DynInstPtr &new_inst)
                 assert(dependGraph.search(src_reg->flatIndex(), new_inst));
                 return_val = true;
             }
+            else if (new_inst->readySrcIdx(src_reg_idx)) {
+                DPRINTF(IQ, "Instruction PC %s has src reg %i (%s) that "
+                        "became ready but now is not ready in scoreboard.\n",
+                        new_inst->pcState(), src_reg->index(),
+                        src_reg->className());
+
+                new_inst->markSrcRegReady(src_reg_idx);
+            } 
             else if (!regScoreboard[src_reg->flatIndex()].ready) {
                 DPRINTF(IQ, "Instruction PC %s has src reg %i (%s) that "
                         "is being added to the dependency chain.\n",
@@ -1685,7 +1714,8 @@ InstructionQueue::addToDependents(const DynInstPtr &new_inst)
                 // Change the return value to indicate that something
                 // was added to the dependency graph.
                 return_val = true;
-            } else {
+            } 
+            else {
                 DPRINTF(IQ, "Instruction PC %s has src reg %i (%s) that "
                         "became ready before it reached the IQ.\n",
                         new_inst->pcState(), src_reg->index(),
@@ -1693,11 +1723,18 @@ InstructionQueue::addToDependents(const DynInstPtr &new_inst)
                 // Mark a register ready within the instruction.
                 //if (new_inst->numSrcRegs() != new_inst.readyRegs)
                 new_inst->markSrcRegReady(src_reg_idx);
-                if(!new_inst->getPushToWIB()){
-                    new_inst->markRealSrcRegReady();
-                }
             }
         }
+
+        else {
+                DPRINTF(IQ, "Instruction PC %s has src reg %i (%s) that "
+                        "became ready before it reached the IQ.\n",
+                        new_inst->pcState(), src_reg->index(),
+                        src_reg->className());
+                // Mark a register ready within the instruction.
+                //if (new_inst->numSrcRegs() != new_inst.readyRegs)
+                // new_inst->markSrcRegReady(src_reg_idx);
+            }
     }
 
     return return_val;

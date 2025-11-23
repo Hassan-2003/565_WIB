@@ -116,6 +116,33 @@ ROB::ROB(CPU *_cpu, const BaseO3CPUParams &params)
     resetState();
 }
 
+void ROB::inOrderPush(DynInstPtr instr, std::list<DynInstPtr> &orderList){
+    // Do normal push back if the new_inst is the youngest
+    if (orderList.empty() || (instr->seqNum > orderList.back()->seqNum)) {
+        orderList.push_back(instr);
+    }
+
+    else {
+        // Start at the end of the list
+        ListIt inst_it = orderList.end();
+        bool inserted = false;
+
+        while ((inst_it != orderList.begin()) && !inserted) {
+            --inst_it;
+
+            // Look for an older instruction and insert
+            if (instr->seqNum > (*inst_it)->seqNum ) {
+                orderList.insert(std::next(inst_it), instr);
+                inserted = true;
+            }
+        }
+
+        // new_inst is the oldest instruction
+        if (!inserted) {
+            orderList.push_front(instr);
+        }
+    }
+}
 void ROB::wibPush(ThreadID tid, DynInstPtr instr, std::vector<int> &loadPtrs){
 
     WIBEntry* wibEntry = new WIBEntry();
@@ -165,7 +192,6 @@ ROB::wibPop(ThreadID tid, int loadPtr, DynInstPtr instr){
             delete[] wibEntry->loadPtrs;
             delete wibEntry;
 
-            // DPRINTF(ROB, "[tid:%d] Cleared load vector pointer %d for instruction in WIB. [sn:%llu]\n", tid, loadPtr, wibEntry->instr->seqNum);
             return true;
         }
     }
@@ -174,17 +200,12 @@ ROB::wibPop(ThreadID tid, int loadPtr, DynInstPtr instr){
 
 void 
 ROB::readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs){
-    // unsigned banksChecked[2*MaxWidth];
-
-
-    // for(int i=0; i<2*MaxWidth; i++){
-    //     banksChecked[i] = 0;
-    // }
     using wibIT = std::list<WIBEntry*>::iterator;
     std::vector<wibIT> banksChecked(2 * MaxWidth, WIB[tid].end());
 
     findOldestReadyInstrs(tid, banksChecked);
     DPRINTF(ROB, "[tid:%d] WIB Read Cycle - Is even: %d \n", tid, even);
+
     // Currently doing oldest-first checking within even/odd banks
     auto it = WIB[tid].begin();
 
@@ -195,23 +216,15 @@ ROB::readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs){
     for(int bank=!even; bank<2*MaxWidth; bank+=2){
         if((banksChecked[bank] != WIB[tid].end())){
             WIBEntry* wibEntry = *(banksChecked[bank]);
-            // DPRINTF(ROB, "[tid:%d] Instruction is ready to re-issue from
-            // WIBEntry* wibEntry = *it;
-            // int bank = wibEntry->instr->bankNum;
-
-            // DPRINTF(ROB, "[tid:%d] WIB Reading instruction in bank %d, Read: %d. Waiting Status:%d [sn:%llu]\n", tid, bank, banksChecked[bank], instrWaiting(wibEntry),wibEntry->instr->seqNum);
-            
             DPRINTF(ROB, "[tid:%d] Instruction is ready to re-issue from WIB. [sn:%llu]\n", tid, wibEntry->instr->seqNum);
             
-            readyInstrs.push_back(wibEntry->instr);
+            //Turns buffer into in-order list
+            inOrderPush(wibEntry->instr, readyInstrs);
             
             //Remove from WIB
             it = WIB[tid].erase(banksChecked[bank]);
             delete[] wibEntry->loadPtrs;
             delete wibEntry;
-
-            // //Break to avoid iterator invalidation
-            // break;
         }
 
         ++it;

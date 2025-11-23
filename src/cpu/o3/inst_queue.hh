@@ -183,6 +183,8 @@ class InstructionQueue
     /** Returns whether or not the IQ is full for a specific thread. */
     bool isFull(ThreadID tid);
 
+    bool almostFull(ThreadID tid);
+
     /** Returns if there are any ready instructions in the IQ. */
     bool hasReadyInsts();
 
@@ -473,6 +475,7 @@ class InstructionQueue
           bool ready = true;
           bool wait_bit = false;
           int wib_index = -1;
+          bool was_waiting = false;
       };
      std::vector<regstate> regScoreboard;
 

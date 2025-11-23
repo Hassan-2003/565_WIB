@@ -294,6 +294,9 @@ class ROB
 
     bool isLoadPtrFree(ThreadID tid, int &loadPtr);
 
+    typedef typename std::list<DynInstPtr>::iterator ListIt;
+
+    void inOrderPush(DynInstPtr instr, std::list<DynInstPtr> &orderList);
     // Given an instruction, get its ROB bank number
     // void get_bank(ThreadID tid, DynInstPtr instr, unsigned &bank_num);
 
