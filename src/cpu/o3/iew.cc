@@ -981,8 +981,12 @@ IEW::dispatchInsts(ThreadID tid)
         }
 
         // Check for full conditions.
-        if ((instQueue.almostFull(tid)&&!wibBuffer.empty()) || (instQueue.isFull(tid)&&wibBuffer.empty())) {
-            DPRINTF(IEW, "[tid:%i] Issue: IQ has become full.\n", tid);
+        if(!wibBuffer.empty()) {
+            DPRINTF(IEW, "[tid:%i] Issue: There are reinsertion ready instructions in WIB, cannot dispatch new instructions\n", tid);
+            break;
+        }
+        if (instQueue.almostFull(tid)) {
+            DPRINTF(IEW, "[tid:%i] Issue: IQ has become almost full.\n", tid);
 
             // Call function to start blocking.
             block(tid);

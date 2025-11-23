@@ -213,7 +213,7 @@ ROB::readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs){
     // Sorting across banks from oldest to youngest. (Not necessary in hardware since its parallel issue but for simulator, it needs dispatch order insertions for squashes)
 
     // Oldest Priority across half of banks (even or odd)
-    for(int bank=!even; bank<2*MaxWidth; bank+=2){
+    for(int bank=0; bank<2*MaxWidth; bank+=1){
         if((banksChecked[bank] != WIB[tid].end())){
             WIBEntry* wibEntry = *(banksChecked[bank]);
             DPRINTF(ROB, "[tid:%d] Instruction is ready to re-issue from WIB. [sn:%llu]\n", tid, wibEntry->instr->seqNum);

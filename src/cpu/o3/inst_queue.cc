@@ -576,7 +576,7 @@ InstructionQueue::isFull()
 bool
 InstructionQueue::almostFull(ThreadID tid)
 {
-    if (numFreeEntries(tid) <= 1) {
+    if (numFreeEntries(tid) <= 5) {
         return(true);
     } else {
         return(false);
@@ -956,7 +956,13 @@ InstructionQueue::scheduleReadyInsts()
                     DPRINTF(IQ,"Setting Destination Register wait bit for"
                             " wait dependent instructions (%i) \n",
                             issuing_inst->renamedDestIdx(i)->index());
-                
+                    
+                    if(issuing_inst->renamedDestIdx(i)->isFixedMapping()){
+                        DPRINTF(IQ,"Destination Register was a fixed mapping, not setting"
+                            " wait dependent instructions (%i) \n",
+                            issuing_inst->renamedDestIdx(i)->index());
+                        continue;
+                    }
                     dest_reg = issuing_inst->renamedDestIdx(i)->flatIndex();
                     setWait(dest_reg, wib_indexes.front());
                 }
@@ -994,15 +1000,16 @@ InstructionQueue::scheduleReadyInsts()
                         tid, issuing_inst->pcState(),
                         issuing_inst->seqNum);
                 
-                // Need to decrement the ready source count for the instruction
-                for (int i = 0; i < issuing_inst->numSrcRegs(); i++) {
-                    if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex()) && !(issuing_inst->renamedSrcIdx(i)->isFixedMapping())) {
-                        issuing_inst->decrSrcRegReady();
-                    }
-                }
+                // // Need to decrement the ready source count for the instruction
+                // for (int i = 0; i < issuing_inst->numSrcRegs(); i++) {
+                //     if (getWait(issuing_inst->renamedSrcIdx(i)->flatIndex()) && !(issuing_inst->renamedSrcIdx(i)->isFixedMapping())) {
+                //         issuing_inst->decrSrcRegReady();
+                //     }
+                // }
 
+                issuing_inst->setSrcRegReady(0);
                 
-                // Need to add it back to dependets list to be properly woken up later
+                // Need to add it back to dependents list to be properly woken up later
                 addToDependents(issuing_inst);
 
                 // remove the instruction from the readyInsts queue
