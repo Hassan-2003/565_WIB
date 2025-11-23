@@ -223,7 +223,7 @@ DependencyGraph<DynInstPtr>::search(RegIndex idx,
         return false;
     }
 
-    nodesRemoved++;
+    // nodesRemoved++;
 
     // Find the instruction within the dependency linked list.
     while (curr->inst != inst_to_search) {

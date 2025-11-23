@@ -828,8 +828,14 @@ InstructionQueue::processFUCompletion(const DynInstPtr &inst, int fu_idx)
 void
 InstructionQueue::scheduleReadyInsts()
 {
+
     DPRINTF(IQ, "Attempting to schedule ready instructions from "
             "the IQ.\n");
+
+    if(prevReg2Ready != regScoreboard[2].ready){
+        DPRINTF(IQ, "Reg 2 ready state changed from %d to %d\n",prevReg2Ready, regScoreboard[2].ready);
+        prevReg2Ready = regScoreboard[2].ready;
+    }
 
     IssueStruct *i2e_info = issueToExecuteQueue->access(0);
 
@@ -1238,8 +1244,8 @@ InstructionQueue::wakeDependents(const DynInstPtr &completed_inst)
         // Special case of uniq or control registers.  They are not
         // handled by the IQ and thus have no dependency graph entry.
         if (dest_reg->isFixedMapping()) {
-            DPRINTF(IQ, "Reg %d [%s] is part of a fix mapping, skipping\n",
-                    dest_reg->index(), dest_reg->className());
+            DPRINTF(IQ, "Reg %d is part of a fix mapping, skipping\n",
+                    dest_reg->index());
             continue;
         }
 
@@ -1330,7 +1336,7 @@ InstructionQueue::wakeWaitDependents(const DynInstPtr &waiting_inst)
             // Only adds to ready list for issue on the next cycle since we would 
             // run the risk of pushing it to the ready list and issuig it in the same cycle
             // (single cycle wake up and issue)
-            addIfWaitReady(dep_inst);
+            addIfReady(dep_inst);
             
             dep_inst = dependGraph.pop(dest_reg->flatIndex());
         }
@@ -1533,22 +1539,25 @@ InstructionQueue::doSquash(ThreadID tid)
                     // either at issue time, or when the register is
                     // overwritten.  The only downside to this is it
                     // leaves more room for error.
-                    
-                    if ((!squashed_inst->readySrcIdx(src_reg_idx)) &&
-                        !src_reg->isFixedMapping()) {
-                        if(dependGraph.search(src_reg->flatIndex(), squashed_inst)) {
-                            DPRINTF(IQ, "Removing squashed instruction "
-                                "[sn:%llu] PC %s from dependency "
-                                "graph on src reg %i. Waiting: %d, Ready: %d.\n",
-                                squashed_inst->seqNum,
-                                squashed_inst->pcState(),
-                                src_reg->index(),
-                                getWait(src_reg->flatIndex()),
-                                regScoreboard[src_reg->flatIndex()].ready);
+                    if(!src_reg->isFixedMapping()){
+                        DPRINTF(IQ,"Is it in the dependency graph of Reg %i? Status: %s\n",
+                                src_reg->index(), dependGraph.search(src_reg->flatIndex(), squashed_inst) ? "Yes" : "No");
+                    }
+                    if ((!squashed_inst->readySrcIdx(src_reg_idx) &&
+                        !src_reg->isFixedMapping()) && dependGraph.search(src_reg->flatIndex(), squashed_inst)) {
+                        // if(dependGraph.search(src_reg->flatIndex(), squashed_inst)) {
+                        DPRINTF(IQ, "Removing squashed instruction "
+                            "[sn:%llu] PC %s from dependency "
+                            "graph on src reg %i. Waiting: %d, Ready: %d.\n",
+                            squashed_inst->seqNum,
+                            squashed_inst->pcState(),
+                            src_reg->index(),
+                            getWait(src_reg->flatIndex()),
+                            regScoreboard[src_reg->flatIndex()].ready);
 
-                            dependGraph.remove(src_reg->flatIndex(),
-                                           squashed_inst);
-                        }
+                        dependGraph.remove(src_reg->flatIndex(),
+                                        squashed_inst);
+                    // }
                     }
                     else{
                         DPRINTF(IQ, "Not removing squashed instruction "
@@ -1686,7 +1695,7 @@ InstructionQueue::addToDependents(const DynInstPtr &new_inst)
                 new_inst->markSrcRegReady(src_reg_idx);
             }
 
-            else if(new_inst->getPushToWIB() && regScoreboard[src_reg->flatIndex()].wait_bit) {
+            else if(new_inst->getPushToWIB() && (regScoreboard[src_reg->flatIndex()].wait_bit || !regScoreboard[src_reg->flatIndex()].ready)) {
                 DPRINTF(IQ, "Indirect waiting Instruction PC %s has src reg %i that "
                         "is waiting on a load-dependent instruction in the WIB.\n",
                         new_inst->pcState(), src_reg->index());
@@ -1723,6 +1732,7 @@ InstructionQueue::addToDependents(const DynInstPtr &new_inst)
                 // Mark a register ready within the instruction.
                 //if (new_inst->numSrcRegs() != new_inst.readyRegs)
                 new_inst->markSrcRegReady(src_reg_idx);
+                // regScoreboard[src_reg->flatIndex()].ready = true;
             }
         }
 
@@ -1734,6 +1744,7 @@ InstructionQueue::addToDependents(const DynInstPtr &new_inst)
                 // Mark a register ready within the instruction.
                 //if (new_inst->numSrcRegs() != new_inst.readyRegs)
                 // new_inst->markSrcRegReady(src_reg_idx);
+                regScoreboard[src_reg->flatIndex()].ready = true;
             }
     }
 
@@ -1785,7 +1796,7 @@ InstructionQueue::addToProducers(const DynInstPtr &new_inst)
         // Mark the scoreboard to say it's not yet ready.
         regScoreboard[dest_reg->flatIndex()].ready = false;
         regScoreboard[dest_reg->flatIndex()].wait_bit = false;
-        regScoreboard[dest_reg->flatIndex()].wib_index = -1;
+        // regScoreboard[dest_reg->flatIndex()].wib_index = -1;
     }
 }
 

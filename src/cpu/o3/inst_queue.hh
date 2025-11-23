@@ -479,6 +479,8 @@ class InstructionQueue
       };
      std::vector<regstate> regScoreboard;
 
+    bool prevReg2Ready = true;
+
     /** Adds an instruction to the dependency graph, as a consumer. */
     bool addToDependents(const DynInstPtr &new_inst);
 
