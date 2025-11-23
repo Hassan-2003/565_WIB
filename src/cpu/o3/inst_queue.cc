@@ -1543,8 +1543,9 @@ InstructionQueue::doSquash(ThreadID tid)
                         DPRINTF(IQ,"Is it in the dependency graph of Reg %i? Status: %s\n",
                                 src_reg->index(), dependGraph.search(src_reg->flatIndex(), squashed_inst) ? "Yes" : "No");
                     }
-                    if ((!squashed_inst->readySrcIdx(src_reg_idx) &&
-                        !src_reg->isFixedMapping()) && dependGraph.search(src_reg->flatIndex(), squashed_inst)) {
+                    if (!src_reg->isFixedMapping()) {
+                         
+                        if (dependGraph.search(src_reg->flatIndex(), squashed_inst)) {
                         // if(dependGraph.search(src_reg->flatIndex(), squashed_inst)) {
                         DPRINTF(IQ, "Removing squashed instruction "
                             "[sn:%llu] PC %s from dependency "
@@ -1557,7 +1558,7 @@ InstructionQueue::doSquash(ThreadID tid)
 
                         dependGraph.remove(src_reg->flatIndex(),
                                         squashed_inst);
-                    // }
+                        }
                     }
                     else{
                         DPRINTF(IQ, "Not removing squashed instruction "
