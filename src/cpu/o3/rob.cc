@@ -227,7 +227,7 @@ void ROB::wibPush(ThreadID tid, DynInstPtr instr, std::vector<int> &loadPtrs){
 
     //Turning WIB into priority queue based on dispatch order
     inOrderPush(wibEntry, WIB[tid]);
-    displayWIB();
+    // displayWIB();
 }
 
 
