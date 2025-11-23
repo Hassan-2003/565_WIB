@@ -294,9 +294,13 @@ class ROB
 
     bool isLoadPtrFree(ThreadID tid, int &loadPtr);
 
+    void displayWIB();
+
     typedef typename std::list<DynInstPtr>::iterator ListIt;
 
+    void inOrderPush(WIBEntry* entry, std::list<WIBEntry*> &orderList);
     void inOrderPush(DynInstPtr instr, std::list<DynInstPtr> &orderList);
+    
     // Given an instruction, get its ROB bank number
     // void get_bank(ThreadID tid, DynInstPtr instr, unsigned &bank_num);
 
@@ -348,7 +352,7 @@ class ROB
     std::list<WIBEntry*> WIB[MaxThreads];
     
     // Toggle to alternate checking even/odd banks each cycle
-    int even;
+    int even = 1;
     
     // Stack to track free load vector pointers
     std::vector<int> freeLoadVectors[MaxThreads];

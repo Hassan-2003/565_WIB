@@ -112,37 +112,94 @@ ROB::ROB(CPU *_cpu, const BaseO3CPUParams &params)
         maxEntries[tid] = 0;
     }
 
-    even = 1;
+    even = 1; // Start with even banks
     resetState();
 }
 
-void ROB::inOrderPush(DynInstPtr instr, std::list<DynInstPtr> &orderList){
+void ROB::inOrderPush(WIBEntry* entry, std::list<WIBEntry*> &orderList){
     // Do normal push back if the new_inst is the youngest
-    if (orderList.empty() || (instr->seqNum > orderList.back()->seqNum)) {
-        orderList.push_back(instr);
+    DynInstPtr instr = entry->instr;
+
+    if (orderList.empty() || (instr->seqNum > orderList.back()->instr->seqNum)) {
+        orderList.push_back(entry);
     }
 
     else {
         // Start at the end of the list
-        ListIt inst_it = orderList.end();
+        auto inst_it = orderList.end();
         bool inserted = false;
 
         while ((inst_it != orderList.begin()) && !inserted) {
             --inst_it;
 
             // Look for an older instruction and insert
-            if (instr->seqNum > (*inst_it)->seqNum ) {
-                orderList.insert(std::next(inst_it), instr);
+            if (instr->seqNum > (*inst_it)->instr->seqNum ) {
+                orderList.insert(std::next(inst_it), entry);
                 inserted = true;
             }
         }
 
         // new_inst is the oldest instruction
         if (!inserted) {
-            orderList.push_front(instr);
+            orderList.push_front(entry);
         }
     }
 }
+
+void ROB::inOrderPush(DynInstPtr instr, std::list<DynInstPtr> &orderList){
+
+    // Do normal push back if the new_inst is the youngest
+
+    if (orderList.empty() || (instr->seqNum > orderList.back()->seqNum)) {
+
+        orderList.push_back(instr);
+
+    }
+
+
+
+    else {
+
+        // Start at the end of the list
+
+        ListIt inst_it = orderList.end();
+
+        bool inserted = false;
+
+
+
+        while ((inst_it != orderList.begin()) && !inserted) {
+
+            --inst_it;
+
+
+
+            // Look for an older instruction and insert
+
+            if (instr->seqNum > (*inst_it)->seqNum ) {
+
+                orderList.insert(std::next(inst_it), instr);
+
+                inserted = true;
+
+            }
+
+        }
+
+
+
+        // new_inst is the oldest instruction
+
+        if (!inserted) {
+
+            orderList.push_front(instr);
+
+        }
+
+    }
+
+}
+
 void ROB::wibPush(ThreadID tid, DynInstPtr instr, std::vector<int> &loadPtrs){
 
     WIBEntry* wibEntry = new WIBEntry();
@@ -168,8 +225,21 @@ void ROB::wibPush(ThreadID tid, DynInstPtr instr, std::vector<int> &loadPtrs){
         }
     }
 
-    WIB[tid].push_back(wibEntry);
-    // DPRINTF(ROB, "[tid:%d] Instruction has been pushed to WIB. [sn:%llu]\n", tid, wibEntry->instr->seqNum);
+    //Turning WIB into priority queue based on dispatch order
+    inOrderPush(wibEntry, WIB[tid]);
+    displayWIB();
+}
+
+
+void  
+ROB::displayWIB(){
+    for(ThreadID tid = 0; tid < 1; tid++){
+        for(auto it = WIB[tid].begin(); it != WIB[tid].end(); it++){
+            WIBEntry* wibEntry = *it;
+            DPRINTF(ROB, "Instruction [sn:%llu] in bank %d waiting: %d.\n", wibEntry->instr->seqNum, wibEntry->instr->bankNum, instrWaiting(wibEntry));
+            DPRINTF(ROB, "\n");
+        }
+    }   
 }
 
 bool 
@@ -200,10 +270,16 @@ ROB::wibPop(ThreadID tid, int loadPtr, DynInstPtr instr){
 
 void 
 ROB::readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs){
-    using wibIT = std::list<WIBEntry*>::iterator;
-    std::vector<wibIT> banksChecked(2 * MaxWidth, WIB[tid].end());
+    // WIB is now a priority queue based on dispatch order
+    // If dispatch order cannot be maintained, then do not pop any instructions
 
-    findOldestReadyInstrs(tid, banksChecked);
+    // Assumes the WIB entries are sorted by dispatch order
+    // Only pop one entry from each bank in a set per cycle (even or odd)
+    // So you check the WIB entries in order and pop the first ready entry you find in each bank
+    // You stop when you reach an entry that is not ready or if its bank has already popped an entry this cycle
+
+    std::vector<int> banksChecked(2 * MaxWidth, 0);
+
     DPRINTF(ROB, "[tid:%d] WIB Read Cycle - Is even: %d \n", tid, even);
 
     // Currently doing oldest-first checking within even/odd banks
@@ -213,59 +289,70 @@ ROB::readCycle(ThreadID tid, std::list<DynInstPtr> &readyInstrs){
     // Sorting across banks from oldest to youngest. (Not necessary in hardware since its parallel issue but for simulator, it needs dispatch order insertions for squashes)
 
     // Oldest Priority across half of banks (even or odd)
-    for(int bank=0; bank<2*MaxWidth; bank+=1){
-        if((banksChecked[bank] != WIB[tid].end())){
-            WIBEntry* wibEntry = *(banksChecked[bank]);
+    // for(int bank=0; bank<2*MaxWidth; bank+=1){
+    for(it = WIB[tid].begin(); it != WIB[tid].end(); ++it){
+        WIBEntry* wibEntry = *it;
+        int bank = wibEntry->instr->bankNum;
+        if((banksChecked[bank] == 0) && (bank%2 == !even) && !instrWaiting(wibEntry)){
             DPRINTF(ROB, "[tid:%d] Instruction is ready to re-issue from WIB. [sn:%llu]\n", tid, wibEntry->instr->seqNum);
-            
-            //Turns buffer into in-order list
+
             inOrderPush(wibEntry->instr, readyInstrs);
-            
-            //Remove from WIB
-            it = WIB[tid].erase(banksChecked[bank]);
+            banksChecked[bank] = 1;
+
+            //Turns buffer into in-order list
+            it = WIB[tid].erase(it);
+            if(it == WIB[tid].end()){
+                break;
+            }
+            it--;
             delete[] wibEntry->loadPtrs;
             delete wibEntry;
         }
 
-        ++it;
+        // If you can't pop in commit order than don't pop at all
+        else{
+            DPRINTF(ROB, "[tid:%d] Found all commit order ready WIB instructions.\n", tid);
+            break;
+        }
+
     }
 
     // Alternate between checking even or odd banks each cycle
     even = !even;
 }
 
-void
-ROB::findOldestReadyInstrs(ThreadID tid, 
-        std::vector<std::list<WIBEntry*>::iterator> &banksChecked){
-    auto it = WIB[tid].begin();
-    // DPRINTF(ROB, "[tid:%d] Finding oldest ready instructions in WIB.\n", tid);
-    assert(banksChecked[0] == WIB[tid].end());
-    // Find Oldest Instruction per bank
-    while(it != WIB[tid].end()){
-        WIBEntry* wibEntry = *it;
-        // DPRINTF(ROB, "[tid:%d] Checking instruction in WIB in bank %d. [sn:%llu]\n", tid, wibEntry->instr->bankNum, wibEntry->instr->seqNum);
-        int bank = wibEntry->instr->bankNum;
-        assert(bank >= 0 && bank < (int)banksChecked.size());
+// void
+// ROB::findOldestReadyInstrs(ThreadID tid, 
+//         std::vector<std::list<WIBEntry*>::iterator> &banksChecked){
+//     auto it = WIB[tid].begin();
+//     // DPRINTF(ROB, "[tid:%d] Finding oldest ready instructions in WIB.\n", tid);
+//     assert(banksChecked[0] == WIB[tid].end());
+//     // Find Oldest Instruction per bank
+//     while(it != WIB[tid].end()){
+//         WIBEntry* wibEntry = *it;
+//         // DPRINTF(ROB, "[tid:%d] Checking instruction in WIB in bank %d. [sn:%llu]\n", tid, wibEntry->instr->bankNum, wibEntry->instr->seqNum);
+//         int bank = wibEntry->instr->bankNum;
+//         assert(bank >= 0 && bank < (int)banksChecked.size());
 
-        // DPRINTF(ROB, "[tid:%d] Checking instruction in bank %d. Waiting Status:%d [sn:%llu]\n", tid, bank, instrWaiting(wibEntry),wibEntry->instr->seqNum);
-        if(!instrWaiting(wibEntry)){
-            if(!(banksChecked[bank] == WIB[tid].end())){
-                // DPRINTF(ROB, "[tid:%d] Checking instruction for youngest in bank %d. [sn:%llu]\n", tid, bank, wibEntry->instr->seqNum);
-                if(wibEntry->instr->seqNum < (*banksChecked[bank])->instr->seqNum){
-                    // DPRINTF(ROB, "[tid:%d] Setting instruction as youngest in bank %d. [sn:%llu]\n", tid, bank, wibEntry->instr->seqNum);
-                    banksChecked[bank] = it;
-                    // DPRINTF(ROB, "[tid:%d] Found oldest ready instruction in bank %d. [sn:%llu]\n", tid, bank, wibEntry->instr->seqNum);
-                }
-            }
-            else{
-                // DPRINTF(ROB, "[tid:%d] Setting instruction as youngest in bank %d. [sn:%llu]\n", tid, bank, wibEntry->instr->seqNum);
-                banksChecked[bank] = it;
-            }
-        }
+//         // DPRINTF(ROB, "[tid:%d] Checking instruction in bank %d. Waiting Status:%d [sn:%llu]\n", tid, bank, instrWaiting(wibEntry),wibEntry->instr->seqNum);
+//         if(!instrWaiting(wibEntry)){
+//             if(!(banksChecked[bank] == WIB[tid].end())){
+//                 // DPRINTF(ROB, "[tid:%d] Checking instruction for youngest in bank %d. [sn:%llu]\n", tid, bank, wibEntry->instr->seqNum);
+//                 if(wibEntry->instr->seqNum < (*banksChecked[bank])->instr->seqNum){
+//                     // DPRINTF(ROB, "[tid:%d] Setting instruction as youngest in bank %d. [sn:%llu]\n", tid, bank, wibEntry->instr->seqNum);
+//                     banksChecked[bank] = it;
+//                     // DPRINTF(ROB, "[tid:%d] Found oldest ready instruction in bank %d. [sn:%llu]\n", tid, bank, wibEntry->instr->seqNum);
+//                 }
+//             }
+//             else{
+//                 // DPRINTF(ROB, "[tid:%d] Setting instruction as youngest in bank %d. [sn:%llu]\n", tid, bank, wibEntry->instr->seqNum);
+//                 banksChecked[bank] = it;
+//             }
+//         }
 
-        ++it;
-    }
-}
+//         ++it;
+//     }
+// }
 
 void 
 ROB::clearLoadWaiting(ThreadID tid, int loadPtr){
