@@ -1629,7 +1629,7 @@ LSQUnit::read(LSQRequest *request, ssize_t load_idx)
         load_entry.loadSentTick = curTick();
 
         // Schedule the load miss detection event
-        Tick timeToMiss = curTick() + cpu->cyclesToTicks(Cycles(23));
+        Tick timeToMiss = curTick() + cpu->cyclesToTicks(Cycles(15));
         MissDetectEvent *missDetect = new MissDetectEvent(load_inst, this);
         cpu->schedule(missDetect, timeToMiss);
 
